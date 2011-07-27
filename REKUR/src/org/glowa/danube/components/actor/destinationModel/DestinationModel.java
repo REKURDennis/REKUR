@@ -35,6 +35,9 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 	
 	private String citiesTable = "cities";
 	private String database = "jdbc:mysql://localhost/rekur?user=root&password=bla";
+	private String dataBaseName;
+	private String userName;
+	private String password;
 	private HashMap<Integer, boolean[]> holidayTypes = new HashMap<Integer, boolean[]>();
 	private HashMap<Integer, Integer> countryIDs = new HashMap<Integer, Integer>();
 	private HashMap<Integer, ClimateData> dailyClimateData = new HashMap<Integer, ClimateData>();
@@ -46,6 +49,13 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 	 */
 	protected void init() {
 		System.out.println("destinationInit");
+		
+		dataBaseName = this.componentConfig().getComponentProperties().getProperty("dataBaseName");
+	    userName = this.componentConfig().getComponentProperties().getProperty("userName");
+	    password = this.componentConfig().getComponentProperties().getProperty("password");
+	    database = "jdbc:mysql://localhost/"+dataBaseName+"?user="+userName+"&password="+password;
+		
+		
 		initdestinaionsFromDataBase();
 		for(Actor entry :actorMap().getEntries()){
 			DD_Destination dest = (DD_Destination)entry;
