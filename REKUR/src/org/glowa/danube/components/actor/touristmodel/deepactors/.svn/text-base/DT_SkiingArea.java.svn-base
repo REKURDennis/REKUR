@@ -1,0 +1,849 @@
+package org.glowa.danube.components.actor.tourism.deeptourism;
+
+//org.glowa.danube.components.actor.tourism.deeptourism.DT_SkiingArea
+import java.util.Collection;
+import java.util.Random;
+
+import org.glowa.danube.components.actor.tourism.TourismProxel;
+import org.glowa.danube.components.actor.tourism.deeptourism.event.ColdEnoughForSnowmaking;
+import org.glowa.danube.components.actor.tourism.deeptourism.event.DrinkingWaterShortage;
+import org.glowa.danube.components.actor.tourism.deeptourism.event.GroundWaterShortage;
+import org.glowa.danube.components.actor.tourism.deeptourism.event.RiverWaterShortage;
+import org.glowa.danube.components.actor.tourism.deeptourism.event.SnowHeightForSkiing;
+import org.glowa.danube.components.actor.tourism.deeptourism.plan.CloseBusiness;
+import org.glowa.danube.components.actor.tourism.deeptourism.plan.CloseBusinessFinally;
+import org.glowa.danube.components.actor.tourism.deeptourism.plan.OpenBusiness;
+import org.glowa.danube.datatypes.SkiingAreaStatusType;
+import org.glowa.danube.deepactors.actors.actor.ActionEnvironment;
+import org.glowa.danube.deepactors.actors.actor.Actor;
+import org.glowa.danube.deepactors.actors.plan.Plan;
+
+
+
+/**
+ * DeepActor skiingarea with its variables and methods.
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ */
+public class DT_SkiingArea extends DT_AbstractDeepActor
+implements Actor,ActionEnvironment,DT_SkiingEnv
+
+
+{ 
+	private boolean extendArtSnow = false;
+	public boolean extendAction = false;
+	private int extendArtSnowStartyear = 2020;
+	private float extendFactorCanon = 1.3f;
+	private float extendFactorArea = 1.3f;
+	private float extendFactorWaterStorage = 1.3f;
+	private boolean extendArtSnowToNewAreas = false;
+	private boolean changeProfitabilityThreshold = false;
+	private int startYearOfLiftingProfitabilityThreshold = 2020;
+	private float factorChangeProfitabilityThresholdperYear = 1.0f;
+	
+	private int[] oprerationDays;
+	
+	private int operationStep;
+	private int breakEvenOperationDays;
+	private float artSnowTime;
+	private float waterOuput;
+	
+	public float skiareaCapacity;
+	private float areaNumber;
+	public boolean enoughSnow;
+	public boolean enoughArtSnow;
+	public boolean coldEnough;
+	
+	private boolean drinkingWaterDeficency;
+	private boolean groundWaterDeficency;
+	private boolean riverWaterDeficency;
+	
+	public boolean hasArtSnowCanons;
+	public boolean artSnowPossible; //Fuer Wasti
+	
+	public float artSnowArea;
+
+	public float minFeuchtkugelTemp;
+	public float dayMidTemp;
+	
+	private double potArtSnowVolumeSeason;
+	
+	private float potArtSnowArea;
+	private double potBasisArtSnowVolume;
+	private double[] artSnowPotetial;
+	private int artSnowPotStep;
+	private int artSnowYearCounter;
+	private int randomNumber;
+	
+	private int simYear;
+	public DT_WaterStorage waterStorage;
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#setGmt(int)
+	 */
+	public void setGmt(int i,int a,int b)
+	{
+		super.setGmt(i,a,b);
+		gmt = i;
+		switch (i)
+		{
+		case 1: // Baseline
+		{
+			extendArtSnow = true;				// Allgemeines Ausbauen der Beschneiung
+			extendArtSnowStartyear = 2020; // Ab welchem Jahr
+			extendFactorArea = 1.5f; 			// Um wieviel mehr Schneekanonen
+			extendFactorWaterStorage = 1.2f;				//Um wieviel mehr Speicherteich
+			extendFactorCanon = 1.3f;
+			extendArtSnowToNewAreas = false;	//Gibt es neue Gebiete mit Beschneiung?
+			changeProfitabilityThreshold = false; 			//WirtschaftlichkeitsSchwelle Ansteigen:
+			startYearOfLiftingProfitabilityThreshold = 2020;
+			factorChangeProfitabilityThresholdperYear = 1.0f;// 1.0f = Keine Veraenderung; 1.01f 1% Mehr noetige Betriebstage
+
+		}
+		break;
+		case 2: // Liberal
+		{
+			extendArtSnow = true;				// Allgemeines Ausbauen der Beschneiung
+			extendArtSnowStartyear = 2020; // Ab welchem Jahr
+			extendFactorArea = 2.5f; 			// Um wieviel mehr Schneekanonen
+			extendFactorWaterStorage = 2.0f;				//Um wieviel mehr Speicherteich
+			extendFactorCanon = 2.0f;
+			extendArtSnowToNewAreas = true;	//Gibt es neue Gebiete mit Beschneiung?
+			changeProfitabilityThreshold = true; 			//WirtschaftlichkeitsSchwelle Ansteigen:
+			startYearOfLiftingProfitabilityThreshold = 2020;
+			factorChangeProfitabilityThresholdperYear = 1.01f;// 1.0f = Keine Veraenderung; 1.01f 1% Mehr noetige Betriebstage
+
+		}
+		break; // Nachhaltig
+		case 3:
+		{
+			extendArtSnow = true;				// Allgemeines Ausbauen der Beschneiung
+			extendArtSnowStartyear = 2020; // Ab welchem Jahr
+			extendFactorArea = 1.2f; 			// Um wieviel mehr Schneekanonen
+			extendFactorWaterStorage = 1.2f;				//Um wieviel mehr Speicherteich
+			extendFactorCanon = 1.2f;
+			extendArtSnowToNewAreas = false;	//Gibt es neue Gebiete mit Beschneiung?
+			changeProfitabilityThreshold = false; 			//WirtschaftlichkeitsSchwelle Ansteigen:
+			startYearOfLiftingProfitabilityThreshold = 2020;
+			factorChangeProfitabilityThresholdperYear = 1.0f;// 1.0f = Keine Veraenderung; 1.01f 1% Mehr noetige Betriebstage
+
+		}
+		break;
+		}
+	}
+
+	
+	
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#init()
+	 */
+	protected void init()
+	{	
+		this.typeID = 11;
+		super.init();
+		
+		operationDaysCounter = 0;
+		operationStep = 0;
+		breakEvenOperationDays = 80; // Tage Regel noch modifizieren nach L‰ndern!!!!
+		actorstatus = SkiingAreaStatusType.SKIING;		
+		skiareaCapacity = 13.8f; //Generische Kapazitaet
+
+		simYear = 0;
+		
+		oprerationDays = new int[10];
+		for (int i = 0; i < oprerationDays.length; i++)
+			{oprerationDays[i] = 140;}	
+		
+		enoughSnow = false;
+		
+		artSnowPotetial = new double[10];
+		for (int i = 0; i < artSnowPotetial.length; i++)
+		{artSnowPotetial[i] = 0.0d;}
+		
+		
+		artSnowPotStep = 0;
+		
+		drinkingWaterDeficency = false;
+		groundWaterDeficency = false;
+		riverWaterDeficency = false;
+		drinkingWaterDemand = 0.0f;
+		
+		waterStorage = new DT_WaterStorage();
+		artSnowTime = 9.5f;
+		
+		//ƒnderung Mario: Fl‰chenzahl ist laut Diss 0,77!!
+		areaNumber = 0.77f;
+		
+		waterOuput = 104.0f;
+		
+		artificalSnowVolume = 0;
+		minFeuchtkugelTemp = 0f;
+		dayMidTemp = 0f;
+ 
+		articficalSnowingDays = 0;
+		potBeschneiungstage = 0;
+		potArtSnowVolumeSeason = 0.0d;
+		potArtSnowArea = 0.0f;
+		potBasisArtSnowVolume = 0.0d;
+		artSnowYearCounter = 0;
+		
+		Random r = new Random();
+		
+		randomNumber = r.nextInt(5);
+		
+		artSnowPossible = false;
+		
+			
+		
+		
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.actors.actor.AbstractActor#export()
+	 */
+	protected void export()
+	{
+		
+	}
+	
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.actors.actor.AbstractActor#query()
+	 */
+	protected void query()
+	{
+				
+		int monat = this.simulationTime().getMonth();
+		int tag = this.simulationTime().getDay();
+		int jahr = this.simulationTime().getYear();
+
+		if ((tag==1)&&(monat==7))
+		{
+			artificalSnowVolume = 0;
+			if (changeProfitabilityThreshold && (jahr == startYearOfLiftingProfitabilityThreshold))
+			{
+				breakEvenOperationDays = (int)((float)breakEvenOperationDays * factorChangeProfitabilityThresholdperYear); 
+			}
+
+			if (extendArtSnow && (jahr == extendArtSnowStartyear))
+			{
+				this.artSnowArea = this.artSnowArea * extendFactorArea;
+			}
+
+			if ((jahr==2025))
+			{	
+				
+				if (this.extendAction)
+				{
+					if (this.hasArtSnowCanons)
+					{this.artSnowArea = this.artSnowArea * 1.5f;
+					}else
+					{
+						this.artSnowArea =  this.artSnowArea + potArtSnowArea;
+						float kapa = this.artSnowArea *  2434.0f * 0.619325f;
+						this.waterStorage.init(kapa);
+						this.hasArtSnowCanons = true;
+					}
+					this.extendAction = false;
+				}
+			}
+		}
+		
+		if ((tag==1)&&(monat==1))
+		{
+			simYear++;
+			potArtSnowArea = 	(float)(4.9E-5D * this.skiareaCapacity - 
+									5.0E-10D * Math.pow(this.skiareaCapacity,2.0D) +
+									2.9E-15D * Math.pow(this.skiareaCapacity,3.0D));						
+			
+		}
+		
+		try{
+			if(proxelSensorEvents().getEntries(SnowHeightForSkiing.class).size() == 1)
+				{enoughSnow = true;}
+			else
+				{enoughSnow = false;}			
+		}catch (Exception e)
+			{enoughSnow = false;}
+		
+		try{
+			if(proxelSensorEvents().getEntries(ColdEnoughForSnowmaking.class).size() == 1)
+				{coldEnough = true;}
+			else
+				{coldEnough = false;}			
+		}catch (Exception e)
+			{coldEnough = false;}
+
+		try{
+			if(proxelSensorEvents().getEntries(DrinkingWaterShortage.class).size() == 1)
+				{drinkingWaterDeficency = true;}
+			else
+				{drinkingWaterDeficency = false;}
+		}catch (Exception e)
+				{drinkingWaterDeficency = false;}
+		
+		try{
+			if(proxelSensorEvents().getEntries(RiverWaterShortage.class).size() == 1)
+				{riverWaterDeficency = true;}
+			else
+				{riverWaterDeficency = false;}
+		}catch (Exception e)
+				{riverWaterDeficency = false;}
+		
+		try{
+			if(proxelSensorEvents().getEntries(GroundWaterShortage.class).size() == 1)
+				{groundWaterDeficency = true;}
+			else
+				{groundWaterDeficency = false;}
+		}catch (Exception e)
+				{groundWaterDeficency = false;}
+		
+		
+		
+		
+		
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#options()
+	 */
+	protected void options()
+	{
+		super.options();
+		
+		this.riverWaterDemand = 0f;
+		this.groundWaterDemand = 0f;
+		this.optimaleSkiingDay = 0;
+		
+		int monat = this.simulationTime().getMonth();
+		int tag = this.simulationTime().getDay();
+		int jahr = this.simulationTime().getYear();
+		 
+		if (actorstatus != SkiingAreaStatusType.NO_SKIINGAREA)			
+		{	
+			if (!waterStorage.isFull())	
+			{
+			float fuelltrink = 0f;
+			float fuellregen = 0f;
+			float fuelloberflaechen = 0f;
+			float fuellgrund = 0f;
+			float fuellmengeTag = 0.5f * waterOuput * this.artSnowArea;
+			// Diss Mario S. 182	50% des Wasserbedarfs
+			if (!drinkingWaterDeficency)
+				{fuelltrink = 0.0569f*fuellmengeTag;
+				drinkingWaterDemand +=fuelltrink;}
+			
+			if (!riverWaterDeficency)
+				{fuelloberflaechen = 0.7512f*fuellmengeTag;}
+	
+			if(!groundWaterDeficency)
+				{fuellgrund = 0.1919f*fuellmengeTag;}
+				
+			
+			waterStorage.fill(fuelltrink,fuellregen,fuelloberflaechen,fuellgrund);
+		
+			fuelloberflaechen = fuelloberflaechen - waterStorage.waterOutput();
+
+			if (fuelloberflaechen < 0f)
+				{fuelloberflaechen = 0f;} //Abfangroutine wird sehr selten benutzt 	
+
+			if (fuellgrund < 0f)
+				{fuellgrund = 0f;} //Abfangroutine wird sehr selten benutzt	
+
+				this.riverWaterDemand = fuelloberflaechen;
+				this.groundWaterDemand = fuellgrund;
+						
+			}
+			else
+			{
+				this.riverWaterDemand = 0f;
+				this.groundWaterDemand = 0f;
+			}
+					
+			
+		int beschneiungAktiv = 0;	
+		
+		// Mario Beschneiungsdatum
+		if 	((((monat == 11) && (tag >= 7)) || (monat == 12)|| (monat <= 2) || ((monat == 3) && (tag <= 13))))
+		{
+			if ((artSnowArea>0)&&coldEnough&&(artificalSnowVolume <= (5595.0f*artSnowArea)))
+			{
+				
+				artSnowPossible = true;
+				float abf = 1.0f;
+				if (extendArtSnow&&(extendArtSnowStartyear >= jahr))
+				{
+					abf = extendFactorCanon;
+				}
+				
+				float wasserbedTaegl = abf * artSnowArea * areaNumber * artSnowTime *  (float)Math.exp(0.95437f + (0.8786f * Math.log(Math.abs((minFeuchtkugelTemp-273.15f))))); 
+				
+				
+					if (waterStorage.actualVolume >= wasserbedTaegl)
+					{
+						waterStorage.takeout(wasserbedTaegl);
+						artificalSnowVolume = artificalSnowVolume + (wasserbedTaegl / 0.435f);
+						articficalSnowingDays = articficalSnowingDays + 1;
+						beschneiungAktiv = 10;					
+					}
+				
+			}
+			
+			if (coldEnough)
+			{
+				potBeschneiungstage++;
+				double potKunstschneMengeTag = 0.0d;				
+				potKunstschneMengeTag = (potArtSnowArea * areaNumber * artSnowTime *  (float)Math.exp(0.95437f + (0.8786f * Math.log(Math.abs((minFeuchtkugelTemp-273.15f))))))/0.435d; 				
+				potArtSnowVolumeSeason = potArtSnowVolumeSeason + potKunstschneMengeTag;
+				if ((tag==15)&&(monat==12))
+				{
+					potBasisArtSnowVolume = potArtSnowVolumeSeason;
+				}
+				
+
+			}
+			
+			
+			
+			
+			
+			
+		}//If
+		//Mario f¸gt die Berechnung der Schneik‰ltetage ein
+		if (coldEnough)
+			{snowColdDay = 1;}
+		else
+			{snowColdDay = 0;}
+		
+		
+			
+		
+		//*******Taufunktion Temperaturindexmethode
+		if (artificalSnowVolume > 0)
+			{
+				//Mario hat den Datentyp auf double ge‰ndert!
+				double md;
+				//Differenz Tagestemp Nullgradgrenze hier 2∞C
+				// 0.85f in 0.9 geaendert
+				md = 0.95f * (dayMidTemp - 275.15f);
+				
+				// Achtung beschneite Fl‰che ist in ha => 
+				// hochskalieren mit Faktor 10.000
+				// anschlieﬂendes teilen durch Tausend macht aus Litern m≥!!
+				md = (md * artSnowArea*10000.0f)/1000.0f;
+								
+				if (md < 0)
+					{md = 0.0f;}			
+				else
+				{md = md / 0.435f;}
+				
+				if (artificalSnowVolume < md)
+				{artificalSnowVolume = 0;}	
+				else 
+				{	
+					artificalSnowVolume = artificalSnowVolume - md;
+				}
+				
+				if (md > artificalSnowVolume)
+				{
+					md = artificalSnowVolume;
+				}
+				
+				ms = ms + md;
+				
+				if ((((monat == 11) && (tag >= 7)) ||(monat == 12)|| (monat <= 2) || ((monat == 3) && (tag <= 13))))
+				{
+				mb = mb + md;
+				}
+				
+				
+				
+			}// if (kunstschneemengeSaison > 0)
+			
+		if (potArtSnowVolumeSeason > 0)
+			{
+				double md;
+				//Differenz Tagestemp Nullgradgrenze hier 2∞C
+				md = 0.95f * ( dayMidTemp - 275.15f);
+				
+				//Achtung beschneite Fl‰che ist in ha => 
+				//hochskalieren mit Faktor 10.000
+				md = (md * potArtSnowArea*10000.0f)/1000.0f;
+				md = md / 0.435f;
+				
+				if (md < 0)
+				{
+					md = 0.0f;
+				}
+				
+				else
+				{
+					md = md / 0.435f;
+				}
+				
+				if (potArtSnowVolumeSeason < md)
+				{
+					potArtSnowVolumeSeason = 0;
+				}	
+				
+				else 
+				{	
+					potArtSnowVolumeSeason = potArtSnowVolumeSeason - md;
+				}			
+			}
+			
+			
+		
+		 
+			
+		 if ((((monat == 12) && (tag > 15)) || (monat <= 3)||((monat == 4) && (tag <= 15))))
+		 {// Saisonzeit ist gegeben
+			 
+			 
+			boolean skibetriebMoeglich = false;
+			double schneHoeheZumBetrieb = 80.0d;
+
+			switch (this.countryID)
+			{
+			case 1:{// Bayern = 1
+					// Nordbayern (Bayr. Wald und Fichtelgebirge) 80mm Wassersaule
+									
+					if (this.myProxelloc <= 60000)
+					{schneHoeheZumBetrieb = 60.0d;}
+					else
+					{schneHoeheZumBetrieb = 80.0d;}
+
+					}break;
+			case 2:{schneHoeheZumBetrieb = 40.0d;}break;
+			case 3:{schneHoeheZumBetrieb = 40.0d;}break;
+			}
+			
+			// Sonst 100 mm Wassersaeule
+			
+			
+			if (hasArtSnowCanons)
+			{
+				extendArtSnowToNewAreas = false;
+				if (artSnowArea >= 50)
+					// Grosses Gebiet kann nur mit Kunstsschnee betrieben werden
+					// Schwellenwert 50 ha
+				{
+					double antKunst = artificalSnowVolume / (2184.0f*artSnowArea);
+					double antNatur = this.snowdepth / (schneHoeheZumBetrieb + 20d);
+					if (((antKunst+antNatur) >= 1.0d)||(snowdepth >= schneHoeheZumBetrieb)||(artificalSnowVolume >= (2184.0f*artSnowArea)))
+					{
+						skibetriebMoeglich = true;
+					}
+				}
+				else // Kleines Skigebiet benoetigt Kunst- und Naturschnee
+				{
+				if ((artificalSnowVolume >= (2184.0f*artSnowArea))&&(snowdepth >= schneHoeheZumBetrieb))
+					{skibetriebMoeglich = true;}	
+				}																
+			}
+			else // Hat Keine Beschneiungsanlagen
+			{
+				if (snowdepth >= schneHoeheZumBetrieb)
+				{skibetriebMoeglich = true;}
+			}
+			 
+			
+			
+		// Optimaler Skitag
+		// Genug schnee Genug Kunstschnee, Schneehoehe ueber null
+		// Temperatur -5 bis 5
+			
+			if (	skibetriebMoeglich &&
+					this.snowdepth > 0.0f &&
+					this.dailyMaxTemperature >= 268.15f &&
+					this.dailyMaxTemperature <= 278.15f &&
+					this.percipitationSumDay == 0.0f  &&
+					this.windVelocity <= 10.0f &&
+					this.sundurance >= 5.0f
+					)
+			{
+				this.optimaleSkiingDay = 1;
+			}
+			
+			
+
+			if (skibetriebMoeglich)
+			 {// Skigebiet wird geoeffnet:
+				activate(OpenBusiness.class);
+				this.addOneOperationDay();
+				actorstatus = SkiingAreaStatusType.SKIING;
+			 }
+			 else
+			 {
+				activate(CloseBusiness.class);
+				this.addOneClosingDay();
+				actorstatus = SkiingAreaStatusType.OUT_OF_SERVICE;	
+			 }
+			 
+		 }else //Keine Saison
+		 {
+			activate(CloseBusiness.class);
+			actorstatus = SkiingAreaStatusType.OUT_OF_SERVICE;
+		 }
+		 
+		 //Mario: hier wird der Beschneizustand bekanntgegeben wir haben nur drei Pl‰ne
+		 actorstatus = actorstatus + beschneiungAktiv;
+		}
+		
+		
+		
+		
+		
+		//Mario f¸hrt die Berechnung eines guten Skitage ein
+		if (dailyMaxTemperature >= 253.15f & dailyMaxTemperature >= 278.15f & 
+			percipitationSumDay <= 1.0 & (actorstatus == 2 | actorstatus == 12))
+	    	{
+			alpSkiRunTech = 1;
+	    	}
+		else
+	 		{
+			alpSkiRunTech = 0;
+	 		}
+		
+		
+		
+		
+		
+		 //Assessment der Profitabilitaet wird am 31.7. jeden Jahres durchgefuehrt
+		 if ((tag == 31) & (monat == 7))
+		{
+			 this.started = false;
+			 oprerationDays[operationStep] = operationDaysCounter;
+			 operationDaysCounter = 0;
+			 operationStep = operationStep + 1;
+			 if (operationStep >= oprerationDays.length)
+			 	{operationStep = 0;}
+			 
+			 int SumOperationDays = 0;
+			 for (int i = 0; i < oprerationDays.length; i++)
+				{SumOperationDays = SumOperationDays + oprerationDays[i];}
+			 if ((breakEvenOperationDays*oprerationDays.length) < SumOperationDays)
+			 {// 100 Tage Regel
+				 if (this.simulationTime().getYear() >= 2020)
+				 	{activate(CloseBusinessFinally.class);}		
+			 }
+	
+			 
+			 
+			
+			 if (extendArtSnow)
+			 {			 
+				calcArtsnowpottential();
+				extendArtSnow(jahr);
+
+			 }
+		}
+		 
+		 //Mario setzt die Beschneiungstage im Juli wieder auf Null!
+		 
+		 if ((tag == 31) & (monat == 7))
+			{
+			 articficalSnowingDays = 0;	
+			 snowColdDay = 0;
+			 ms = 0;			 
+
+
+			}
+		 //Mario setzt die Schmelze w‰hrend der Schneizeit am Ende der
+		 //Schneisaison auf Null.
+		 if ((tag == 14) & (monat == 3))
+			{
+			 mb = 0;			 
+			}
+		
+	
+		 
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.actors.actor.AbstractActor#filter()
+	 */
+	public void filter() {
+
+	}
+	
+	
+	public DT_SkiingArea getActor() {
+		return this;
+
+	}
+	
+	
+	/**
+	 * Returns capacity
+	 * @return skiing area capacity
+	 */
+	public float getCapacity()
+	{
+		return skiareaCapacity;
+	}
+
+	
+	
+	private void calcArtsnowpottential()
+	{
+		
+		double faktorPotBeschTage = 0.0d;
+		double faktorPotGrundBesch = 0.0d;
+		double faktorPotSaisonBesch = 0.0d;
+		double beschPot = 0.0d;
+		
+		if (potBeschneiungstage >=20)
+		{
+			faktorPotBeschTage = (double)potBeschneiungstage/20.0d;
+		}
+		
+		if (potBasisArtSnowVolume >= (2184.0d*potArtSnowArea))
+		{
+			faktorPotGrundBesch = potBasisArtSnowVolume/(450.0d*potArtSnowArea);
+		}
+		
+		
+		if (potArtSnowVolumeSeason >= (5595.0d*potArtSnowArea))
+		{
+			faktorPotSaisonBesch = potArtSnowVolumeSeason/(5595.0d*potArtSnowArea);
+		}
+		
+		beschPot = (faktorPotBeschTage + faktorPotGrundBesch + faktorPotSaisonBesch)/3.0d;
+		
+		artSnowPotetial[artSnowPotStep] = beschPot;
+		
+		artSnowPotStep++;
+		if (artSnowPotStep >= artSnowPotetial.length)
+		 	{artSnowPotStep = 0;}
+		 
+		potBeschneiungstage = 0;
+		potBasisArtSnowVolume = 0.0d;
+		potArtSnowVolumeSeason = 0.0d;
+		
+		artSnowYearCounter++;
+		
+	
+	}
+	
+	/**
+	 * extend snowing
+	 * @param jahr
+	 */
+	private void extendArtSnow(int jahr)
+	{
+		if (extendArtSnowToNewAreas && this.artSnowArea == 0.0f && !this.hasArtSnowCanons)
+		{
+			if (artSnowYearCounter >= (randomNumber+10))
+			{
+				double beschPotSum = 0.0d;
+				for (int i = 0; i < artSnowPotetial.length; i++)
+				{beschPotSum = artSnowPotetial[i];}
+				
+				if (beschPotSum >= 10.0d && this.artSnowArea == 0.0f)
+				{
+					this.artSnowArea =  this.artSnowArea + potArtSnowArea;
+					this.extendArtSnowToNewAreas = false;
+					float kapa = this.artSnowArea *  2434.0f * 0.619325f;
+					this.waterStorage.init(kapa);
+				}
+			}
+		}
+		
+		if (jahr == extendArtSnowStartyear)
+		{
+			waterStorage.extend(extendFactorWaterStorage);
+		}
+	}
+	
+	
+	
+	/**
+	 * Activates object
+	 * @param planType Matching plan
+	 */
+	private void activate(Class planType)
+	{
+		Collection<Plan> allPlans = plans().getPlans();
+		for (Plan p : allPlans)
+			{if(p.getClass().equals(planType)) p.activate();}
+	}
+	
+	/**
+	 * Is Active
+	 * @param planType
+	 * @return <code>true</code> active <code>false</code> not active
+	 */
+	private boolean isActive(Class planType)
+	{
+		Collection<Plan> allPlans = plans().getPlans();
+		for (Plan p : allPlans)
+			{if(p.getClass().equals(planType)) return p.isActive();}
+		 
+		return false;
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#getFuellstandSpeicherteich()
+	 */
+	public float getWaterStorageVolume()
+	{
+		return this.waterStorage.actualVolume;
+	}
+	
+	/**
+	 * Sets the values for break even operation days.
+	 * @param countryID Country ID
+	 */
+	public void setBreakEvenOperationDays(int countryID)
+	
+	{	breakEvenOperationDays = 80;
+		switch (countryID)
+		{
+			case 1: {breakEvenOperationDays = 70;}break;//Bayenr
+			case 2: {breakEvenOperationDays = 25;}break;//BaWue
+			case 3: {breakEvenOperationDays = 55;}break;//Oberoesterreich
+			case 4: {breakEvenOperationDays = 105;}break;//Tirol
+			case 5: {breakEvenOperationDays = 91;}break;//Salzburg
+			case 6: {breakEvenOperationDays = 79;}break;//Vorarlberg
+			case 7: {breakEvenOperationDays = 108;}break;//Engadin		
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#preCompute(org.glowa.danube.components.actor.tourism.TourismProxel)
+	 */
+	public void preCompute(TourismProxel p)
+	{
+		super.preCompute(p);		
+		this.minFeuchtkugelTemp = p.minFeuchtkugeltemp;
+		this.dayMidTemp = p.dailyMeanTemperature;
+
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#initDataFromProxels(org.glowa.danube.components.actor.tourism.TourismProxel)
+	 */
+	public void initDataFromProxels(TourismProxel p)
+	{
+		super.initDataFromProxels(p);
+		
+		this.skiareaCapacity = p.skiAreaCapacity;
+		this.hasArtSnowCanons = p.hasArtSnowingCapacities;
+		this.artSnowArea = p.artificalSnowedArea;
+		
+		float kapa = p.artificalSnowedArea *  2434.0f * 0.619325f;
+		this.waterStorage.init(kapa);
+		
+	}
+	
+	
+}

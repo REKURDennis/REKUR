@@ -1,0 +1,818 @@
+package org.glowa.danube.components.actor.tourism;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.glowa.danube.components.actor.tourism.deeptourism.DT_Gastronomy;
+import org.glowa.danube.components.actor.tourism.deeptourism.DT_Hotel;
+
+
+
+/**
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ *
+ * Gemeinde as tourismmodell unit. Saves all gemeinde (Community) based data. Acces via Gemeinde ID.
+ * 
+ * 
+ */
+
+public class TourismGemeinde
+{
+	//Szenarioparamter 1 = Normal, Groesser 1 = Wachstum, kleiner 1 Schrumpfung
+	private float guestNightsMetaFactor = 1.0f;
+	
+	public long gemID = 0;
+	public int countryId = 0;
+	public long kreisID = 0;
+	public int gmt = 1;
+	public int zentroidPID = 0;
+	
+	public float scope = 0f;
+	
+	public long axis; // Achsenabschnitt Regression A
+	public float gradient; // Steigung der Regression B
+	
+	public boolean seasonCalculation = false;
+	public long axisWinter = 0;
+	public long axisSummer = 0;
+	public float gradientWinter = 0.0f;
+	public float gradientSummer = 0.0f;
+	
+	private long guestNightExtensionPerYear;
+	public int wintersportIntensKl;
+	public double skiingAreaCapacityInOperation;
+	private long bedNightReductionDueInopGolfCourse;
+	
+	public boolean tourismgemeinde;
+	
+	//Anteile der Uebernachtungen Saisonal	
+	
+	private float nightsFactor[];
+	public long beds = 0;
+	public long operators = 0;
+
+	public long bedNightsPerYear = 0;
+	public long bedNightsPerLastYear = 0;
+	public long bedNightsPerMonth[];
+	public long bedNightsPerLastYear_Monthly[];
+	public long reductionSki = 0;
+	public long reductionSkiWithoutTemp = 0;
+	
+	public long bedNightsPerYearWithoutTemp = 0;
+	public long bedNightsPerLastYearWithoutTemp = 0;
+	public long bedNightsPerMonthWithoutTemp[];
+	public long bedNightsPerLastYear_MonthlyWithoutTemp[];
+	
+	public float anschlussgrad = 1;
+	
+	public long population = 0;
+	
+	public float averageTemp;
+	public float monthlyAverageTemp = 0f;
+	
+	public float avTempJun = 0.0f;
+	public float avTempJul = 0.0f;
+	public float avTempAug = 0.0f;
+
+	public double avTempCum = 0.0d;
+	public double avTempCumJun = 0.0d;
+	public double avTempCumJul = 0.0d;
+	public double avTempCumAug = 0.0d;
+	
+	public int avTempCounter = 0;
+	
+	public int avTempCounterJun = 0;
+	public int avTempCounterJul = 0;
+	public int avTempCounterAug = 0;
+
+	
+	public float debug3 = 0.0f;
+
+	public int drinkingWaterFlag;
+	
+	public float a_temp =1.0f;
+	public float a_temp1 = 1.0f;
+	public float a_ski = 1.0f;
+	public float a_drinkingWater = 1.0f;
+	public float a_swim = 1.0f;
+	public float a_debugMonthTemp = 0.0f;
+
+	
+	//Variablen Naherholungsmodell
+	public float excursionFrequency = 0f;
+	public long sumWaterPark;
+	public long sumOutdoorPool;
+	public long sumIndoorPool;
+	public long sumInAndOutdoorPool;
+	public long sumLido;
+	public long sumThermalspa;
+	public long sumGolfCourse;
+	public long sumCastel;
+	public long sumMemorial;
+	public long sumChurch;
+	public long sumGastro;
+	public long sumGreenland;
+	public long sumdevelopement;
+	
+	public long maxSumWaterPark;
+	public long maxSumOutdoorPool;
+	public long maxSumInDoorPool;
+	public long maxSumInAndOutdoorPool;
+	public long maxSumLido;
+	public long maxSumThermalspa;
+	public long maxSumGolfCourse;
+	public long maxSumCastel;
+	public long maxSumMemorial;
+	public long maxSumChurch;
+	public long maxSumGastro;
+	public long maxSumNatGrassland;
+	public long maxSumResBuilding;
+	
+	public double additivAttracFactor;
+	public double multAttracFactor;
+	
+	public double propabilityMul = 0.0d;
+	public double propabilityAdd = 0.0d;
+
+	public long numberDayGuests;
+	
+	public long potDailyGuestQuellGem = 0;
+	
+	
+	
+	public Set<Integer> gemPopProxels;
+	public Set<Integer> skiAreaPIDs;
+	public Set<Integer> waterParkPIDs;
+	public Set<Integer> thermalspaPIDs;
+	
+	public DT_Hotel hotelActor;
+	public DT_Gastronomy gastroActor;
+	
+	public float waterDemandMonthm3;
+	public float wasteWaterMonthm3 = 0f;
+	
+	/**
+	 * Sets the societal scenario
+	 * @param i The scenarionumber 1 = baseline, 2 = Liberal, 3 = Nachhaltig
+	 */
+	public void setGmt(int i)
+	{
+		gmt = i;
+		switch (i)
+		{
+		case 1: //Baseline
+		{guestNightsMetaFactor = 1.0f;// Konstant
+		this.hotelActor.yearlyImprovingRate = 1.0f;// Konstant
+		this.gastroActor.yearlyExtensionRate = 1.0f;}//Konstant
+		break;
+		case 2: //Liberal FDP
+		{guestNightsMetaFactor = 1.01f;// Steigerung um 1% pro Jahr
+		this.hotelActor.yearlyImprovingRate = 1.005f; // Steigerung um 0,5% pro Jahr
+		this.gastroActor.yearlyExtensionRate = 1.005f;}// Steigerung um 0,5% pro Jahr
+		break;
+		case 3:// Nachhaltig
+		{guestNightsMetaFactor = 0.99f;
+		this.hotelActor.yearlyImprovingRate = 0.99f;
+		this.gastroActor.yearlyExtensionRate = 0.99f;}
+		break;
+		}
+	}
+	
+	/**
+	 * Initializes the variables.
+	 */
+	public void init()
+	{
+		gemPopProxels = new HashSet<Integer>();
+		skiAreaPIDs = new HashSet<Integer>();
+		waterParkPIDs = new HashSet<Integer>();
+		thermalspaPIDs = new HashSet<Integer>();
+		
+		hotelActor = new DT_Hotel();
+		gastroActor = new DT_Gastronomy();
+		
+		gastroActor.init();
+		hotelActor.init();
+		
+		nightsFactor = new float[12];
+		
+		wintersportIntensKl = 0;
+	
+		guestNightExtensionPerYear = 0;
+		
+		bedNightsPerMonth = new long [12];
+		bedNightsPerLastYear_Monthly = new long [12];
+		
+		//Debug
+		bedNightsPerMonthWithoutTemp = new long [12];
+		bedNightsPerLastYear_MonthlyWithoutTemp = new long [12];
+		
+	
+		
+		for (int i = 0; i < nightsFactor.length;i++)
+		{
+			nightsFactor[i] = 1f/12f;
+			bedNightsPerMonth[i] = 0;
+			bedNightsPerLastYear_Monthly[i] = 0;
+			
+			//Debug
+			bedNightsPerMonthWithoutTemp[i] = 0;
+			bedNightsPerLastYear_MonthlyWithoutTemp[i] = 0;
+		}
+		
+		bedNightReductionDueInopGolfCourse = 0;
+		
+		
+		//Variablen Naherholung
+		sumWaterPark = 0;
+		sumOutdoorPool = 0;
+		sumIndoorPool = 0;
+		sumInAndOutdoorPool = 0;
+		sumThermalspa = 0;
+		sumGolfCourse = 0;
+		excursionFrequency = 0f;
+		sumCastel = 0;
+		sumMemorial = 0;
+		sumChurch = 0;
+		sumGastro = 0;
+		sumGreenland = 0;
+		sumdevelopement = 0;
+		
+		maxSumWaterPark = 0;
+		maxSumOutdoorPool = 0;
+		maxSumInDoorPool = 0;
+		maxSumInAndOutdoorPool = 0;
+		maxSumThermalspa = 0;
+		maxSumGolfCourse = 0;
+		maxSumCastel = 0;
+		maxSumMemorial = 0;
+		maxSumChurch = 0;
+		maxSumGastro = 0;
+		maxSumNatGrassland = 0;
+		maxSumResBuilding = 0;
+		numberDayGuests = 0;
+
+		additivAttracFactor = 0.0d;
+		multAttracFactor = 0.0d;
+		
+	}
+	
+	/**
+	 * Prepares the calculations beginnen from the startingyear
+	 * @param startingYear The year to be started at
+	 */
+	public void prepareCalculations(int startingYear)
+	{	
+		float f;
+		
+		startingYear = startingYear - 1994; //1995 = 1;
+		f = (float)this.axis + ((float)startingYear * (float)this.gradient);		
+		if (f < 0){f=0;}
+		bedNightsPerYear = (long)f;
+		
+		//debug
+		bedNightsPerYearWithoutTemp = (long)f;
+		
+		int vorjahr = startingYear - 1;
+		f = (float)this.axis + ((float)vorjahr * (float)this.gradient);		
+		if (f < 0){f=0;}
+		bedNightsPerLastYear = (long)f;
+		//debug
+		bedNightsPerLastYearWithoutTemp = (long)f;
+
+		for (int i = 0; i < bedNightsPerMonth.length;i++)
+		{
+			f = nightsFactor[i] * (float)bedNightsPerYear;
+			bedNightsPerMonth[i] = (long)f;
+			bedNightsPerMonthWithoutTemp[i] = (long)f;
+			f = nightsFactor[i] * (float)bedNightsPerLastYear;
+			bedNightsPerLastYear_Monthly[i] = (long)f;
+			bedNightsPerLastYear_MonthlyWithoutTemp[i] = (long)f;
+		}
+		
+		
+		guestNightExtensionPerYear = bedNightsPerYear - bedNightsPerLastYear;
+
+		if ((nightsFactor[7]>=0.12f)|(nightsFactor[1]>=0.9f))
+		{this.tourismgemeinde = true;}
+			else
+		{this.tourismgemeinde = false;}
+
+		
+		
+		if (seasonCalculation)
+		{
+			
+			
+		}
+		
+		gastroActor.operators = sumGastro;
+		hotelActor.enterprises = operators;
+		hotelActor.beds = beds;
+		
+	}
+	
+	/**
+	 * Prepares the calculations for the next simulated year.
+	 */
+	public void prepareNextYear()
+	{		
+		bedNightsPerLastYear = 0;
+		bedNightsPerLastYearWithoutTemp = 0;
+		for (int i = 0; i < bedNightsPerMonth.length;i++)
+		{
+			bedNightsPerLastYear_Monthly[i] = bedNightsPerMonth[i];
+			bedNightsPerLastYear = bedNightsPerLastYear + bedNightsPerLastYear_Monthly[i];
+			
+			//debug
+			bedNightsPerLastYear_MonthlyWithoutTemp[i] = bedNightsPerMonthWithoutTemp[i];
+			bedNightsPerLastYearWithoutTemp = bedNightsPerLastYearWithoutTemp + bedNightsPerLastYear_MonthlyWithoutTemp[i];
+		}
+		
+		bedNightsPerYear = bedNightsPerLastYear + guestNightExtensionPerYear;
+		float f = (float)bedNightsPerYear * guestNightsMetaFactor;
+		bedNightsPerYear = (long)f;
+		//debug
+		bedNightsPerYearWithoutTemp = bedNightsPerLastYearWithoutTemp + guestNightExtensionPerYear;
+		f = (float)bedNightsPerYearWithoutTemp * guestNightsMetaFactor;
+		bedNightsPerYearWithoutTemp = (long)f;
+		
+		// Uebernachtungen duerfen nicht negativ werden
+		
+		if (bedNightsPerYear < 0)
+		{
+			bedNightsPerYear = 0;
+		}
+		
+		
+		for (int i = 0; i < bedNightsPerMonth.length;i++)
+		{
+			float fl = nightsFactor[i] * (float)bedNightsPerYear;
+			bedNightsPerMonth[i] = (long)fl;
+			
+			fl = nightsFactor[i] * (float)bedNightsPerYearWithoutTemp;
+			bedNightsPerMonthWithoutTemp[i] = (long)fl;
+		}
+		
+		gastroActor.processEndOfYear();
+		hotelActor.processEndOfYear();
+	}
+	
+
+	
+	/**
+	 * Calculates the atrractions for each proxel of a specific month
+	 * @param tpt The proxeltabel
+	 * @param month Calclation month
+	 */
+	public void calculateAttractions(TourismProxelTable tpt, int month)
+	{
+		// Basis-Uebernachtungsnachfrage
+		// Uebernachtungen des Jahres multipliziert mit Monatsanteil
+		
+		float bedNightsFloat = (float)bedNightsPerYear * nightsFactor[month-1];
+		float bedNightsFloatOhneTemp = (float)bedNightsPerYearWithoutTemp * nightsFactor[month-1];
+		
+		
+		// Lokale Variablen
+		 a_temp =1.0f;
+		 a_temp1 = 1.0f;
+		 a_ski = 1.0f;
+		 a_drinkingWater = 1.0f;
+		 a_swim = 1.0f;
+		
+			
+		
+		// Skigebietsattraktivitaet, nur in der Wintersaison in Wintersportgemeinden
+		
+		
+		if (((month == 12)| (month <=4))&(this.wintersportIntensKl>=1))
+		{
+			
+			double e_ski = 0.0d;
+			switch (wintersportIntensKl)
+			{
+				case 1: {e_ski = 0.10d;}break;
+				case 2: {e_ski = 0.50d;}break;
+				case 3: {e_ski = 0.90d;}break;
+			}
+			
+			
+			double skigebietsKapazitaet = 0;
+			skiingAreaCapacityInOperation = 0; 
+			
+			for (int mySkiPID : skiAreaPIDs)
+			{
+				int skiBetTage = tpt.getTourismProxel(mySkiPID).skiareaMonthlyOperationDays;
+				int skiGesStage = skiBetTage + tpt.getTourismProxel(mySkiPID).skiAreaMonthlyClosedDays;
+				double kap = tpt.getTourismProxel(mySkiPID).skiAreaCapacity;
+				skigebietsKapazitaet = skigebietsKapazitaet + (double)kap * (double)skiGesStage;
+				skiingAreaCapacityInOperation = skiingAreaCapacityInOperation + (double)kap * (double)skiBetTage;
+	
+			}
+			
+			if (skigebietsKapazitaet == 0)
+				{a_ski = 1f;}
+			else
+				{
+				a_ski = (float)
+				(1.0d-((1.0d-(skiingAreaCapacityInOperation/skigebietsKapazitaet))*(e_ski*0.5d)));
+				}
+			}
+		else {a_ski = 1.0f;}
+		
+		//Gaeste die nicht mehr in das Skigebiet fahren
+		reductionSki = (long)(bedNightsFloat * (1.0d-a_ski));
+		reductionSkiWithoutTemp = (long)(bedNightsFloatOhneTemp * (1.0d-a_ski)); 
+		
+		//AttraktivitŠtsabschlaege bei Trinkwassermangel
+
+		int dwF = 0;
+		int count = 0;
+		long pop = 0;
+		for (int bevPID : this.gemPopProxels )
+ 		{
+			dwF = dwF + tpt.getTourismProxel(bevPID).drinkingWaterFlag;
+			if (tpt.getTourismProxel(bevPID).population >= 0)
+				{pop = pop + tpt.getTourismProxel(bevPID).population;}
+			count++;
+ 		}
+		
+		if (count==0)
+			{this.drinkingWaterFlag = 1;
+			this.population = 1;}
+		else
+			{this.drinkingWaterFlag = dwF / count;
+			this.population = pop;}
+		
+		if (this.population <= 0)
+			{this.population = 1;}
+		
+		switch (this.drinkingWaterFlag)
+		{
+		case 1: {a_drinkingWater = 1.0f;}break;
+		case 2: {a_drinkingWater = 1.0f;}break;
+		case 3: {a_drinkingWater = 1.0f;}break;
+		case 4: {a_drinkingWater = 0.9f;}break;
+		case 5: {a_drinkingWater = 0.675f;}break;
+		}
+			
+		//Abhangigkeit der Uebernachtungsnachfrage von der Temperatur
+		//Berechungen lt Regressionsgleichung
+		//Nur bei Urlaubsgemeinden, im Juni, Juli und August
+		
+	
+			float mmT = 0.0f;
+			int i = 0;
+			for (int myBevPID : gemPopProxels)
+			{
+				mmT = mmT + tpt.getTourismProxel(myBevPID).monthAvTemp;
+				i++;
+			}
+			
+		
+			mmT = mmT / (float)i;
+			monthlyAverageTemp = mmT;
+			a_debugMonthTemp = mmT;
+			
+			if ((avTempCounterJun <= 10)&&(month==6))
+			{
+				avTempCumJun = avTempCumJun + (double)mmT;
+				avTempCounterJun++;
+				avTempJun = (float)(avTempCumJun / (double)avTempCounterJun);
+			}
+			
+			if ((avTempCounterJul <= 10)&&(month==7))
+			{
+				avTempCumJul = avTempCumJul + (double)mmT;
+				avTempCounterJul++;
+				avTempJul = (float)(avTempCumJul / (double)avTempCounterJul);
+
+			}
+
+			if ((avTempCounterAug <= 10)&&(month==8))
+			{
+				avTempCumAug = avTempCumAug + (double)mmT;
+				avTempCounterAug++;
+				avTempAug = (float)(avTempCumAug / (double)avTempCounterAug);
+			}
+
+			if (avTempCounter <= 120)
+			{
+				avTempCum = avTempCum + (double)mmT;
+				avTempCounter++;
+				
+				if (avTempCounter == 120)
+				{
+					double d = avTempCum / (double)avTempCounter;
+					if ((d >= 200f)&&(d<=350f))
+						{averageTemp = (float)d;}
+				}
+			}
+			
+			if  (this.tourismgemeinde & (month>=6)&(month<=8))
+			{
+				float f1=(float)monthlyAverageTemp;
+				switch (month)
+				{
+					case 6:{f1=avTempJun;}break;
+					case 7:{f1=avTempJul;}break;
+					case 8:{f1=avTempAug;}break;
+				}
+				
+				debug3= f1;
+				a_temp = 1.0f + (((monthlyAverageTemp - f1)/100.0f)*1.5f);
+				
+				if (a_temp > 1.05f) {a_temp = 1.05f;}
+				if (a_temp < 0.95f) {a_temp = 0.95f;}
+			}
+			else
+			{a_temp = 1.0f;}
+			
+			/*
+			if (this.urlaubsgemeinde & (monat>=6)&(monat<=8))
+				{
+					try{a_temp1 = (0.299f*((float)monatsMittelTemp/(float)mitteltemp))+0.745f;
+						
+						a_temp = a_temp1/(12f*this.getUebAnt(monat));
+				}catch (Exception e) {a_temp = 1;}
+			
+			if (a_temp > 1.05f) {a_temp = 1.05f;}
+			if (a_temp < 0.95f) {a_temp = 0.95f;}
+			}
+			
+			*/
+		
+		
+		
+		//Schwimmbadattrak
+		if (tourismgemeinde)
+			{
+			int erlebBadMitProb = 0;
+			int thermBadMitProb = 0;
+			for (int myErlBadPID : waterParkPIDs)
+			{			
+				if (tpt.getTourismProxel(myErlBadPID).swimmingpoolWaterProblems)
+				{erlebBadMitProb++;}
+				
+			}
+			
+			for (int myTherBadPID : thermalspaPIDs)
+			{			
+				if (tpt.getTourismProxel(myTherBadPID).swimmingpoolWaterProblems)
+				{thermBadMitProb++;}
+			}
+			a_swim = (float)Math.pow(0.9f,(double)(thermBadMitProb + erlebBadMitProb));
+			
+		}
+			
+		//Berechnung der Uebernachtungen als Float
+		
+		
+		// Insgesamt 3 mal aendern!!!
+		//*** Mario Bedinghts ohne Einfluss Zeile Auskommentieren 
+		bedNightsFloat = bedNightsFloat * a_temp * a_ski * a_drinkingWater * a_swim; 
+
+		bedNightsFloatOhneTemp = bedNightsFloatOhneTemp * a_ski * a_drinkingWater * a_swim; 
+		
+		
+		//Konvertieren als Absolute Zahl
+		long bNpM = (long)bedNightsFloat;                                              
+		
+		//Abzueglich der Reduktion durch Golfplaetze
+		bNpM = bNpM - bedNightReductionDueInopGolfCourse;
+
+		if (bNpM <0)
+			{bNpM = 0;}	
+		bedNightsPerMonth[month - 1] = bNpM;
+	
+		
+		//Debug
+		bNpM = (long)bedNightsFloatOhneTemp;                                              
+		bNpM = bNpM - bedNightReductionDueInopGolfCourse;
+		
+		if (bNpM <0)
+		{bNpM = 0;}
+		bedNightsPerMonthWithoutTemp[month - 1] = bNpM;
+
+		
+		hotelActor.processMonthly(drinkingWaterFlag);
+		gastroActor.processMonthly(drinkingWaterFlag);
+		
+	}
+	
+	
+	/**
+	 * Adds skiing guets from other ski areas.
+	 * @param leavinGuestSkiTotal Number of added guests
+	 * @param totalCapacity Total capacity
+	 * @param month Calculation month
+	 */
+	public void addSkiersFromOtherAreas(long leavinGuestSkiTotal,double totalCapacity,int month)
+	{
+		/* 
+		*/
+			
+		//*** Mario Bedinghts ohne Einfluss Ganze Funktion Auskommentieren
+		if (((month == 12)| (month <=4))&&(this.wintersportIntensKl>=1)&&(totalCapacity!=0)&&(leavinGuestSkiTotal>0))
+		{	
+			
+		double z = (skiingAreaCapacityInOperation/totalCapacity)*(double)leavinGuestSkiTotal;		
+		bedNightsPerMonth[month - 1] = bedNightsPerMonth[month - 1] + (long)z;
+		}
+		
+		
+		if (bedNightsPerMonth[month - 1]<0)
+		{
+			bedNightsPerMonth[month - 1] = 0;
+			
+		}
+		
+	}
+	
+	/**
+	 * Adds skiing guets from other ski areas. Without regarding the temperature
+	 * @param leavinGuestSkiTotal Number of added guests
+	 * @param totalCapacity capacity
+	 * @param month month
+	 */
+	public void addSkiersFromOtherAreasWithoutTemp(long leavinGuestSkiTotal,double totalCapacity,int month)
+	{
+		/* Debug
+		*/
+			
+		//*** Mario Bedinghts ohne Einfluss Ganze Funktion Auskommentieren
+		if (((month == 12)| (month <=4))&&(this.wintersportIntensKl>=1)&&(totalCapacity!=0)&&(leavinGuestSkiTotal>0))
+		{	
+			
+		double z = (skiingAreaCapacityInOperation/totalCapacity)*(double)leavinGuestSkiTotal;		
+		bedNightsPerMonthWithoutTemp[month - 1] = bedNightsPerMonthWithoutTemp[month - 1] + (long)z;
+		}
+		
+		
+		if (bedNightsPerMonthWithoutTemp[month - 1]<0)
+		{
+			bedNightsPerMonthWithoutTemp[month - 1] = 0;
+			
+		}
+		
+	}
+	
+	
+	
+	/**
+	 * Reduces bed nights  due to golf courses
+	 * @param mon month
+	 * @param totalCapacity Total capacity
+	 */
+	public void reduceDueInopGolfCourses(int mon, long totalCapacity)
+	{
+		
+		float monatsAnteil = 0f;
+		float marktAnteil;
+		
+		
+		switch (mon)
+		{
+		case 3: {monatsAnteil = 0.118f;}break;
+		case 4: {monatsAnteil = 0.103f;}break;
+		case 5: {monatsAnteil = 0.148f;}break;
+		case 6: {monatsAnteil = 0.098f;}break;
+		case 7: {monatsAnteil = 0.093f;}break;
+		case 8: {monatsAnteil = 0.075f;}break;
+		case 9: {monatsAnteil = 0.114f;}break;
+		case 10: {monatsAnteil = 0.132f;}break;
+		case 11: {monatsAnteil = 0.119f;}break;
+		}
+		marktAnteil = (float)this.beds / (float)totalCapacity;
+		
+		bedNightReductionDueInopGolfCourse = 0;
+		//*** Mario Bedinghts ohne Einfluss Ganze Funktion Auskommentieren
+		bedNightReductionDueInopGolfCourse = (long)(3800.f * monatsAnteil * marktAnteil);	
+		
+		
+	}
+	
+	
+	
+	/**
+	 * Calculation of the same day visitor factor
+	 * @param tpt Tourism proxel table
+	 * @param month Month of calculation
+	 */
+	public void calculateSameDayVisitorsFactors(TourismProxelTable tpt, int month)
+	{
+		
+		additivAttracFactor =
+			(((double)sumOutdoorPool / (double)maxSumOutdoorPool) * 0.408d)+
+			(((double)sumIndoorPool / (double)maxSumInDoorPool)*0.388d)+
+			(((double)sumInAndOutdoorPool / (double)maxSumInAndOutdoorPool)*0.516d)+
+			(((double)sumWaterPark / (double)maxSumWaterPark)*0.401d)+
+			(((double)sumThermalspa / (double)maxSumThermalspa)*0.179d)+
+			(((double)sumCastel / (double)maxSumCastel)*0.290d)+
+			(((double)sumMemorial / (double)maxSumMemorial)*0.394d)+
+			(((double)sumChurch / (double)maxSumChurch)*0.420d)+
+			(((double)sumGolfCourse/(double)maxSumGolfCourse)*0.128d)+
+			(((double)sumGreenland/(double)maxSumNatGrassland)*0.120d)+
+			(((double)sumGastro / (double)maxSumGastro)*0.943d)+
+			(((double)sumdevelopement / (double)maxSumResBuilding)*0.906d);
+		
+		multAttracFactor =
+			(((((double)sumOutdoorPool / (double)maxSumOutdoorPool) * 0.408d)+ 1.0d )*
+			((((double)sumIndoorPool / (double)maxSumInDoorPool)*0.388d) + 1.0d )*
+			((((double)sumInAndOutdoorPool / (double)maxSumInAndOutdoorPool)*0.516d) + 1.0d )*
+			((((double)sumWaterPark / (double)maxSumWaterPark)*0.401d) + 1.0d )*
+			((((double)sumThermalspa / (double)maxSumThermalspa)*0.179d) + 1.0d )*
+			((((double)sumCastel / (double)maxSumCastel)*0.290d) + 1.0d )*
+			((((double)sumMemorial / (double)maxSumMemorial)*0.394d) + 1.0d )*
+			((((double)sumChurch / (double)maxSumChurch)*0.420d) + 1.0d )*
+			((((double)sumGolfCourse/(double)maxSumGolfCourse)*0.128d) + 1.0d)*
+			((((double)sumGreenland/(double)maxSumNatGrassland)*0.120d) + 1.0d )*
+			((((double)sumGastro / (double)maxSumGastro)*0.943d) + 1.0d )*
+			(((double)sumdevelopement / (double)maxSumResBuilding)*0.906d + 1.0d )) - 1.0d
+			;
+		
+		if (multAttracFactor<0)
+		{		
+				//System.out.println("**********Muliplikativer Faktor Negativ=" + multAttrakFaktor + " gemID=" + this.gemID);
+				multAttracFactor = 0;
+		}
+		
+		if (additivAttracFactor<0)
+		{		
+				additivAttracFactor = 0;
+		}
+
+	
+		
+		
+	}
+	
+	/**
+	 * Getmethod of the propotion of yearly guest nights of the TourismGemeinde as float of a specific month.
+	 * @param monat Month of return value
+	 * @return Propotion of yearly guest nights of the TourismGemeinde as float
+	 */
+	public float getUebAnt(int monat)
+	
+	{	// Array beginnt bei 0, Monat bei 12
+		return nightsFactor[monat-1];	
+	
+	}// getUebAnt();
+	
+
+	/**
+	 * Setmethod of the propotion of yearly guest nights of the TourismGemeinde as float of a specific month.
+	 * @param month Month to be set
+	 * @param value Propotion of yearly guest nights of the TourismGemeinde as float
+	 */
+	public void setUebAnt(int month, float value)
+	
+	{	// Array beginnt bei 0, Monat bei 12
+		if ((value >= 0) && (value <= 1))
+		{
+			nightsFactor[month-1] = value;
+		}
+		else
+		{nightsFactor[month-1] = 0;}
+	
+	}// getUebAnt();
+
+		
+	
+	/**
+	 * Getmethod of guest nights of a specific month.
+	 * @param month Month to get
+	 * @return Number of guest nights.
+	 */
+	public long getGuestNights(int month)
+	
+	{
+		return bedNightsPerMonth[month - 1];
+	}//getUebernachtungen
+	
+	
+	/** Returns the whole count of yearly guest nights concerning the basis model.
+	 * @return Guest nights of the year
+	 */
+	public long getJahrGuestNights()
+	
+	{
+		return bedNightsPerYear;
+		
+	}//getUebernachtungen
+	
+	/**
+	 * Sets the avarage temperature of a month
+	 * @param f Temperature to be set
+	 */
+	public void setMonthlyAvvarageTemp(float f)
+	{
+		this.monthlyAverageTemp = f;
+	}
+	
+
+	
+	
+
+}//Class TourismGemeinde

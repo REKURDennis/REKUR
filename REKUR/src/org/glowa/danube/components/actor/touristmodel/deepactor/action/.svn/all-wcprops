@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/action
+END
+CalculateOperationDays.java
+K 25
+svn:wc:ra_dav:version-url
+V 129
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/action/CalculateOperationDays.java
+END
+NoAttract.java
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/action/NoAttract.java
+END
+Attract.java
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/action/Attract.java
+END
+NoAttractFinally.java
+K 25
+svn:wc:ra_dav:version-url
+V 123
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/action/NoAttractFinally.java
+END

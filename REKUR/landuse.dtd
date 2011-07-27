@@ -1,0 +1,3 @@
+<!ELEMENT type (name,id,type*)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT id (#PCDATA)>

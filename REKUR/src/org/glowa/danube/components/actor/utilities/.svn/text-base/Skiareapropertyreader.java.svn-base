@@ -1,0 +1,142 @@
+package org.glowa.danube.components.actor.tourism.utilities;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+
+import org.glowa.danube.components.actor.tourism.TourismGemeindeTable;
+import org.glowa.danube.components.actor.tourism.utilities.SkiAreaproperty;
+import org.glowa.danube.utilities.internal.DanubiaLogger;
+
+
+
+
+/**
+ * Reads skiarea properties
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ *
+ */
+public class Skiareapropertyreader {
+	
+	private boolean logging = true;
+
+	
+	public SkiAreaproperty[] skiareadata = null;
+	public int Max_NumberofSkieAreas = 300;
+	private static DanubiaLogger logger = DanubiaLogger.getDanubiaLogger(TourismGemeindeTable.class);
+
+	
+	/**
+	 * Reads in the properties and saves them.
+	 */
+	public  void initSkipropertyreader()
+	{
+		String line;
+		int i_zaheler = 0;
+	
+		
+		skiareadata = new SkiAreaproperty[Max_NumberofSkieAreas];	
+		for( int i=0; i<this.Max_NumberofSkieAreas; i++ ){
+			skiareadata[i] = new SkiAreaproperty();
+		}
+		
+	
+		try{
+			BufferedReader reader = new BufferedReader(new FileReader("data" + File.separator + 
+			"tourism" + File.separator + "skigebietsinit.txt"));
+		   reader.readLine(); 							//Erste Zeile hat nur Datei-Infos!
+		
+		   while ( (line = reader.readLine()) != null) { //Liest Zeile aus bis Datei-Ende
+			
+			//	 Variablendeklaration = 1. Hilfsvariable StringBuffer fuer jerde einzelne Variable
+			StringBuffer st_location = new StringBuffer(10); //Spalte 1 = Land
+			StringBuffer st_kapazitaet = new StringBuffer(10); //Spalte 2 = Bevoerderungskapazitaet
+			StringBuffer st_beschneit= new StringBuffer(12); //Spalte 3 = Beschneit ja/nein
+			StringBuffer st_beschneiteFlaeche= new StringBuffer(12); //Spalte 3 = Beschneite Flaeche
+			
+			//****** Schritt 1 Alle einzelnen Variablen pro Zeile in einen String
+		 
+			 int iterator = 0;
+			 //Spalte 1 Proxel ID
+			 while (line.charAt(iterator) != ';' && line.charAt(iterator) != '\t' &&  line.charAt(iterator) != ' ') { 
+			   st_location.append(line.charAt(iterator));
+			   iterator++;
+			 } //while
+			 iterator++;
+
+			 //Spalte 2 Bevoerderungskapazitaet
+			 while (line.charAt(iterator) != ';' && line.charAt(iterator) != '\t'&&  line.charAt(iterator) != ' ') { 
+			   st_kapazitaet.append(line.charAt(iterator));
+			   iterator++;
+			 } //while
+			 iterator++;
+	
+			 //Spalte 3 Beschneit
+			 while (line.charAt(iterator) != ';' && line.charAt(iterator) != '\t'&&  line.charAt(iterator) != ' ') { 
+				 st_beschneit.append(line.charAt(iterator));
+			   iterator++;
+			 } //while
+			 iterator++;
+			 
+			 //Spalte 4 Beschneite Flache
+			 while (iterator < line.length() && line.charAt(iterator) != ';' && line.charAt(iterator) != '\t' &&  line.charAt(iterator) != ' '&&  line.charAt(iterator) != '\n'&&  line.charAt(iterator) != '\r') {
+			   st_beschneiteFlaeche.append(line.charAt(iterator));
+			   iterator++;
+			 } //while
+			 iterator++;
+	
+
+
+		  
+//	  2. Echte Werte werden in die Gemeindetabelle geschrieben
+  		   //1 Land ID
+		   try {skiareadata[i_zaheler].location = Integer.parseInt(st_location.toString());} //try
+		   catch (NumberFormatException nfe)
+		   {if (logging) {
+		   	logger.warn("Falscher Datentyp in skigebietsinit.txt - Spalte 1 Location " + line.toString());} //catch
+		   }
+		   
+		   //2 Kapazitaet
+		   float f_kap;
+		   int i_kap = 130000;//Generische Kapazitaet
+		   try {i_kap = Integer.parseInt(st_kapazitaet.toString());} //try
+		   catch (NumberFormatException nfe)
+		   {if (logging) {
+		   	logger.warn("Falscher Datentyp in skigebietsinit.txt - Spalte 2 Kapazitaet " + line.toString());} //catch	
+		   }
+		   
+		   f_kap = (float)i_kap/1000f;
+		   skiareadata[i_zaheler].capacity = f_kap;
+
+		   //3 Gem ID
+		   try {skiareadata[i_zaheler].artificalSnowed = (Integer.parseInt(st_beschneit.toString())==1);} //try
+		   catch (NumberFormatException nfe)
+		   {if (logging) {
+		   	logger.warn("Falscher Datentyp in skigebietsinit.txt - Spalte 3 Beschneit" + line.toString());} //catch	
+		   }	
+		   
+		   try {skiareadata[i_zaheler].artificalSnowdArea = (Float.parseFloat(st_beschneiteFlaeche.toString()));} //try
+		   catch (NumberFormatException nfe)
+		   {if (logging) {
+		   	logger.warn("Falscher Datentyp in skigebietsinit.txt - Spalte 3 Beschneit" + line.toString());} //catch	
+		   }	
+		   
+			   
+		   
+			  i_zaheler = i_zaheler + 1;
+		   } //while
+		   reader.close();
+		   reader = null;
+			}
+			catch(Exception e)
+			{
+				if (logging) {
+				logger.warn("Dateieinlesen aus skigebietsinit.txt fehlgeschlagen: " + e.getLocalizedMessage());
+				}
+			}
+
+	
+		
+	}
+
+}

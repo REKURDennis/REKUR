@@ -1,0 +1,29 @@
+package org.glowa.danube.components.actor.tourism.deeptourism.action;
+
+import org.glowa.danube.datatypes.SkiingAreaStatusType;
+import org.glowa.danube.deepactors.actors.action.*;
+import org.glowa.danube.components.actor.tourism.deeptourism.*;
+
+/**
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ * @see AbstractAction
+ */
+public class NoAttractFinally extends AbstractAction<DT_AbstractDeepActor> {
+	
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.actors.action.AbstractAction#execute()
+	 */
+	protected void execute() {
+		super.execute();
+		
+		environment().setStatus(SkiingAreaStatusType.NO_SKIINGAREA);
+
+/*
+		NO_SKIINGAREA = 0;
+		OUT_OF_SERVICE = 1;
+		SKIING = 2;
+		SKIING_WITH_ARTIFICIAL_SNOW = 3;
+*/
+	}
+}

@@ -1,0 +1,947 @@
+package org.glowa.danube.components.actor.tourism.dummy;
+
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.glowa.danube.metadata.AreaMetaData;
+import org.glowa.danube.simulation.model.AbstractModel;
+import org.glowa.danube.tables.FloatDataTable;
+import org.glowa.danube.tables.IntegerDataTable;
+import org.glowa.danube.tables.MassPerAreaTable;
+import org.glowa.danube.tables.PopulationNumberTable;
+import org.glowa.danube.tables.TemperatureTable;
+import org.glowa.danube.utilities.internal.DanubiaLogger;
+import org.glowa.danube.utilities.time.DanubiaCalendar;
+import org.glowa.danube.tables.DataTable;
+import org.glowa.danube.components.actor.tourism.deeptourism.Tourism;
+import org.glowa.danube.dataio.RasterData;
+import org.glowa.danube.dataio.ras.RAS;
+import org.glowa.danube.dataio.ras.Utilities;
+import org.glowa.danube.dataio.DanubiaData;
+import org.glowa.danube.dataio.MonthlyFileDataReader;
+
+import org.glowa.danube.utilities.execution.ProvideEngine;
+import org.glowa.danube.utilities.execution.ProvideTask;
+
+
+
+
+/**
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ * @version 30. Juni 2010
+ * Reads in the Dummydata for local simulation runs
+ * 
+ */
+public class TourismDummy extends AbstractModel<TourismDummyProxel> implements
+		org.glowa.danube.components.actor.interfaces.ActorControllerToTourist
+
+{
+	// PIDs for computation
+	// Atmosphere to Actor
+
+	private TemperatureTable m_tAirTemperatureMonthlyMean; //RAS -->Daily (ATMEAN);  aggregiert Monthly durch Dummy
+	private MassPerAreaTable m_tPrecipitationDailySum; //RAS -->Daily (NIED)
+	private TemperatureTable m_tAirTemperatureDailyMin; //RAS -->Daily (ATMIN)
+	private TemperatureTable m_tAirTemperatureDailyMax; //RAS -->Daily (ATMAX)
+	private TemperatureTable m_tAirTemperatureDailyMean; //RAS -->Daily (ATMEAN)
+	private TemperatureTable m_tWetBulbTemperatureDailyMin; //RAS -->Daily (WETTMP)
+	private MassPerAreaTable m_tEvapotranspirationDailySum; //RAS --> Daily ("Et_"
+	private MassPerAreaTable m_tAccumulatedSnow;  //RAS --> Monthly ("Swe_")
+	private FloatDataTable dailySundurance;//RAS --> Daily(SUNDUR)
+	private FloatDataTable dailyAvarageWind;//RAS --> Daily(WIND)
+
+
+
+	//RAS Readers
+
+	private RAS m_rPrecipitationDailySum; //RAS -->Daily
+	private RAS m_rAirTemperatureDailyMin; //RAS -->Daily
+	private RAS m_rAirTemperatureDailyMax; //RAS -->Daily
+	private RAS m_rWetBulbTemperatureDailyMin; //RAS -->Daily
+	private RAS m_rAirTemperatureDailyMean; //RAS -->Daily
+
+	// various strings needed for reading files
+	private String m_sPathDaily;  //string to specify path where local daily data read by the dummy is located 
+	private RAS m_rAccumulatedSnow;  //RAS -->Daily
+	private RAS m_rEvapotranspirationDailySum; //RAS --> Monthly
+	private RAS m_rSunDurDaily;
+	private RAS m_rWindSpeedDaily;
+
+
+	
+	private boolean m_bFirst = true;
+
+	private DanubiaCalendar m_pSimulationTime;
+	
+	private static DanubiaLogger logger = DanubiaLogger.getDanubiaLogger(Tourism.class);
+
+	static final long serialVersionUID = 1;
+
+	private int[] pids = null;
+
+
+	private PopulationNumberTable popTable = null;
+
+	private MassPerAreaTable artSnowDepth = null;
+
+	private PopulationNumberTable skitourists = null;
+	private IntegerDataTable dummyFlagTable = null;
+	private IntegerDataTable drinkingFlagTable = null;
+	private IntegerDataTable groundWaterFlagTable = null;
+
+	private MassPerAreaTable producedArtificialSnow = null;
+	private FloatDataTable waterUsedForSnowing = null;
+	
+	private MonthlyFileDataReader drinkingWaterFlagReader;
+	private MonthlyFileDataReader groundWaterFlagReader;
+	
+	private DanubiaData drinkingWaterFlagData;
+	private DanubiaData groundWaterFlagData;
+
+	private long dayCounter = 1;
+	private long monthCounter = 1;
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.simulation.component.AbstractComponent#init()
+	 */
+	@Override
+	protected void init() {
+		Utilities.IGNORE_RAS_TIMESTAMPS = true;
+		this.pids = pids();
+
+		// Generate export tables
+		
+		// Initialize Tables
+
+		this.m_tAirTemperatureMonthlyMean= new TemperatureTable(this.areaMetaData());
+		this.m_tPrecipitationDailySum = new MassPerAreaTable(this.areaMetaData());
+		this.m_tAirTemperatureDailyMin= new TemperatureTable(this.areaMetaData());
+		this.m_tAirTemperatureDailyMax= new TemperatureTable(this.areaMetaData());
+		this.m_tAirTemperatureDailyMean= new TemperatureTable(this.areaMetaData());
+		this.m_tWetBulbTemperatureDailyMin= new TemperatureTable(this.areaMetaData());
+		this.m_tAccumulatedSnow= new MassPerAreaTable(this.areaMetaData());
+		this.m_tEvapotranspirationDailySum = new MassPerAreaTable(this.areaMetaData());
+		
+
+
+		// set the path to the daily data files
+		this.m_sPathDaily = "dummydata" + File.separator +
+			"RAS" + File.separator;
+
+		// set the path to the monthly data files
+	
+				
+		popTable = new PopulationNumberTable(areaMetaData());
+		artSnowDepth = new MassPerAreaTable(areaMetaData());
+		skitourists = new PopulationNumberTable(areaMetaData());
+		dummyFlagTable = new IntegerDataTable(areaMetaData());
+		drinkingFlagTable = new IntegerDataTable(areaMetaData());
+		groundWaterFlagTable = new IntegerDataTable(areaMetaData());
+		
+		dailyAvarageWind = new FloatDataTable(areaMetaData());
+		dailySundurance = new FloatDataTable(areaMetaData());
+
+		dailyAvarageWind.fill(0.0f);
+		dailySundurance.fill(8.0f);
+		
+		producedArtificialSnow = new MassPerAreaTable(areaMetaData());
+		waterUsedForSnowing = new FloatDataTable(areaMetaData());
+		
+		
+		System.out.println("***InitDummies!****");
+		try{
+			drinkingWaterFlagReader = new MonthlyFileDataReader("dummydata"+File.separator+"DDAT","getDrinkingWaterQuantityFlag",".ddat");
+			groundWaterFlagReader = new MonthlyFileDataReader("dummydata"+File.separator+"DDAT","getDrinkingWaterQuantityFlag",".ddat");
+		} catch (IOException e)
+
+        {
+          System.out.println("IOException when instantiating data reader:" + e);
+        }
+		
+		
+	    try
+        {
+          //reading DanubiaData from FileReader
+          drinkingWaterFlagData=drinkingWaterFlagReader.read();
+          groundWaterFlagData=groundWaterFlagReader.read();
+        }
+        catch (IOException e)
+        {
+        	System.out.println("IOException when reading from data reader:" + e);
+        }
+
+
+		if (drinkingWaterFlagData != null)
+	        { // reading the data
+	          drinkingFlagTable = (IntegerDataTable) drinkingWaterFlagData.data;
+	        }
+	        else
+	        {
+	          // check path and file name
+	        	System.out.println("Daten DrinkingWaterFlag sind Schrott!");
+	        }
+		if (groundWaterFlagData != null)
+        { // reading the data
+          groundWaterFlagTable = (IntegerDataTable) groundWaterFlagData.data;
+        }
+        else
+        {
+          // check path and file name
+        	System.out.println("Daten groundWaterFlag sind Schrott!");
+        }
+
+
+
+
+		// Dauerhafte Werte setzen!
+		artSnowDepth.fill(0.0f);
+		dummyFlagTable.fill(1);
+		drinkingFlagTable.fill(1);
+		popTable.fill(100f);
+
+		waterUsedForSnowing.fill(0.0f);
+		producedArtificialSnow.fill(0.0f);
+
+		/*
+		 * Dateneinlesen der Grids zum Init-Zeitschritt. Aenderungen auch fure
+		 * den Modellauf!!!
+		 */
+
+		/*
+		 * Monatstemp wird berechtent! try
+		 * {importASCIIDataTable(monatsTempTable,"MonatstempTemp","value",new
+		 * BufferedReader( new FileReader( "dummydata/Dtemp_monat/ATr_r_001.dat"
+		 * )));} catch (Exception e)
+		 * {System.err.println("******DUMMYMODELL**********DUMMYMODELL**********DUMMYMODELL**********
+		 * Fehler beim Dateieinlesen dummydata/Dtemp_monat/ATr_r_001.dat" +
+		 * e.getLocalizedMessage()+e.getMessage());}
+		 */
+
+		try {
+			importASCIIDataTable(popTable, "TotalPoulation", "value",
+					new BufferedReader(new FileReader(
+							"dummydata" +File.separator+ "bev_proxel_corine_v4.asc")));
+		} catch (Exception e) {
+			System.err
+					.println("******DUMMYMODELL**********DUMMYMODELL**********DUMMYMODELL********** Fehler beim Dateieinlesen *** dummydata/bev_proxel_corine_v4.asc"
+							+ e.getLocalizedMessage() + e.getMessage());
+		}
+		
+		
+		// Korrekturfaktor Dummymodell
+		/*for (int i = 0; i < pids.length; i++) {
+			tagesTempTable.setValue(pids[i], tagesTempTable.getValue(pids[i]) + 278.15f);
+			monatsTempTable.setValue(pids[i], monatsTempTable.getValue(pids[i]) + 278.15f);
+		}
+		*/
+    	this.provide(this.simulationStart());
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.simulation.component.AbstractComponent#finish()
+	 */
+	@Override
+	public void finish() {
+		// Free export tables
+		popTable = null;
+    	this.m_tAirTemperatureMonthlyMean= null;
+		this.m_tPrecipitationDailySum= null;
+		this.m_tAirTemperatureDailyMin= null;
+		this.m_tAirTemperatureDailyMax= null;
+		this.m_tAirTemperatureDailyMean= null;
+		this.m_tWetBulbTemperatureDailyMin = null;
+    	this.m_tEvapotranspirationDailySum = null;
+    	this.m_tAccumulatedSnow = null;
+		
+    	try {this.m_rPrecipitationDailySum.close();}
+    	catch (Exception ex){}
+    	this.m_rPrecipitationDailySum = null;
+
+    	try {this.m_rAirTemperatureDailyMin.close();}
+    	catch (Exception ex){}
+    	this.m_rAirTemperatureDailyMin = null;
+
+    	try {this.m_rAirTemperatureDailyMax.close();}
+    	catch (Exception ex){}
+    	this.m_rAirTemperatureDailyMax = null;
+
+    	try {this.m_rAirTemperatureDailyMean.close();}
+    	catch (Exception ex){}
+    	this.m_rAirTemperatureDailyMean = null;
+    	
+    	try {this.m_rWetBulbTemperatureDailyMin.close();} 
+    	catch (Exception ex) {}
+    
+    	try {this.m_rEvapotranspirationDailySum.close();} 
+    	catch (Exception ex) {}
+
+    	try {this.m_rAccumulatedSnow.close();} 
+    	catch (Exception ex) {}
+    	   	
+    	try {this.m_rSunDurDaily.close();} 
+    	catch (Exception ex) {}
+    	
+    	try {this.m_rWindSpeedDaily.close();} 
+    	catch (Exception ex) {}
+    	
+    	this.m_rWetBulbTemperatureDailyMin = null;
+    	this.logger().debug("Tourism Dummy: FINISHED finish");
+	}
+
+		
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.simulation.model.AbstractModel#getData(org.glowa.danube.utilities.time.DanubiaCalendar)
+	 */
+	@Override
+	public void getData(DanubiaCalendar actTime) {
+	
+		if (actTime.getDay() == 1) {
+			monthCounter++;
+		}
+
+		dayCounter++;
+		
+	    try
+        {
+          //reading DanubiaData from FileReader
+          drinkingWaterFlagData=drinkingWaterFlagReader.read();
+          groundWaterFlagData=groundWaterFlagReader.read();
+        }
+        catch (IOException e)
+        {
+        	System.out.println("IOException when reading from data reader:" + e);
+        }
+
+
+		if (drinkingWaterFlagData != null)
+	        { // reading the data
+	          drinkingFlagTable = (IntegerDataTable) drinkingWaterFlagData.data;
+	        }
+	        else
+	        {
+	          // check path and file name
+	        	System.out.println("Daten DrinkingWaterFlag sind Schrott!");
+	        }
+		if (groundWaterFlagData != null)
+        { // reading the data
+          groundWaterFlagTable = (IntegerDataTable) groundWaterFlagData.data;
+        }
+        else
+        {
+          // check path and file name
+        	System.out.println("Daten groundWaterFlag sind Schrott!");
+        }
+
+	
+	
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.simulation.model.AbstractModel#compute(org.glowa.danube.utilities.time.DanubiaCalendar)
+	 */
+	@Override
+	public void compute(DanubiaCalendar actTime) {
+	
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.simulation.model.AbstractModel#provide(org.glowa.danube.utilities.time.DanubiaCalendar)
+	 */
+	@Override
+	public void provide(DanubiaCalendar t) {
+		// Ich gehe davon aus, dass der Dummy täglich läuft
+
+    	this.logger().debug("Tourism Dummy: STARTED provide");
+    	this.m_pSimulationTime = t;
+
+
+    	// 1. Januar: Ras-File schliessen und neues oeffnen
+		//if ((t.getMonth() == 1 && t.getDay() == 1) || this.m_bFirst)
+    	if(this.m_bFirst)
+		{
+	    	String sFileName = "";
+	    	String sDate = "_" + t.getYear() + ".RAS";	   	
+			
+//	    	 Beginn Block für ein Ras File: SunDur
+
+			try
+			{
+				if (this.m_rSunDurDaily != null)
+				{
+					this.m_rSunDurDaily.close();
+				}
+			}
+
+			catch (Exception ex){}
+
+			try
+			{
+				sFileName = this.m_sPathDaily + "SUNDUR" + sDate;  // assuming that SWE is accumulated snow
+				this.logger().debug("Opening File " + sFileName);
+				this.m_rSunDurDaily = new RAS(sFileName);
+			}
+			catch (Exception ex)
+			{this.logger().warn("Error Opening File " + sFileName, ex);}
+			// Ende Block für ein Ras File: SunDur
+	    	
+//	    	 Beginn Block für ein Ras File: Wind
+
+			try
+			{
+				if (this.m_rWindSpeedDaily != null)
+				{
+					this.m_rWindSpeedDaily.close();
+				}
+			}
+
+			catch (Exception ex){}
+
+			try
+			{
+				sFileName = this.m_sPathDaily + "WIND" + sDate;  // assuming that SWE is accumulated snow
+				this.logger().debug("Opening File " + sFileName);
+				this.m_rWindSpeedDaily = new RAS(sFileName);
+			}
+			catch (Exception ex)
+			{this.logger().warn("Error Opening File " + sFileName, ex);}
+			// Ende Block für ein Ras File: Wind
+			
+			
+	    	// Beginn Block für ein Ras File: SWE
+
+			try
+			{
+				if (this.m_rAccumulatedSnow != null)
+				{
+					this.m_rAccumulatedSnow.close();
+				}
+			}
+
+			catch (Exception ex){}
+
+			try
+			{
+				sFileName = this.m_sPathDaily + "SWE" + sDate;  // assuming that SWE is accumulated snow
+				this.logger().debug("Opening File " + sFileName);
+				this.m_rAccumulatedSnow = new RAS(sFileName);
+			}
+			catch (Exception ex)
+			{this.logger().warn("Error Opening File " + sFileName, ex);}
+			// Ende Block für ein Ras File: SWE
+			
+			// Beginn Block für ein Ras File "Et_"
+			try
+			{
+				if (this.m_rEvapotranspirationDailySum != null)
+				{
+					this.m_rEvapotranspirationDailySum.close();
+				}
+			}
+			catch (Exception ex){}
+
+			try
+			{
+				sFileName = this.m_sPathDaily + "Et" + sDate;
+				this.logger().debug("Opening File " + sFileName);
+				this.m_rEvapotranspirationDailySum = new RAS(sFileName);
+			}
+
+			catch (Exception ex)
+			{
+				this.logger().warn("Error Opening File " + sFileName, ex);
+			}
+
+			// Ende Block für ein Ras File "Et_"
+
+	
+	    	
+	    	
+			// Beginn Block für ein Ras File: WETTMP
+			try
+			{
+				if (this.m_rWetBulbTemperatureDailyMin != null)
+				{
+					this.m_rWetBulbTemperatureDailyMin.close();
+				}
+			}
+			catch (Exception ex){}
+			
+			try
+			{
+				sFileName = this.m_sPathDaily + "WETTMP" + sDate;  // assuming that WETTMP is WetBulbTemperatureDailyMin
+				this.logger().debug("Opening File " + sFileName);
+				this.m_rWetBulbTemperatureDailyMin = new RAS(sFileName);
+			}
+			catch (Exception ex)
+			{this.logger().warn("Error Opening File " + sFileName, ex);}
+			// Ende Block für ein Ras File: WETTMP
+			
+
+			// Beginn Block für ein Ras File: ATMEAN
+			try
+			{
+				if (this.m_rAirTemperatureDailyMean != null)
+				{
+					this.m_rAirTemperatureDailyMean.close();
+				}
+			}
+			catch (Exception ex){}
+
+			try
+			{
+				sFileName = this.m_sPathDaily + "ATMEAN" + sDate;  
+				this.logger().debug("Opening File " + sFileName);
+				this.m_rAirTemperatureDailyMean = new RAS(sFileName);
+			}
+			catch (Exception ex)
+			{this.logger().warn("Error Opening File " + sFileName, ex);}
+			// Ende Block für ein Ras File: ATMEAN
+
+			// Beginn Block für ein Ras File: ATMAX
+			try
+			{
+				if (this.m_rAirTemperatureDailyMax != null)
+				{
+					this.m_rAirTemperatureDailyMax.close();
+				}
+			}
+			catch (Exception ex){}
+		
+			try
+			{
+				sFileName = this.m_sPathDaily + "ATMAX" + sDate;  
+				this.logger().debug("Opening File " + sFileName);
+				this.m_rAirTemperatureDailyMax = new RAS(sFileName);
+			}
+			catch (Exception ex){
+				this.logger().warn("Error Opening File " + sFileName, ex);
+				}
+			// Ende Block für ein Ras File: ATMAX
+
+	    	
+
+	    	// Beginn Block für ein Ras File: ATMIN
+			try
+			{
+				if (this.m_rAirTemperatureDailyMin != null)
+				{	
+					this.m_rAirTemperatureDailyMin.close();
+				}
+			}
+			catch (Exception ex){}
+
+			try
+			{
+				sFileName = this.m_sPathDaily + "ATMIN" + sDate;  
+				this.logger().debug("Opening File " + sFileName);
+				this.m_rAirTemperatureDailyMin = new RAS(sFileName);
+			}
+			catch (Exception ex)
+			{this.logger().warn("Error Opening File " + sFileName, ex);}
+			// Ende Block für ein Ras File: ATMIN
+		
+			
+
+			// Beginn Block für ein Ras File: NIED
+			try
+			{
+				if (this.m_rPrecipitationDailySum != null)
+				{
+					this.m_rPrecipitationDailySum.close();
+				}
+			}
+
+			catch (Exception ex){}
+
+			try
+			{
+				sFileName = this.m_sPathDaily + "NIED" + sDate;  
+				this.logger().debug("Opening File " + sFileName);
+				this.m_rPrecipitationDailySum = new RAS(sFileName);
+			}
+			catch (Exception ex){
+				this.logger().warn("Error Opening File " + sFileName, ex);}
+			// Ende Block für ein Ras File: NIED
+
+			this.m_bFirst = false;
+
+		}
+
+		
+		// Tägliche Daten einlesen
+    	this.m_pProvideEngineDaily.provide();
+    	this.logger().debug("FINISHED provide");	
+		
+	}
+	
+	// AUsgabe der Variablen
+	public PopulationNumberTable getTotalPopulation() {
+		return popTable;
+
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getAirTemperatureMonthlyMean()
+	 */
+	public TemperatureTable getAirTemperatureMonthlyMean() {
+		return m_tAirTemperatureMonthlyMean;
+
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getPrecipitationDailySum()
+	 */
+	public MassPerAreaTable getPrecipitationDailySum() {
+		return m_tPrecipitationDailySum;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getAirTemperatureDailyMin()
+	 */
+	public TemperatureTable getAirTemperatureDailyMin() {
+		return m_tAirTemperatureDailyMin;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getAirTemperatureDailyMax()
+	 */
+	public TemperatureTable getAirTemperatureDailyMax() {
+		return m_tAirTemperatureDailyMax;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getAirTemperatureDailyMean()
+	 */
+	public TemperatureTable getAirTemperatureDailyMean() {
+		return m_tAirTemperatureDailyMean;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getAccumulatedSnow()
+	 */
+	public MassPerAreaTable getAccumulatedSnow() {
+		return m_tAccumulatedSnow;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getSkiTourists()
+	 */
+	public PopulationNumberTable getSkiTourists() {
+		return skitourists;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getRiverWaterQuantityFlagMonthly()
+	 */
+	public IntegerDataTable getRiverWaterQuantityFlagMonthly() {
+		return dummyFlagTable;
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getRiverWaterQuantityFlagDaily()
+	 */
+	public IntegerDataTable getRiverWaterQuantityFlagDaily() {
+		return dummyFlagTable;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getGroundwaterQuantityFlag()
+	 */
+	public IntegerDataTable getGroundwaterQuantityFlag() {
+		return groundWaterFlagTable;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getDrinkingWaterQuantityFlag()
+	 */
+	public IntegerDataTable getDrinkingWaterQuantityFlag()
+
+	{
+		return drinkingFlagTable;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getWetBulbTemperatureDailyMin()
+	 */
+	public TemperatureTable getWetBulbTemperatureDailyMin() {
+		return m_tWetBulbTemperatureDailyMin;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getEvapotranspirationDailySum()
+	 */
+	public MassPerAreaTable getEvapotranspirationDailySum() {
+		return m_tEvapotranspirationDailySum;
+	}
+
+	/**
+	 * @return EvapotranspirationDailySum
+	 */
+	public MassPerAreaTable getEvapotranspiration() {
+		return m_tEvapotranspirationDailySum;
+	}
+
+	
+	/**
+	 * Imports the ASCII Data Table
+	 * @param dt Data Table
+	 * @param elementName Element Name
+	 * @param header Header of table
+	 * @param in1 Buffered reader
+	 * @throws IOException
+	 */
+	private void importASCIIDataTable(FloatDataTable dt, String elementName,
+			String header, BufferedReader in1) throws IOException
+
+	{
+		String line = in1.readLine(); // first row is the header, which is
+		line = in1.readLine();
+		line = in1.readLine();
+		line = in1.readLine();
+		line = in1.readLine();
+		line = in1.readLine(); //Die ersten 6 Zeilen ignorieren!
+		
+		StringTokenizer stok = null;
+		String tok = null;
+		float value;
+
+		// Matrix
+		AreaMetaData amd = areaMetaData();
+		int nCols = amd.getNCols();
+		int nRows = amd.getNRows();
+
+		for (int r = 0; r < nRows; r++) {
+			line = in1.readLine();
+			stok = new StringTokenizer(line);
+			for (int c = 0; c < nCols; c++) {
+				tok = stok.nextToken();
+				try {
+					value = Float.parseFloat(tok);
+				}// try
+				catch (NumberFormatException ex) {
+					value = 0;
+				}// for
+				dt.setValue(amd.getPID(c, r), value);
+				/*
+				 * DataElement de = dt.getDataElement( amd.getPID( c, r ) );
+				 * dt.putDataElement(amd.getPID(c, r), de);
+				 */
+			}// for
+		} // public void importASCIIDataTable
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getArtificialSnowCover()
+	 */
+	public MassPerAreaTable getArtificialSnowCover() {
+		return artSnowDepth;
+	}
+
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getProducedArtificialSnow()
+	 */
+	public MassPerAreaTable getProducedArtificialSnow() {
+		return producedArtificialSnow;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.ActorControllerToTourist#getWaterUsedForSnowing()
+	 */
+	public FloatDataTable getWaterUsedForSnowing() {
+		return waterUsedForSnowing;
+	}
+	
+    /**
+     * Daily provide engine
+     */
+    private ProvideEngine m_pProvideEngineDaily = new ProvideEngine();
+    {
+//    	 WindVelocity
+    	m_pProvideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+				ImportRASDataTable(m_rWindSpeedDaily, dailyAvarageWind);
+    		}
+    	});
+     	
+//    	 SundDur
+    	m_pProvideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+				ImportRASDataTable(m_rSunDurDaily, dailySundurance);
+    		}
+    	});
+    	
+    	// Accumulated Snow
+    	m_pProvideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+				ImportRASDataTable(m_rAccumulatedSnow, m_tAccumulatedSnow);
+    		}
+    	});
+
+    	
+    	// Evapotranspiration
+    	m_pProvideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+				ImportRASDataTable(m_rEvapotranspirationDailySum, m_tEvapotranspirationDailySum);
+    		}
+    	});
+    	
+    	
+    	// PrecipitationDailySum and PrecipitationMonthlySum 
+    	m_pProvideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+				ImportRASDataTable(m_rPrecipitationDailySum, m_tPrecipitationDailySum);
+			}
+
+    	});
+
+    	// AirTemperatureDailyMin
+    	m_pProvideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+				ImportRASDataTable(m_rAirTemperatureDailyMin, m_tAirTemperatureDailyMin);
+    		}
+    	});
+
+    	// AirTemperatureDailyMax
+    	m_pProvideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+				ImportRASDataTable(m_rAirTemperatureDailyMax, m_tAirTemperatureDailyMax);
+    		}
+    	});
+
+    	
+
+    	// AirTemperatureDailyMean and AirTemperatureMonthlyMean
+    	m_pProvideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+				ImportRASDataTable(m_rAirTemperatureDailyMean, m_tAirTemperatureDailyMean);
+				// AirTemperatureDailyMean für einen Monat aufaddieren und durch Anzahl der Tage teilen
+
+				if (m_pSimulationTime.getDay() == 1) 
+					{
+					for (int i = 0; i < pids.length; i++) 
+						{
+						m_tAirTemperatureMonthlyMean.setValue(pids()[i], m_tAirTemperatureDailyMean.getValue(pids()[i]));
+						}
+					} 
+				else {
+					for (int i = 0; i < pids.length; i++) 
+					{
+						m_tAirTemperatureMonthlyMean.setValue(pids()[i], (m_tAirTemperatureDailyMean
+								.getValue(pids()[i]) + m_tAirTemperatureDailyMean.getValue(pids()[i])));
+						// to avoid that this is calculated in any timestep
+						if (m_pSimulationTime.getDay() > 27) 
+						{
+							m_tAirTemperatureMonthlyMean.setValue(pids()[i],(m_tAirTemperatureMonthlyMean.getValue(pids()[i])
+								/(float)m_pSimulationTime.getDay()));
+
+						}		
+					}
+				}
+			}
+    	});
+
+
+  
+
+    	// WetBulbTemperatureDailyMin
+    	m_pProvideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+				ImportRASDataTable(m_rWetBulbTemperatureDailyMin, m_tWetBulbTemperatureDailyMin);
+    		}
+    	});
+    }
+
+    
+		
+		
+		
+		
+		
+
+	
+
+/**
+ * Imports the RAS data
+ * @param ras Ras to be imported
+ * @param dataTable Import to
+ */
+private void ImportRASDataTable(RAS ras, DataTable dataTable)
+{
+	try
+	{
+		this.logger().info("Reading file " + ras.rasfilename);
+
+		RasterData raster = new RasterData(ras.getNoOfColumns(), ras.getNoOfRows());
+		Number[] record;
+
+		//EOF
+		if ((record = ras.getNextDataRecord())==null)
+		{
+			this.logger().warn("No Record left in File: " + ras.rasfilename);
+		}
+		else
+		{
+			double val;
+			int c=0;
+			
+			for (int i=0; i<ras.getNoOfRows(); i++) {
+				for (int j=0; j<ras.getNoOfColumns(); j++) {
+					val = record[c].doubleValue();
+					raster.putValue(j,i, val / ras.getGain() - ras.getOffset());//gain und offset rausrechnen
+					c++;
+				}
+			}
+			dataTable.putRasterData("value", raster);
+		}
+	}
+
+	catch (Exception ex){this.logger().warn("Error ImportRASDataTable", ex);}
+
+}
+
+/**
+ * @return Daily average wind velocity.
+ */
+public FloatDataTable getHorizontalVelocityDailyMean() {
+	
+	return this.dailyAvarageWind;
+}
+
+/**
+ * @return daily sundurance
+ */
+public FloatDataTable getSunshineDurationDailySum() {
+	
+	return this.dailySundurance;
+}
+
+
+
+
+}

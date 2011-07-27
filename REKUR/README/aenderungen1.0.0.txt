@@ -1,0 +1,18 @@
+Änderungen zu Framework 1.0 Stand 6. Oktober
+
+** Logging:
+Logging wurde auf wenige Teile begrenzt.
+Logging-Abfrage wurde eingebaut.
+
+** Paralelisierung von Import/Export:
+Routinen wurden eingebaut
+Import kann nur teilweise parallelisiert werden
+(Berechnung 1 mal im Jahr!)
+
+** Datentypen:
+Wrapper-Typen aus den Proxeln in Primitive umgewandelt
+
+** Schleifen:
+Array-Abfragen wurden reduziert
+Direktzugriffe eingesetzt
+Unnötige Ausdrücke ausgeklammert

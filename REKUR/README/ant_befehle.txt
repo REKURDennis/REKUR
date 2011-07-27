@@ -1,0 +1,34 @@
+
+Ant Befehle Dreimal:
+
+ant -f build_build.xml *** Compiliert
+
+ant startServer >> server.out &
+
+**STARTET SERVER
+
+ant startMonitor
+**STARTET Monitor
+
+ant startClient -Ddanubiaclient.id=node01
+
+
+
+Alt:
+
+
+ant -Dcomponent="tourism TourismDummy" startComponent &
+
+ant -Dcomponent=TourismDummy startComponent
+
+ant -Dcomponent=tourism startComponent
+
+
+
+**REGSTRIERT KOMPONENTEN
+
+--> Lock Registration
+--> Start Simulation
+
+
+ant -f build_build.xml delivery

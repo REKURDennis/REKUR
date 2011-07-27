@@ -1,0 +1,18 @@
+package org.glowa.danube.components.actor.tourism.deeptourism;
+
+import org.glowa.danube.deepactors.actors.actor.ActionEnvironment;
+
+
+
+/** Action Environment for Skiing areas
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ * 
+ *
+ */
+public interface DT_SkiingEnv extends ActionEnvironment{
+	
+	public void setStatus(int s);
+	
+	public void addOneOperationDay();
+
+}

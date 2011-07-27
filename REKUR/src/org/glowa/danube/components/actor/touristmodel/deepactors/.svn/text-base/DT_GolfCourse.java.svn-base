@@ -1,0 +1,423 @@
+package org.glowa.danube.components.actor.tourism.deeptourism;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
+import java.util.Set;
+
+import org.glowa.danube.components.actor.tourism.TourismProxel;
+import org.glowa.danube.components.actor.tourism.deeptourism.event.DrinkingWaterShortage;
+import org.glowa.danube.components.actor.tourism.deeptourism.event.GroundWaterShortage;
+import org.glowa.danube.components.actor.tourism.deeptourism.event.IrrigationNeed;
+import org.glowa.danube.components.actor.tourism.deeptourism.event.RiverWaterShortage;
+import org.glowa.danube.components.actor.tourism.deeptourism.plan.CloseBusiness;
+import org.glowa.danube.components.actor.tourism.deeptourism.plan.OpenBusiness;
+import org.glowa.danube.datatypes.SkiingAreaStatusType;
+import org.glowa.danube.deepactors.actors.actor.ActionEnvironment;
+import org.glowa.danube.deepactors.actors.actor.Actor;
+import org.glowa.danube.deepactors.actors.plan.Plan;
+
+/**
+ * This is the GolfCourse DeepActor with its specific variables and methods.
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ */
+public class DT_GolfCourse extends DT_AbstractDeepActor
+implements Actor,ActionEnvironment
+{
+	
+	//Szenarioparamerter:
+	private boolean rainwaterwatering = true;
+	private boolean fairwaywatering = true;
+	public boolean hasSnow;
+	public boolean wateringNeeded = false;
+ 	
+	public float evapoTrans = 0f;
+	private DT_WaterStorage waterStorage;
+	private boolean drinkingWaterDeficiency;
+	
+	private boolean groundWaterDeficiency;
+	
+	private boolean riverWaterDeficiency;
+	
+	private int wateringInterval = 1; //Mario
+	private float calibrationConst = 0.69f;//Mario
+	public float holes;
+	
+	private float areaGreen;
+	private float areaTee;
+	private float areaFairway;
+
+	private int dayCounter = 0;
+	private int wateringDays = 0; //Days that need irrigation
+	private int daysWithwatering = 0; //Days with actual irrigation
+	private int waterstressdays = 0;
+	private int lastWateringDay = 0;
+	private boolean initSize = true;
+
+	
+	private boolean waterStressinLastTimestep;
+	private boolean golfCourseDried;
+	
+	public Set<Long> suroundingGemeinde;
+	public long numberOfBeds;
+
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#setGmt(int)
+	 */
+	public void setGmt(int i,int a,int b)
+	{
+		super.setGmt(i,a,b);
+		gmt = i;
+		switch (i)
+		{
+		case 1: 
+		{fairwaywatering = false;
+		wateringInterval = 1; //Mario
+		}
+		break;
+		case 2: 
+		{fairwaywatering = true;
+		wateringInterval = 1;}
+		break;
+		case 3:
+		{fairwaywatering = false;
+		wateringInterval = 2;}
+		break;
+		}
+	}
+	
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#init()
+	 */
+	protected void init()
+	{
+		this.typeID = 10;
+		
+		super.init();
+		
+		hasSnow = false;
+		
+		riverWaterDemand = 0f;
+		groundWaterDemand = 0f;
+		drinkingWaterDemand = 0f;
+		
+		waterStorage = new DT_WaterStorage();
+		waterStorage.init(6285.0f); //Fixer Wert (Mario)
+		
+		drinkingWaterDeficiency = false;
+		groundWaterDeficiency = false;
+		riverWaterDeficiency = false;
+		golfCourseDried = false;
+		
+		waterStressinLastTimestep = false;
+		
+		
+		holes = 18;
+		areaGreen = 1.5000f;// Mario Flaechen in HA!!!
+		areaTee = 1.2000f;
+		areaFairway = 17.6000f;
+		
+		dayCounter = 0;
+		wateringDays = 0;
+		waterstressdays = 0;
+		daysWithwatering = 0;
+		lastWateringDay = 0;
+		numberOfBeds = 0;
+		
+		suroundingGemeinde = new HashSet<Long>(); //Set of communities in 30km distance
+
+		this.actorstatus = 1;
+		
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.actors.actor.AbstractActor#export()
+	 */
+	protected void export()
+	{
+		
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.actors.actor.AbstractActor#query()
+	 */
+	protected void query()
+	{
+		try{
+		if(proxelSensorEvents().getEntries(IrrigationNeed.class).size() == 1)
+		{wateringNeeded = true;}
+		else
+		{wateringNeeded = false;}
+		}
+		catch (NoSuchElementException e)
+		
+		{hasSnow = false;}
+		try{
+			if(proxelSensorEvents().getEntries(DrinkingWaterShortage.class).size() == 1)
+				{drinkingWaterDeficiency = true;}
+			else
+				{drinkingWaterDeficiency = false;}
+		}catch (Exception e)
+				{drinkingWaterDeficiency = false;}
+		
+		try{
+			if(proxelSensorEvents().getEntries(RiverWaterShortage.class).size() == 1)
+				{riverWaterDeficiency = true;}
+			else
+				{riverWaterDeficiency = false;}
+		}catch (Exception e)
+				{riverWaterDeficiency = false;}
+		
+		try{
+			if(proxelSensorEvents().getEntries(GroundWaterShortage.class).size() == 1)
+				{groundWaterDeficiency = true;}
+			else
+				{groundWaterDeficiency = false;}
+		}catch (Exception e)
+				{groundWaterDeficiency = false;}
+
+		
+		
+	}
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#options()
+	 */
+	protected void options()
+	{
+		 super.options();
+		 
+		 int monat = this.simulationTime().getMonth();
+		 int tag = this.simulationTime().getDay();	
+		 
+		this.riverWaterDemand = 0.0f;
+		this.groundWaterDemand = 0.0f;
+		 
+		 if ((tag == 1) & (monat == 1))
+		 {
+		 //Reset of all counters
+				dayCounter = 0;
+				wateringDays = 0;
+				waterstressdays = 0;
+				daysWithwatering = 0;
+				lastWateringDay = 0;
+				golfCourseDried = false;
+				// Measure 1: 2025 Fairwaysirrigaition is introduced 
+				if ((this.simulationTime().getYear()==2025)&&(mag==1))
+				{
+					this.fairwaywatering = true;
+				}
+		}
+		 
+		 
+		 
+		 int bewaesserungsstatus = 0;
+		 
+		if (actorstatus != SkiingAreaStatusType.NO_SKIINGAREA)			
+		{
+			
+			if (tag == 1)
+			{
+				drinkingWaterDemand = 0.0f;
+			}
+
+		if (!waterStorage.isFull())	
+			{
+			
+			float fuelltrink = 0f;
+			float fuellregen = 0f;
+			float fuelloberflaechen = 0f;
+			float fuellgrund = 0f;
+			float fuellmengeTag = 0f;
+			
+			if ((monat >= 4)&&(monat<=10)&&rainwaterwatering)
+			{
+				fuellregen = (percipitationSumDay * 6100f)/1000f;
+			}
+			if (fairwaywatering)
+			{fuellmengeTag = 359.4f;} else
+			{fuellmengeTag = 59.0f;} //Mario Fuellmengeneinstellung
+			
+			fuellmengeTag = fuellmengeTag - fuellregen; //Regenwasser abziehen
+			
+			if (!drinkingWaterDeficiency)
+				{fuelltrink = 0.209f*fuellmengeTag;
+				drinkingWaterDemand +=fuelltrink;}
+			
+			if (!riverWaterDeficiency)
+				{fuelloberflaechen = 0.107f*fuellmengeTag;}
+			
+			if(!groundWaterDeficiency)
+				{fuellgrund = 0.685f*fuellmengeTag;}
+				
+			
+			waterStorage.fill(fuelltrink,fuellregen,fuelloberflaechen,fuellgrund);
+			 //void fuellen (float fuell_trinkwasser,float fuell_regenwasser, float fuell_oberflaechenwasser, float fuell_grundwasser)
+	
+			fuelloberflaechen = fuelloberflaechen - waterStorage.waterOutput();
+			if (fuelloberflaechen < 0f)
+				{fuelloberflaechen = 0f;} //Abfangroutine wird sehr selten benutzt	
+
+			if (fuellgrund < 0f)
+			{fuellgrund = 0f;} //Abfangroutine wird sehr selten benutzt	
+
+				this.riverWaterDemand = fuelloberflaechen;
+				this.groundWaterDemand = fuellgrund;
+			}
+			
+							
+
+		
+		
+		
+		 if (((monat >= 4)) && ((monat <= 9)||((monat==10)&&(tag<=15)))&& (!golfCourseDried))
+		 {
+			 dayCounter++;
+		 }
+				
+			
+		 if (((monat >= 4)) && (!hasSnow) && (!golfCourseDried) && ((monat <= 9)||((monat==10)&&(tag<=15))))
+		 {
+			if (wateringNeeded)
+			{
+				float irrigationNeed = 0f;
+
+				
+				if (initSize){
+				areaTee = (areaTee / 18f)*holes;
+				areaFairway = (areaFairway / 18f)*holes;
+				areaGreen = (areaGreen / 18f)*holes;
+				initSize = false;
+				}
+				irrigationNeed = (calibrationConst*
+						((evapoTrans - percipitationSumDay)*
+						(areaTee+areaFairway+areaGreen)))*10.0f;//Attention! *10000 / 1000
+				int anzahlTageLetzterBewasserung = dayCounter - lastWateringDay;
+				
+				
+				if ((irrigationNeed > 0f)&& (anzahlTageLetzterBewasserung % wateringInterval == 0) )
+				{
+					wateringDays++;
+				
+					
+					if (waterStorage.takeout(irrigationNeed))
+					{
+						daysWithwatering++;
+						lastWateringDay = dayCounter;
+						waterStressinLastTimestep = false;
+						bewaesserungsstatus = 10;
+					}
+					else
+					{
+						bewaesserungsstatus = 20;
+						if (waterStressinLastTimestep)
+							{waterstressdays++;}
+						else
+						{waterstressdays = 1;}
+						
+						waterStressinLastTimestep = true;
+						
+							
+					}
+				}
+				
+				
+			}
+			if (waterStressinLastTimestep && (waterstressdays>=25))
+			{
+				activate(CloseBusiness.class);
+				actorstatus = SkiingAreaStatusType.OUT_OF_SERVICE;	
+				golfCourseDried = true;
+			}
+			else
+			{
+				activate(OpenBusiness.class);
+				this.addOneOperationDay();
+				actorstatus = SkiingAreaStatusType.SKIING; //Same as ski areas...
+			}
+		} 
+		 else
+		 {
+			 activate(CloseBusiness.class);
+			 actorstatus = SkiingAreaStatusType.OUT_OF_SERVICE;
+				
+		 }
+		}
+		
+		 //Assesment of Profitability (to be implemented)
+		 if ((tag == 31) & (monat == 12))
+		 	{
+				
+		 	}
+		 
+		
+		 actorstatus = actorstatus + bewaesserungsstatus;
+		 
+		 
+		 if (dailyMaxTemperature >= 283.15f & dailyMaxTemperature <= 303.15f & percipitationSumDay == 0.0 &
+			(actorstatus == 2 | actorstatus == 12))
+		 	{
+			 golfenTechn = 1;
+		 	}
+		 else
+		 	{
+			 golfenTechn = 0; 
+		 	}
+
+		 
+		 
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.actors.actor.AbstractActor#filter()
+	 */
+	public void filter() {
+
+	}
+	
+	
+	/**
+	 * returns itself
+	 * @return 
+	 */
+	public DT_GolfCourse getActor() {
+		return this;
+
+	}
+	
+	
+	/**
+	 * @param planType
+	 */
+	private void activate(Class planType)
+	{
+		
+		Collection<Plan> allPlans = plans().getPlans();
+		for (Plan p : allPlans)
+			{if(p.getClass().equals(planType)) p.activate();}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#preCompute(org.glowa.danube.components.actor.tourism.TourismProxel)
+	 */
+	public void preCompute(TourismProxel p)
+	{
+		super.preCompute(p);
+		this.evapoTrans = p.evapoTranspiration;
+		this.percipitationSumDay = p.percipitationSumDay;
+		this.holes = p.golfCourseSize;
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor#getFuellstandSpeicherteich()
+	 */
+	public float getWaterStorageVolume()
+	{
+		return this.waterStorage.actualVolume;
+	}
+}

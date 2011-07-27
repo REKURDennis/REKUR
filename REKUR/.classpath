@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="lib/components_2.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/danubia_2.1.10.jar"/>
+	<classpathentry kind="lib" path="lib/danubia_design.jar"/>
+	<classpathentry kind="lib" path="lib/danubia-datatypes_2.2.4.jar"/>
+	<classpathentry kind="lib" path="lib/image.jar"/>
+	<classpathentry kind="lib" path="lib/jdom.jar"/>
+	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.6.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
+	<classpathentry kind="lib" path="lib/mm.mysql-2.0.4-bin.jar"/>
+	<classpathentry kind="lib" path="lib/msbase.jar"/>
+	<classpathentry kind="lib" path="lib/mssqlserver.jar"/>
+	<classpathentry kind="lib" path="lib/Projector1.0.jar"/>
+	<classpathentry kind="lib" path="lib/RASReader_1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/rootinterfaces_2.4.0_223.jar"/>
+	<classpathentry kind="lib" path="lib/spring.jar"/>
+	<classpathentry kind="lib" path="lib/standard.jar"/>
+	<classpathentry kind="lib" path="lib/xalan.jar"/>
+	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/netcdfAll-4.2.jar"/>
+	<classpathentry kind="output" path="src_300710"/>
+</classpath>

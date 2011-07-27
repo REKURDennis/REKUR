@@ -1,0 +1,538 @@
+// WSUtilities.java
+
+/*
+*  Project: Glowa, IAWG 2003,
+*  $Id: WSUtilities.java,v 1.1 2003/07/10 11:10:58 Roland Exp $
+ */
+// more or less a copy of Rivernet utilities by Georg Kaspar
+package org.glowa.danube.components.actor.tourism.utilities;
+
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.Set;
+
+import org.glowa.danube.components.actor.tourism.TourismProxel;
+import org.glowa.danube.components.actor.tourism.deeptourism.DT_AbstractDeepActor;
+import org.glowa.danube.components.actor.tourism.deeptourism.DT_SkiingArea;
+import org.glowa.danube.dataio.ArcAsciiRasterFilter;
+import org.glowa.danube.dataio.RasterData;
+import org.glowa.danube.tables.FloatDataTable;
+import org.glowa.danube.tables.WaterFluxTable;
+import org.glowa.danube.utilities.internal.DanubiaLogger;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+import java.io.File;
+
+
+
+
+
+
+/**
+ * Utilities for the rivernetwork component.<p>
+ * @version 1.0
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ */
+
+public final class TourismUtilities
+{
+	
+	public static final int VISUALIZATION_BUFFER_SIZE = 50; 
+
+	public static final int VISUALIZATION_DELAY = 500;
+
+	
+
+	public static final String MOVIE_DEFAULT_FRAMERATE = "25";
+
+	public static final String MOVIE_DEFAULT_VIEWNAME = "default";
+
+	public static final String MOVIE_DEFAULT_VALUENAME = "value";
+
+	public static final String MOVIE_UNITNAME = "unit";
+
+	public static final String MOVIE_DEFAULT_COLORENCODING = "LINEAR_RGB";
+
+	public static final String MOVIE_DEFAULT_MINCOLOR = "red";
+
+	public static final String MOVIE_DEFAULT_MAXCOLOR = "blue";
+
+	public static final String MOVIE_DEFAULT_NANCOLOR = "white";
+
+	public static final String MOVIE_DEFAULT_ZEROCOLOR = "black";
+
+	public static final String MOVIE_DEFAULT_SCALING = "1";
+
+	public static final String MOVIE_DEFAULT_BOUNDARYFILE = "null";
+
+	
+
+	public static final int DOWNSCALE_MEAN = 1;
+
+	public static final int DOWNSCALE_MAX = 2;
+
+	public static final int DOWNSCALE_MIN = 3;
+
+	
+
+	
+
+	public static boolean IGNORE_RAS_TIMESTAMPS = false;
+
+	/**
+
+	 * Formats for writers
+
+	 */
+
+	
+
+	public static final DecimalFormat RASDATATYPE = new DecimalFormat("           0\r\n", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBANDS = new DecimalFormat("          0\r\n", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASROWS = new DecimalFormat("         0         ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASCOLS = new DecimalFormat("         0\r\n", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASRES = new DecimalFormat("        0\r\n", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASOFFSET = new DecimalFormat("  ##0.#######E00   ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASGAIN = new DecimalFormat("0.000    \r\n", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBVALID = new DecimalFormat(" 0 ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBYEAR = new DecimalFormat("0000  ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBMONTH = new DecimalFormat("#0 ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBDAY = new DecimalFormat("#0 ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBHOUR = new DecimalFormat("00  ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBMIN = new DecimalFormat("00    ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBAVERAGE = new DecimalFormat("##0.######E00    ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBLOW = new DecimalFormat("##0.######E00    ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBHIGH = new DecimalFormat("##0.######E00    ", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat RASBERROR = new DecimalFormat("##0.######E00\r\n", new DecimalFormatSymbols(new Locale("en")));
+
+	
+
+	public static final DecimalFormat DEZ0 = new DecimalFormat("0", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat DEZ2 = new DecimalFormat("##0.##", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat DEZ4 = new DecimalFormat("##0.####", new DecimalFormatSymbols(new Locale("en")));
+
+	public static final DecimalFormat DEZ2EX = new DecimalFormat("##0.##E0", new DecimalFormatSymbols(new Locale("en")));
+
+	
+
+	public static final DecimalFormat ASCII_OUT_FORMAT = DEZ4;
+
+	
+
+	
+
+	public static final String OPERATORPATTERN = "(<\\+>|<\\/>|<->|<\\*>|<%>)+";
+
+	public static final String OPENCLOSEPATTERN = "[<>]";
+
+	
+
+	public static final String DEFAULTS_DIR = File.separator+"defaults";
+
+	public static final String DEFAULT_AMD_NAME = "defaultAMD.txt";
+
+	public static final String DEFAULT_SMD_NAME = "defaultSMD.txt";
+
+	public static final String DEFAULT_MASK = "defaultMask.asc";
+
+	//TODO: einbauen in getValuebyPIDS
+
+	public static final String DEFAULT_PIDS = "defaultPIDs.txt";
+
+	//TODO: use defaultAMD / methode zum setzen
+	
+	private boolean firstTime = true;
+	private boolean firstMonth = true;
+
+	/**
+	 * Constructor
+	 */
+	public TourismUtilities()
+	{
+	}
+	
+	/** 
+	 * Sort skiingareas by size
+	 * @param array skiarea
+	 * @param begin begin
+	 * @param end end
+	 * @return sorted array
+	 */
+	
+	public DT_SkiingArea [] quickSortSkiingAreas(DT_SkiingArea[] array, int anfang, int ende){
+		if (ende> anfang){
+			int pivot = anfang;
+			int mitte = anfang;
+			System.out.println(pivot+" "+ mitte);
+			for (int i=anfang+1; i<= ende; i++){
+				if (array[i].skiareaCapacity< array[pivot].skiareaCapacity){
+					mitte++;
+					array = swap(array, i, mitte);
+				}
+				
+			}
+			System.out.println("Nach if" +pivot+" "+ mitte);
+			array = swap(array, pivot, mitte);
+			
+			array= quickSortSkiingAreas(array, mitte+1, ende);
+			array =quickSortSkiingAreas(array, anfang, mitte-1);
+			
+		}
+		return array;
+	}
+
+	private DT_SkiingArea [] swap(DT_SkiingArea[] result, int a, int b){
+		DT_SkiingArea temp = result[a];
+		result[a] = result[b];
+		result[b] = temp; 
+		return result;
+	}
+	
+	
+	
+	
+	
+	
+	/**
+	 * 
+	 * Changes a dot to comma in a float value
+	 * @param f Number
+	 * @return String with comma
+	 */
+	public String dotToComma(float f){
+		String back = new String();
+		back = ""+f;
+		back = back.replace(".", ",");
+		return back; 
+	}
+
+	/**
+	 * 
+	 *  Changes a dot to comma in a float value
+	 * @param d Number
+	 * @return String with comma
+	 */
+	public String dotToComma(double d){
+		String back = new String();
+		back = ""+d;
+		back = back.replace(".", ",");
+		return back; 
+	}
+	
+	/*public String floatToString(float d){
+		String back = new String();
+		back = ""+d;
+		back = back.replace(".", ",");
+		return back; 
+	}*/
+	/**
+	 * distanceOfProxels(TourismProxel, TourismProxel) calculates proxel distance
+	 * @param a Proxel one
+	 * @param b Proxel two
+	 * @return distance
+	 */
+	public double distanceOfProxels(TourismProxel a, TourismProxel b)
+	{
+				
+		double vDiff = a.northing() - b.northing();
+		double hDiff = a.easting() - b.easting();
+		
+		return  java.lang.Math.sqrt((vDiff*vDiff)+(hDiff*hDiff));
+		
+	}
+	
+	
+	/**
+	 * setOutputDirectories(String) sets all paths
+	 * @param modelOutPath root Pfad.
+	 */
+	public void setOutputDirectories(String modelOutPath)
+	{
+		if (new File(modelOutPath + File.separator + "tourism" + File.separator + "deepActorOut").mkdirs())
+		{logger.info("modelout/tourism/deepActorsOut Verzeichnis Erzeugt...");}
+		
+		if (new File(modelOutPath + File.separator + "tourism" + File.separator + "timeseries").mkdirs())
+		{logger.info("modelout/tourism/timeseries Verzeichnis Erzeugt...");}
+		
+		if (new File(modelOutPath + File.separator + "tourism" + File.separator + "jpg").mkdirs())
+		{logger.info("modelout/tourism/jpg Verzeichnisse Erzeugt...");}
+
+	}
+	
+	/**
+	 * writeDeepActorsYear(Set<DT_AbstractDeepActor>, String, int) write yearly operationdays into a file.
+	 * @param deepActors actors to be wrtiten
+	 * @param name Pathname
+	 * @param year year
+	 */
+	public void writeDeepActorsYear(Set<DT_AbstractDeepActor> deepActors, String name, int year)
+	{
+		try {
+			FileWriter pw= new FileWriter(name, true);
+			// Kopfzeile
+			if(firstTime){
+				pw.write("DeepActorID;");
+				for (DT_AbstractDeepActor a : deepActors)
+				{
+					if(a.typeID==11){
+						pw.write(a.getId() + ";");
+					}
+				}
+				pw.write("\nLocatin_PID;");
+				for (DT_AbstractDeepActor a : deepActors)
+				{
+					if(a.typeID==11){
+						pw.write(a.myProxelloc + ";");
+					}
+				}
+				firstTime=false;
+			}
+			pw.write("\nOperationdays_"+year+";");
+			for (DT_AbstractDeepActor a : deepActors)
+			{
+				if(a.typeID==11){
+					pw.write(a.getOperationDaysYear() + ";");
+				}
+			}
+			pw.close();
+		} 
+		catch (Exception e) {
+		}
+
+	}
+	
+	/**
+	 * Writes out DeepActor data into a file
+	 * @param deepActors DeepActors to be writen
+	 * @param name Pathname
+	 * @param date Date
+	 */
+	public void writeDeepActors(Set<DT_AbstractDeepActor> deepActors, String name, String date)
+	{
+		try {
+			PrintWriter pw = new PrintWriter(name);
+			// Kopfzeile
+			pw.println("DeepActorID;Locatin_PID;typeID;status;drinkingWater;RiverWater;GroundWater;Operationdays;OperationdaysMonth;ArtificalSnowVolume;StartDate;EndDate;Date");
+			
+			
+			for (DT_AbstractDeepActor a : deepActors)
+			{
+				String s = "";
+				
+				s = s + a.getId() + ";";
+				s = s + a.myProxelloc + ";";
+				s = s + a.typeID + ";";
+				s = s + a.getStatus() + ";";
+				s = s + a.getDrinkingWaterConsuption() + ";";
+				s = s + a.getRiverWaterDemand() + ";";
+				s = s + a.getGroundWaterDemand() + ";";
+				s = s + a.getOperationdays() + ";";
+				s = s + a.getOperationDaysMonth() + ";";
+				s = s + a.getArtificalSnowVolumeSeason() + ";";
+				s = s + a.startDate + ";";
+				s = s + a.endDate+ ";";
+				s = s + date;
+				pw.println(s);
+			}
+			pw.close();
+		} catch (Exception e) {
+		}
+
+	}
+	
+	/**
+	 * Writes out DeepActor data into a file per month
+	 * @param deepActors DeepActors to be writen
+	 * @param name Pathname
+	 * @param date Date
+	 */
+	public void writeDeepActorsPerMonth(Set<DT_AbstractDeepActor> deepActors, String name, String date)
+	{
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(name, true));
+			if(firstMonth){
+				// Kopfzeile
+				bw.write("DeepActorID;");
+				for (DT_AbstractDeepActor a : deepActors)
+				{
+					//s = s + a.myProxelloc + ";";	
+					bw.write(a.getId() + ";");
+				}
+				
+				bw.newLine();
+				bw.write("Locatin_PID;");
+				for (DT_AbstractDeepActor a : deepActors)
+				{
+					bw.write(a.myProxelloc + ";");
+				}
+				firstMonth = false;
+			}
+			bw.newLine();
+			bw.write(date+";");
+			for (DT_AbstractDeepActor a : deepActors)
+			{
+				bw.write(a.getOperationDaysMonth() + ";");
+			}
+			bw.flush();
+			bw.close();
+		} catch (Exception e) {
+		}
+
+	}
+	
+	/**
+	 * write a danubia FloatDataTable 'tab' as a ArcInfo ASCII Grid the the file
+	 * 'gridName'. 'gridName' is created in the modelout/text/rivernetwork
+	 * directory.
+	 */
+	public void writeArcinfoGrid( FloatDataTable tab, String gridName )
+	{
+
+		int                  r, c, pid;
+		float                val;
+		FormatedFilePrinterWS  fp;
+		int                  noData = -9999;
+		int                  nCols    = tab.getAreaMetaData().getNCols();
+		int                  nRows    = tab.getAreaMetaData().getNRows();
+		logger.debug( "writeArcinfoGrid: dumping table to ASCII Grid: " + gridName);
+
+		try
+		{
+			fp = new FormatedFilePrinterWS( gridName );
+
+			fp.println( "ncols " + nCols );
+			fp.println( "nrows " + nRows );
+			fp.println( "xllcorner " + tab.getAreaMetaData().getSiteMetaData().getXllcorner() );
+			fp.println( "yllcorner " + tab.getAreaMetaData().getSiteMetaData().getYllcorner() );
+			fp.println( "cellsize " + tab.getAreaMetaData().getSiteMetaData().getResolution() );
+			fp.println( "nodata_value " + noData );
+
+			for( r = 0; r < nRows; r++ )
+			{
+				for( c = 0; c < nCols; c ++ )
+				{
+					pid = tab.getAreaMetaData().getSiteMetaData().getPID(c,r);
+					//pid = areaMetaData.getSiteMetaData().getPID(c,r);
+					if( tab.getAreaMetaData().isPIDInside( pid ) )
+					{
+						val = tab.getValue( pid );
+						if( Float.isNaN( val ))
+							val = noData;
+						fp.printsp( val );
+					}
+					else
+						fp.printsp( noData );
+				}
+				fp.println();
+			}
+
+			fp.close();
+		}
+		catch( Exception e )
+		{
+			logger.debug( "writeArcinfoGrid: " + e );
+			e.printStackTrace();
+		}
+	}
+
+
+	
+	/**
+	 * read a ArcInfo ASCII Grid 'AsciiGridName' and convert it to a generated
+	 * danubia WaterFluxTable. The grid is searched relative
+	 * to the current working directory.
+	 * This WaterFluxTable is returned by readArcinfoGrid().
+	 * The passed FloatDataTable 'tab' is only used to get the area-parameters.
+	 * @param tab
+	 * @param AsciiGridName
+	 * @return
+	 */
+	public WaterFluxTable readArcinfoGrid( FloatDataTable tab, String AsciiGridName  )
+	{
+		int            nCols    = tab.getAreaMetaData().getNCols();
+		int            nRows    = tab.getAreaMetaData().getNRows();
+		WaterFluxTable wft      = new WaterFluxTable( tab.getAreaMetaData() );
+
+		RasterData     raster;
+		int            r, c, pid, cnt;
+		float          val;
+		float          sum;
+
+		cnt = 0;
+		sum = 0f;
+
+		try
+		{
+			ArcAsciiRasterFilter rf = new ArcAsciiRasterFilter();
+			raster = rf.importRasterData( AsciiGridName );
+			logger.debug( "Raster nrows/ncols: "
+						  + raster.getNRows() + " / " + raster.getNCols() );
+
+			if( raster.getNRows() != nRows ||  raster.getNCols() != nCols )
+			{
+				logger.fatal( "AreaMetaData: mismatch of nRow nCcol=" + nRows + "/"+nCols );
+				System.exit( 99 );
+			}
+
+			for( r = 0; r < nRows; r ++ )
+				for( c = 0; c < nCols; c ++ )
+				{
+					val = 0f;
+					if( raster.isDefined(c,r) )
+					{
+						val = (float)raster.getValue(c,r);
+						sum = sum + val;
+						cnt ++;
+					}
+					pid = tab.getAreaMetaData().getPID(c,r);
+					wft.setValue(pid, val );
+				}
+		}
+		catch( Exception e )
+		{
+			logger.fatal( "readArcinfoGrid: " + AsciiGridName + " failed" );
+			System.exit( 88 );
+		}
+
+		logger.debug( "readArcinfoGrid: #valide data elements: " + cnt
+					  + " sum of them: " + sum );
+
+		return wft;
+	}   // end readArcinfoGrid()
+
+
+
+	//
+	// Attributs:
+	//
+
+	/**
+	 * logger 
+	 */
+	static private DanubiaLogger   logger        =
+			DanubiaLogger.getDanubiaLogger( TourismUtilities.class );
+
+}   // end class RivernetUtilities
+
+// eof

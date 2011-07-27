@@ -1,0 +1,102 @@
+package org.glowa.danube.components.actor.tourism.deeptourism;
+
+/**
+ * Class of the DeepActor Gastronomy
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ *
+ */
+public class DT_Gastronomy {
+	
+	public float yearlyExtensionRate = 1.0f;
+	public long operators;
+	public float status = 1;
+	private float statusWithoutSaving = 1;
+	public int savingStep = 0;
+	public boolean waterProblem = false;
+	public int waterDeficiencyMonth[];
+	public int waterDeficiencyYear;
+	
+	
+	public int waterdeficiencyCounter;
+	public boolean closeBusinessFinally;
+	
+	/**
+	 * initializes all variables
+	 */
+	public void init()
+	
+	{
+		status = 1;
+		savingStep = 0;
+		waterProblem = false;
+		waterDeficiencyMonth = new int[10];
+		closeBusinessFinally = false;
+		waterDeficiencyYear = 0;
+		waterdeficiencyCounter = 0;
+		
+		for (int i = 0; i < waterDeficiencyMonth.length;i++ )
+		{
+			waterDeficiencyMonth[i] = 0;
+		}
+	}
+	
+	
+	/**
+	 *  Calculate water deficiency at the end of the month
+	 * @param flag <code>4</code> save water
+	 */
+	public void processMonthly(int flag)
+	{
+		status = statusWithoutSaving;
+		if ((flag == 4)&&(waterProblem == false))
+		{
+			savingStep = savingStep + 1;
+			if (savingStep <=5)
+			{status = statusWithoutSaving * (1.0f - ((float)savingStep * 0.05f));}
+			else
+				status = statusWithoutSaving * 0.75f;		
+			waterProblem = true;
+			waterDeficiencyYear++;
+		}
+		
+		if (flag == 5)
+		{	status = 0.0f;
+			waterDeficiencyYear++;
+		}
+		
+		if (closeBusinessFinally)
+		{
+			status = 0.0f;
+		}
+	}
+	
+	
+	
+	/**
+	 * Calculate water deficiency at the end of the year.
+	 */
+	public void processEndOfYear()
+	{
+		waterProblem = false;
+		waterDeficiencyMonth[waterdeficiencyCounter] = waterDeficiencyYear;
+		waterDeficiencyYear = 0;
+		waterdeficiencyCounter++;
+		if (waterdeficiencyCounter >= waterDeficiencyMonth.length)
+		{waterdeficiencyCounter = 0;}
+		
+		 int sumWassermangelMonate = 0;
+		 for (int i = 0; i < waterDeficiencyMonth.length; i++)
+			{sumWassermangelMonate = sumWassermangelMonate + waterDeficiencyMonth[i];}
+		 
+		 float gleitenderSchnitt = 30.0f * ((float)sumWassermangelMonate / (float)waterDeficiencyMonth.length);
+		
+		 if (gleitenderSchnitt < 100.0f)
+		 {// 100 Tage Regel
+			 closeBusinessFinally = true;
+		 }
+		 
+			status = status * yearlyExtensionRate;
+			statusWithoutSaving = statusWithoutSaving * yearlyExtensionRate;
+	}
+	
+}

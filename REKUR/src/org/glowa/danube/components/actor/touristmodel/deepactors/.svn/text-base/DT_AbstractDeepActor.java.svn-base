@@ -1,0 +1,945 @@
+package org.glowa.danube.components.actor.tourism.deeptourism;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.glowa.danube.components.actor.tourism.TourismProxel;
+import org.glowa.danube.deepactors.actors.actor.AbstractActor;
+import org.glowa.danube.deepactors.model.AbstractActorModel;
+import org.glowa.danube.utilities.internal.DanubiaLogger;
+import org.glowa.danube.components.actor.tourism.deeptourism.Tourism;
+import org.glowa.danube.components.actor.tourism.utilities.TourismUtilities;
+
+/**
+ * This class  implements the main variables, options, calculation methods and output methods for every DeepActor.
+ *
+ * This class is responsible for the local Deep Actors Timeseries
+ * 
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ */
+public abstract class DT_AbstractDeepActor extends AbstractActor
+
+
+{
+	private static DanubiaLogger logger = DanubiaLogger.getDanubiaLogger(Tourism.class);
+	public int gmt = 1;
+	public int mas = 0;
+	public int mag = 0;
+	public int optimaleSkiingDay = 0;
+	
+	public float sundurance = 0.0f;
+	public float windVelocity = 0.0f;
+	private TourismUtilities tu = new TourismUtilities();
+	
+	
+	public int myProxelloc;	
+	public int actorstatus;
+	public int operationDaysCounter = 0;
+	public float drinkingWaterDemand = 0f;
+	private int operationDaysMonth;
+	private int closedDaysMonth;
+	public float riverWaterDemand;
+	public float groundWaterDemand;
+	public String modelOutPath;
+	
+	
+	public int countryID = 1;
+	public long articficalSnowingDays = 0;
+	public double ms = 0;
+	public double mb = 0;
+	public double summerIndex = 0;
+	public double hotdays = 0;
+	public float summerday = 0;
+	public double snowdepth = 0;
+	public int snowColdDay = 0;
+	public float dailyMaxTemperature = 0f;
+	public float percipitationSumDay = 0f;
+	public double artificalSnowVolume = 0;
+	public float iceDay = 0;
+	public float veryHotDay = 0;
+	public float extremeHotDay = 0;
+	public float rainDay = 0;
+	public float tempRainQuot = 0;
+	public long potBeschneiungstage = 0;
+	public float beachSwimming = 0;
+	public float swimmingSunbath = 0;
+	public float outdoorPoolOptimumTemp = 0;
+	public float outdoorPoolOptimumTechn = 0;
+	public float golfenTemp = 0;
+	public float golfenTechn = 0;
+	public float motorboat = 0;
+	public float sailing = 0;
+	public float waterSki = 0;
+	public float strainActivities = 0;
+	public float passActivities = 0;
+	public float alpinerSkilaufTemp = 0;
+	public float alpSkiRunTech = 0;
+	public float summerIndexDays = 0;
+	public float summerIndexQuot = 0;
+	public float summerdaysMonth = 0;
+	public float rainingDaysMonth = 0;
+	public String startDate;
+	public String endDate;
+	public boolean started;
+	public boolean stopped;
+
+	private String outputFileName;
+	private BufferedWriter outPutFile;
+	
+	public int typeID = 0;
+	private int operationDayYear;
+	
+	
+	public int drinkintWaterFlag;
+	public int groundWaterFlag;
+	public int riverWaterFlag;
+	
+
+	/**
+	 * Sets the societal scenario, the action of skiing areas and golf courses
+	 * @param i societal scenario <code>1</code>baseline, <code>2</code> liberal, <code>3</code> sustainable
+	 * @param a skiing area action
+	 * @param b golf course action
+	 */
+	public void setGmt(int i,int a,int b)
+	{
+		gmt = i;
+		mas = a;
+		mag = b;
+		switch (i)
+		{
+		case 1: 
+		{}
+		break;
+		case 2: 
+		{}
+		break;
+		case 3:
+		{}
+		break;
+		}
+	}
+	
+
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.actors.actor.AbstractActor#init()
+	 */
+	protected void init()
+	{	
+		int[] pids = getLocation().getPIDArray();
+		myProxelloc = pids[0]; //Wenn sich ein Skigebiet ueber mehrere Proxel erstreckt, gibt es nur das erste Proxel			
+		operationDaysMonth = 0;
+		
+		startDate = "0";
+		endDate = "0";
+		
+		//componentProperty
+		 gmt = 1;
+
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.actors.actor.AbstractActor#options()
+	 */
+	protected void options()
+	{	//Monatszaehler wird zum Monatsersten resettet
+		if (this.simulationTime().getDay() == 1)
+		{
+			
+			this.resetMonatsanfang();
+			
+			if (this.simulationTime().getMonth() == 1)
+			{
+				startDate = "0";
+				endDate = "0";
+				started = false;
+				stopped = true;
+			}
+		}
+	
+		 //Mario fügt Hitze- und Sommertage ein
+		 if (dailyMaxTemperature >= 303.15)
+		 	{
+			 hotdays = 1;
+		 	}
+		 else
+		 	{
+			 hotdays = 0;
+		 	}
+		 
+		 
+		 if (dailyMaxTemperature >= 298.15)
+		 	{
+			 summerday = 1;
+		 	}
+		 else
+		 	{
+			 summerday = 0;
+		 	}
+			 
+		 
+		 if (dailyMaxTemperature >= 308.15)
+		 	{
+			 veryHotDay = 1;
+		 	}
+		 else
+		 	{
+			 veryHotDay = 0;
+		 	}
+		 
+		 
+		 
+		 if (dailyMaxTemperature >= 313.15)
+		 	{
+			 extremeHotDay = 1;
+		 	}
+		 else
+		 	{
+			 extremeHotDay = 0;
+		 	}
+		 
+		 
+		 if (dailyMaxTemperature < 273.15)
+		 	{
+			 iceDay = 1;
+		 	}
+		 else
+		 	{
+			 iceDay = 0;
+		 	}
+		 
+		 
+		 if (percipitationSumDay >= 1.0)
+		 	{
+			 rainDay = 1.0f;
+		 	}
+		 else
+		 	{
+			 rainDay = 0.0f;
+		 	}
+		 
+		 
+		 
+		 if (percipitationSumDay >= 1.0)
+		 	{
+			 tempRainQuot = (dailyMaxTemperature - 273.15f) / (percipitationSumDay * 5);
+		 	}
+		 else
+		 	{
+			 tempRainQuot = (dailyMaxTemperature - 273.15f) / 5;
+		 	}
+		 
+		 
+		 
+		 
+		 if (dailyMaxTemperature >= 290.95f & percipitationSumDay == 0.0)
+		 	{
+			beachSwimming = 1;
+		 	}
+		 else
+		 	{
+			 beachSwimming = 0;
+		 	}
+			 
+		 
+		 
+		 
+		 if (dailyMaxTemperature >= 288.15f & dailyMaxTemperature <= 303.15f & percipitationSumDay == 0.0)
+		 	{
+			swimmingSunbath = 1;
+		 	}	 
+		 else
+		 	{
+			  swimmingSunbath = 0;
+		 	}
+			 
+			 
+		 
+		 if (dailyMaxTemperature >= 298.15f & dailyMaxTemperature <= 304.15f & percipitationSumDay == 0.0)
+		 	{
+			outdoorPoolOptimumTemp = 1;
+		 	}
+		 else
+		 	{
+			outdoorPoolOptimumTemp = 0;
+		 	} 
+		 
+		 
+		 
+		 
+		 
+		 if (dailyMaxTemperature >= 283.15f & dailyMaxTemperature <= 303.15f & 
+			percipitationSumDay == 0.0 & snowdepth == 0)
+		 	{
+			 golfenTemp = 1;
+		 	}
+		 else
+		 	{
+			 golfenTemp = 0; 
+		 	}
+		 
+			 
+		 
+		 
+		 
+		 if (dailyMaxTemperature >= 288.15f & percipitationSumDay == 0.0)
+		 	{
+			motorboat = 1;
+		 	} 
+		 else
+		 	{
+			motorboat = 0; 
+		 	}
+			 
+		 
+		 
+		 
+		 if (dailyMaxTemperature >= 283.15f & percipitationSumDay == 0.0)
+		 	{
+			sailing = 1;
+		 	}
+		 else
+		 	{
+			sailing = 0; 
+		 	}
+			 
+		 
+		 
+		 
+		 if (dailyMaxTemperature >= 291.15f & percipitationSumDay == 0.0)
+		 	{
+			 waterSki = 1;
+		 	}
+		 else
+		 	{
+			waterSki = 0; 
+		 	}
+			 
+		 
+		 
+		 
+		 if (dailyMaxTemperature >= 285.95f & dailyMaxTemperature <= 304.85f & percipitationSumDay == 0.0)
+		 	{
+			 strainActivities = 1;
+		 	}
+		 else
+		 	{
+			 strainActivities = 0;
+		 	}
+			 
+		 
+		 
+			 
+		 if (dailyMaxTemperature >= 285.35f & percipitationSumDay == 0.0)
+		 	{
+			 passActivities = 1;
+		 	}
+		 else
+		 	{
+			passActivities = 0; 
+		 	}
+			 
+			
+		 
+		 
+		 if (dailyMaxTemperature >= 268.15f  & 
+			percipitationSumDay <= 1.0)
+		 	{
+			 alpinerSkilaufTemp = 1;
+		 	}
+		 else
+		 	{
+			alpinerSkilaufTemp = 0; 
+		 	}
+			 
+		 
+		 
+		 
+		 
+		 //Hitze und Sommertage werden am 31.12 wieder auf Null gesetzt.
+		 if ((this.simulationTime().getDay() == 31) & (this.simulationTime().getMonth() == 12))
+		 	{
+			hotdays = 0;
+			summerday = 0;
+			veryHotDay = 0;
+			extremeHotDay = 0;
+			iceDay = 0;
+			rainDay = 0;
+		 	}
+		
+		 summerIndex = 18*(dailyMaxTemperature-273.15) + (0.217*4.2 - 0.276*percipitationSumDay + 320)/30;
+		 
+		//Mario aggregiert die Regen- und Sommertage
+		 if (summerday > 0)
+		 	{
+			 summerdaysMonth = summerdaysMonth + 1;
+		 	}
+		
+		 
+		 
+		 
+		 if (rainDay > 0.0)
+		 	{
+			 rainingDaysMonth = rainingDaysMonth + 1;
+		 	}
+		 
+		 
+		 
+		 
+		 
+		 
+		 
+		 
+		 summerIndexDays = summerdaysMonth - rainingDaysMonth;
+		 
+		 if (rainingDaysMonth > 0)
+		 {
+			summerIndexQuot = summerdaysMonth / rainingDaysMonth; 
+		 }
+		 else
+		 {
+			 summerIndexQuot = summerdaysMonth / 1;
+		 }
+		 
+	}
+	
+
+		
+	/**
+	 * setStatus(int) sets actor status
+	 * @param s status <code>1</code>closed, <code>2</code>opened
+	 */
+	public void setStatus(int s)
+	{
+		actorstatus = s;
+	}
+	
+	
+	/**
+	 * getStatus() returns the actor status
+	 * @return int tatus <code>1</code>closed, <code>2</code>opened
+	 */
+	public int getStatus()
+	{
+		return actorstatus;
+	}
+	
+	
+	/**
+	 * getDrinkingWaterConsuption() returns the drinking water consumption
+	 * @return drinking water consumption
+	 */
+	public float getDrinkingWaterConsuption()
+	{
+		return drinkingWaterDemand;
+	}
+	
+	/**
+	 * addOneOperationDay()adds an OperationDay
+	 */
+	public void addOneOperationDay()
+
+	{
+		operationDaysCounter = operationDaysCounter + 1;	
+		operationDaysMonth = operationDaysMonth + 1;
+				
+		if (!started)
+		{
+			startDate = simulationTime().getDay() + "." +simulationTime().getMonth()+"."+simulationTime().getYear();
+			started = true;
+			stopped = false;
+		}
+	}
+
+	/**
+	 * addOneClosingDay)adds an closed day
+	 */
+	public void addOneClosingDay()
+	{
+		closedDaysMonth = closedDaysMonth + 1;
+		if (started && !stopped)
+		{
+			endDate = simulationTime().getDay() + "." +simulationTime().getMonth()+"."+simulationTime().getYear();
+			stopped = false;
+		}
+	}
+
+	/**
+	 * resetMonatsanfang() resets the data to the default values
+	 */
+	public void resetMonatsanfang()
+	{
+		if(simulationTime().getMonth()!=1){
+			operationDayYear += operationDaysMonth;
+		}
+		else{
+			operationDayYear = operationDaysMonth;
+		}
+		operationDaysMonth = 0;
+		closedDaysMonth = 0;
+		drinkingWaterDemand = 0;
+		//Mario fügt das Reset von monatlich Sommer- und Regentage ein
+		summerdaysMonth = 0;
+		rainingDaysMonth = 0;
+	}
+
+	
+	/**
+	 * Returns the working days of one month.
+	 * @return  working days
+	 */
+	public int getOperationDaysMonth()
+	{
+		return operationDaysMonth;
+	}
+	
+	/**
+	 * Returns the working days of one year.
+	 * @return  working days
+	 */
+	public int getOperationDaysYear()
+	{
+		return operationDayYear;
+	}
+	
+	/**
+	 * Returns the number of closed days of one month
+	 * @return  Closed days
+	 */
+	public int getClosedDaysMonth()
+	{
+		return closedDaysMonth;
+	}
+	
+	
+	
+	/**
+	 * Returns the number of working days
+	 * @return working days
+	 */
+	public int getOperationdays()
+	{return operationDaysCounter;}
+	
+	
+	/**
+	 * Returns the river water demand.
+	 * @return  River water demand in m^3.
+	 */
+	public float getRiverWaterDemand()
+	{return riverWaterDemand;}
+	
+	/**
+	 * Returns the ground water demand.
+	 * @return  water demand in m^3.
+	 */
+	public float getGroundWaterDemand()
+	{return groundWaterDemand;}
+	
+	
+	/**
+	 * Returns the artifical snow volume of one season.
+	 * @return Snow volume in m^3.
+	 */
+	public double getArtificalSnowVolumeSeason()
+	{return  artificalSnowVolume;}
+	
+	//Mario führt Ausgabefunktion ein Vorbild: getKunstSchneeMengeSaison()
+	/**
+	 * Returns the number of days with artifical snowing.
+	 * @return  Number of days
+	 */
+	public long getArtificalSnowDays()
+	{return  articficalSnowingDays;}
+	
+	//Mario führt Ausgabefunktion ein: geschmolzener Kunstschnee in m³
+	//Der Kunstschnee ist dabei als Schnee gedacht und nicht als Wasseräquivalent
+	
+	/**
+	 * Returns the volume of smelted artifical snow.
+	 * @return Volume in m^3
+	 */
+	public double getArtificalSmelt()
+	{return ms;}
+	
+	//Mario führt Ausgabefunktion ein: geschmolzener Kunstschnee während der Beschneisaison (7.11. bis 13.3.) in m³
+	//Der Kunstschnee ist dabei als Schnee gedacht und nicht als Wasseräquivalent
+	/**
+	 * Returns the volume of smelted artifical snow in one season.
+	 * @return Volume in m^3
+	 */
+	public double getArtificalSmeltSeason()
+	{return mb;}
+	
+	//Mario führt Ausgabefunktion ein: Sommerindex 
+
+	/**
+	 * Returns the summerindex
+	 * @return
+	 */
+	public double getSummerIndex()
+	{return summerIndex;}
+	
+	//Mario führt Ausgabefunktion ein: Hitzetag 
+	/**
+	 * Returns if it is a hot day
+	 * @return  <code>0</code>no hot day, <code>1</code> hot day
+	 */
+	public double getHotday()
+	{return hotdays;}
+	
+	//Mario führt Ausgabefunktion ein: Sommertag
+	/**
+	 * Returns if it is a summerday
+	 * @return  Summerdays <code>0</code>no summerday, <code>1</code> summerday
+	 */
+	public float getSummerday()
+	{return summerday;}
+	
+	/**
+	 * Returns if it is a optimal skiiny day
+	 * @return  Summerdays <code>0</code>no osd, <code>1</code> osd
+	 */
+	public int getOptimalSkiingDay()
+	{return optimaleSkiingDay;}
+	
+	
+	//Mario führt Ausgabefunktion ein: Schneehoehe 
+	/**
+	 * Returns snow depth
+	 * @return  Snow depth in cm.
+	 */
+	public double getSnowDepth()
+	{return snowdepth;}
+	
+	
+	//Mario führt Ausgabefunktion ein: WinterIndex 
+	/**
+	 * Returns if it is a snow cold day
+	 * @return  Summerdays <code>0</code>no scd, <code>1</code> scd
+	 */
+	public int getSnowColdDay()
+	{return snowColdDay;}
+	
+	
+	
+	//Mario führt weiter Ausgabefunktionen ein
+	/**
+	 * Returns if it is a very hot day
+	 * @return  Summerdays <code>0</code>no vhd, <code>1</code> vhd
+	 */
+	public double getVeryHotDay()
+	{return veryHotDay;}
+	
+	/**
+	 * Returns if it is a extreme hot day
+	 * @return  Summerdays <code>0</code>no ehd, <code>1</code> ehd
+	 */
+	public double getExrtemeHotDay()
+	{return extremeHotDay;}
+	
+	/**
+	 * Returns if it is an ice day
+	 * @return  Summerdays <code>0</code>no id, <code>1</code> id
+	 */
+	public double getIceDay()
+	{return iceDay;}
+	
+	/**
+	 * Returns if it is a rainy day
+	 * @return  Summerdays <code>0</code>no rd, <code>1</code> rd
+	 */
+	public float getRainDay()
+	{return rainDay;}
+	
+	/**
+	 * Returns Temperature/Rain quotient.
+	 * @return  Quotient
+	 */
+	public double getTempRainQuot()
+	{return tempRainQuot;}
+	
+
+	/**
+	 * Returns if swimming is possible
+	 * @return   <code>0</code>no, <code>1</code> yes
+	 */
+	public float getBeachSwimming()
+	{return beachSwimming;}
+	
+	/**
+	 * Returns if swimming and sunbathing is possible
+	 * @return   <code>0</code>no, <code>1</code> yes
+	 */
+	public float getSwimmingSunbath()
+	{return swimmingSunbath;}
+	
+	/**
+	 * returns if today is the optimal outdoor pool temp.
+	 * @return <code>0</code>no, <code>1</code> yes
+	 * @uml.property  name="freibadOptimumTemp"
+	 */
+	public float getOutdoorpoolOptimumTemp()
+	{return outdoorPoolOptimumTemp;}
+	
+	/**
+	 * Returns if optimal technnology for outdoor pool is availyble
+	 * @return <code>0</code>no, <code>1</code> yes
+	 */
+	public float getOutdoorPoolOptimumTechn()
+	{return outdoorPoolOptimumTechn;}
+	
+	/**
+	 * returns golf temp
+	 * @return temp in c
+	 * 
+	 */
+	public float getGolfenTemp()
+	{return golfenTemp;}
+	
+	
+	public float getGolfenTechn()
+	{return golfenTechn;}
+	
+	/**
+	 * Returns if drinving motorboat is possible
+	 * @return   <code>0</code>no, <code>1</code> yes
+	 */
+	public float getMotorboat()
+	{return motorboat;}
+	
+	/**
+	 * Returns if sailing is possible
+	 * @return   <code>0</code>no, <code>1</code> yes
+	 */
+	public float getSailing()
+	{return sailing;}
+	
+	/**
+	 * Returns if waterski is possible
+	 * @return   <code>0</code>no, <code>1</code> yes
+	 */
+	public float getWaterSki()
+	{return waterSki;}
+	
+	/**
+	 * Returns the number of strain activities
+	 * @return Number
+	 */
+	public float getStrainAktivities()
+	{return strainActivities;}
+	
+	/**
+	 * returns the number of pass activities
+	 * @return pass activities
+	 */
+	public float getPassActivities()
+	{return passActivities;}
+	
+	/**
+	 * @return
+	 */
+	public float getAlpinerSkilaufTemp()
+	{return alpinerSkilaufTemp;}
+	
+	/**
+	 * @return
+	 */
+	public float getAlpSkiRunTech()
+	{return alpSkiRunTech;}
+	
+	
+	
+	//Mario schreibt lässt die aggregierten Sommertage und Regentage ausgeben.
+	
+	/**
+	 * Returns the number of summerdays per month
+	 * @return  number of days
+	 */
+	public float getSummerdaysMonth()
+	{return summerdaysMonth;}
+	
+	
+	/**
+	 * Returns the number of rainingdays
+	 * @return  number of days
+	 */
+	public float getRainingDaysMonth()
+	{return rainingDaysMonth;}
+	
+	
+	//Mario schreibt die Indizes raus
+	//Es dürfen nur die Indizes am Monatsletzten analysiert werden
+	/**
+	 * returns the summer index days
+	 * @return Number of days
+	 */
+	public float getSummerIndexDays()
+	{return summerIndexDays;}
+	
+	/**
+	 * Returns the summer index quotient
+	 * @return Quotient
+	 */
+	public float getSummerIndexQuot()
+	{return summerIndexQuot;}
+	
+	
+	
+	
+	/**
+	 * Returns the water storge
+	 * @return Volume in m3.
+	 */
+	public float getWaterStorageVolume()
+	{
+		return 0.0f;
+	}
+	
+
+	
+	/**
+	 * Saves proxeldata in local variables.
+	 * @param p Proxel to be saved.
+	 */
+	public void preCompute(TourismProxel p)
+	{
+		this.snowdepth = p.snowDepth;
+		this.dailyMaxTemperature = p.dailyMaxTemperatureInProxel;
+		this.sundurance = p.sunduranceDaily;
+		this.windVelocity = p.windVelocity;
+		this.percipitationSumDay = p.percipitationSumDay;
+		this.drinkintWaterFlag = p.drinkingWaterFlag;
+		this.groundWaterFlag = p.groundWaterFlag;
+		this.riverWaterFlag = p.riverWaterFlag;
+	
+	}
+
+	
+	
+	
+	/**
+	 * writeOutDATimeseries() writes out the DaTimeseries data.
+	 */
+	public void writeOutDATimeseries()
+	{
+		
+		
+		String datum = this.simulationTime().getDay() + "." + this.simulationTime().getMonth() + "." + this.simulationTime().getYear();	
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(datum);
+		sb.append(";");
+		sb.append(this.getStatus()); 
+		sb.append(";");
+		sb.append((tu.dotToComma(this.getDrinkingWaterConsuption())));
+		sb.append(";");
+		sb.append(tu.dotToComma(this.getRiverWaterDemand()));
+		sb.append(";");
+		sb.append(tu.dotToComma(this.getGroundWaterDemand()));
+		sb.append(";");
+		sb.append(this.getOperationdays());
+		sb.append(";");
+		sb.append(this.getOperationDaysMonth());
+		sb.append(";");
+		sb.append(tu.dotToComma(this.getArtificalSnowVolumeSeason()));
+		sb.append(";");
+		sb.append(tu.dotToComma(this.getWaterStorageVolume()));
+		sb.append(";");
+		
+//		Mario fügt eine Ausgabefunktion ein (Beschneiungstage)
+		sb.append(this.getArtificalSnowDays());
+		sb.append(";");
+		sb.append(tu.dotToComma(this.potBeschneiungstage));
+		sb.append(";");
+		//Mario fügt eine Ausgabefunktion ein (geschmolzener Kunstschnee)
+		sb.append(tu.dotToComma(this.getArtificalSmelt()));
+		sb.append(";");
+		//Mario fügt eine Ausgabefunktion ein (gescholzenere Kunstschnee während der Beschneizeit)
+		sb.append(tu.dotToComma(this.getArtificalSmeltSeason()));
+		sb.append(";");
+		
+		//Mario fügt eine Ausgabefunktion ein (Sohneehoehe)
+		sb.append(tu.dotToComma(this.getSnowDepth()));
+		sb.append(";");
+		//Mario fügt eine Ausgabefunktion ein (WinterIndex)
+		sb.append(this.getSnowColdDay());
+		sb.append(";");
+		//Mario fügt eine Ausgabefunktion ein (Hitzetag)
+		sb.append(tu.dotToComma(this.getHotday()));
+		sb.append(";");
+		//Mario fügt eine Ausgabefunktion ein (Sommertag)
+		sb.append(tu.dotToComma(this.getSummerday()));
+		sb.append(";");
+		
+//		Mario fügt weitere Ausgabegrößen ein
+		sb.append(tu.dotToComma(this.getRainDay()));
+		sb.append(";");
+		
+		sb.append(tu.dotToComma(this.drinkintWaterFlag));
+		sb.append(";");
+		
+		sb.append(tu.dotToComma(this.riverWaterFlag));
+		sb.append(";");
+		
+		sb.append(tu.dotToComma(this.groundWaterFlag));
+		sb.append(";");
+		
+		String s = sb.toString();
+		
+			
+		try {
+		    outPutFile = new BufferedWriter(new FileWriter(outputFileName, true));
+			outPutFile.write(s);
+			outPutFile.newLine();
+		    outPutFile.flush();
+		    outPutFile.close();
+		    //File is cloesd because of DANUBIA Recovery
+	    
+		}
+	    catch (IOException e) { logger.warn("Error - " + e.toString() + "Fehler bei der DeepActorsAusgabedatei"); }
+
+	}
+	
+	
+	/**
+	 * initDeepActorsTimeSeriesWriter(String) initializes the timeseries writer.
+	 * @param s wrtie out Path.
+	 */
+	public void initDeepActorsTimeSeriesWriter(String s)
+	{
+		modelOutPath = s;
+	    boolean b = new File(modelOutPath + File.separator + "tourism" + File.separator + "da_timeseris").mkdirs();
+		outputFileName = modelOutPath + File.separator + "tourism" + File.separator + "da_timeseris"+ File.separator +"TourDATimeseries" + this.getId()+".txt";
+		
+		// Mario at eine neue Kategorie (Beschneiungstage eingeführt)
+		try {
+		      outPutFile = new BufferedWriter(new FileWriter(outputFileName, true));
+		      outPutFile.write("ProxelID="+this.myProxelloc+" Typ="+this.typeID+" ActorsID="+this.getId());
+		      outPutFile.newLine();
+		      outPutFile.write("Datum;Status;drinkingWater;RiverWater;GroundWater;Operationdays;OperationdaysMonth;ProducedArtificalSnow;FillLevelofWaterStorage;ArtificalSnowingDays;potArtSnowingDays;meltingArtSnow;meltingArtSnowBe;Snowdepth;SnowColdDay;HotDay;SummerDay;RainyDay;drinkingWaterFlag;riverWaterFlag;groundWaterFlag");
+		      outPutFile.newLine();
+		      outPutFile.flush();
+		      outPutFile.close();
+	    }
+	    catch (IOException e) {logger.warn("Error - " + e.toString() + "Fehler bei der DeepActorsAusgabedatei"); }		
+
+		
+		
+	}
+	
+	
+	
+	/**
+	 * Initializes the data from proxel
+	 * @param p	Specific proxel
+	 */
+	public void initDataFromProxels(TourismProxel p)
+	{
+		this.countryID = p.countryID;
+	}
+	
+	
+}

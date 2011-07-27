@@ -1,0 +1,2 @@
+<!ELEMENT type (name,type*)>
+<!ELEMENT name (#PCDATA)>

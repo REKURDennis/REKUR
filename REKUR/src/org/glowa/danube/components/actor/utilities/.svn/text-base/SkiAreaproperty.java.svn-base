@@ -1,0 +1,14 @@
+package org.glowa.danube.components.actor.tourism.utilities;
+
+/**
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ * Properties of a ski area
+ *
+ */
+public class SkiAreaproperty {
+	public float capacity = 13.8f;
+	public int location = 0;
+	public boolean artificalSnowed = false;
+	public float artificalSnowdArea = 0;
+	
+}

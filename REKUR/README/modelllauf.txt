@@ -1,0 +1,11 @@
+
+1. GetData am 1. des Monats
+Wenn Januar = Neue Feindaten
+2. Compute Wasserverbrauch berechnen
+3. Commit = Bereitstellen
+4. Get Data am 15. des Monats 
+Hole neuen Water-Supply
+5. Compute --> React
+6. Angepasster Water-Demand
+
+--> Zu 1

@@ -1,0 +1,94 @@
+package org.glowa.danube.components.actor.tourism.deeptourism;
+
+/**
+ * Water storage DeepActor with its variables and methods.
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ * 
+ */
+public class DT_WaterStorage {
+	
+	float actualVolume; //Aktueller Fuellstand in m3
+	float volume; //Maximale Kapazitaet in m3
+	float output;
+	
+	
+	/**
+	 * Initialization with maximal value.
+	 * @param maxvalue volume
+	 */
+	void init(float maxvalue)
+	{
+		actualVolume = maxvalue; //Speicher ist zu Beginn voll
+		volume = maxvalue; //Normierte Speichergoesse Diss Mario
+	}
+	
+	/**
+	 * fill the storge with water
+	 * @param fillDrinkingWater Drinking water in m3
+	 * @param fillRainWater rain water in m3
+	 * @param fillSurfaceWater surface water in m3
+	 * @param fillGroundWater ground water in m3
+	 */
+	void fill (float fillDrinkingWater,float fillRainWater, float fillSurfaceWater, float fillGroundWater)
+	{
+		actualVolume = actualVolume + fillDrinkingWater + fillRainWater + fillSurfaceWater + fillGroundWater;
+	
+		if (actualVolume >volume)
+		{
+			output = actualVolume - volume;
+			actualVolume = volume;
+		
+		}// If
+	}// Void Fuellen
+	
+	
+	/**
+	 * Returns the water output
+	 * @return output in m3
+	 */
+	float waterOutput()
+	{
+		return output;
+	}
+	
+	/** 
+	 * Takes out water off the storage
+	 * @param volume the volume
+	 * @return <code> true </code> is avialble <code> false <code> not avialble
+	 */
+	boolean takeout(float volume)
+	{
+		boolean kannEntnehmen = true;
+		
+		if (volume > actualVolume)
+		{
+			kannEntnehmen = false;
+		}
+		else
+		{
+			actualVolume = actualVolume - volume;
+		}
+		return kannEntnehmen;
+	}
+	
+	/**
+	 * Returns if the storage is full of water
+	 * @return <code> true </code> full <code> false </code> not full
+	 */
+	boolean isFull()
+	{
+		return (actualVolume >= volume);
+	}
+	
+	/**
+	 * extends water storage
+	 * @param factor extension factor
+	 */
+	void extend(float factor)
+	{
+		if (factor >= 1f)
+		{
+			volume = volume * factor;
+		}
+	}
+}

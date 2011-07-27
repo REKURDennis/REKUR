@@ -1,0 +1,92 @@
+package org.glowa.danube.components.actor.tourism.gui;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+
+import org.glowa.danube.components.actor.tourism.deeptourism.Tourism;
+
+/**
+ * Adds an additional GUI to turn on and of different write out options.
+ * @author Dennis Joswig
+ *
+ */
+public class GUI extends JFrame implements ActionListener{
+	
+	
+	private JButton da_Timeseries;
+	private JButton deepActorOut;
+	private JButton timeseries;
+	private JButton overall;
+	private Tourism tourism;
+	
+	public GUI(Tourism tourism){
+		this.tourism = tourism;
+		this.setSize(new Dimension(200,600));
+		this.setLayout(new FlowLayout());
+		this.add(da_Timeseries = new JButton("Da_Timeseries"));
+		this.add(deepActorOut = new JButton("deepActorOut"));
+		this.add(timeseries = new JButton("timeseries"));
+		this.add(overall = new JButton("overall"));
+		overall.setBackground(Color.GREEN);
+		deepActorOut.setBackground(Color.GREEN);
+		timeseries.setBackground(Color.GREEN);
+		da_Timeseries.setBackground(Color.GREEN);
+		this.setVisible(true);
+		overall.addActionListener(this);
+		deepActorOut.addActionListener(this);
+		timeseries.addActionListener(this);
+		da_Timeseries.addActionListener(this);
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		if(e.getSource() == da_Timeseries){
+			if(tourism.getDa_Timeseries()){
+				da_Timeseries.setBackground(Color.RED);
+				tourism.setDa_Timeseries(false);
+			}
+			else{
+				da_Timeseries.setBackground(Color.GREEN);
+				tourism.setDa_Timeseries(true);
+			}
+		}
+		if(e.getSource() == deepActorOut){
+			if(tourism.getDeepActorOut()){
+				deepActorOut.setBackground(Color.RED);
+				tourism.setDeepActorOut(false);
+			}
+			else{
+				deepActorOut.setBackground(Color.GREEN);
+				tourism.setDeepActorOut(true);
+			}
+		}
+		if(e.getSource() == timeseries){
+			if(tourism.getTimeseries()){
+				timeseries.setBackground(Color.RED);
+				tourism.setTimeseries(false);
+			}
+			else{
+				timeseries.setBackground(Color.GREEN);
+				tourism.setTimeseries(true);
+			}
+		}
+		if(e.getSource() == overall){
+			if(tourism.getOverall()){
+				overall.setBackground(Color.RED);
+				tourism.setOverall(false);
+			}
+			else{
+				overall.setBackground(Color.GREEN);
+				tourism.setOverall(true);
+			}
+		}
+		
+	}
+	
+}

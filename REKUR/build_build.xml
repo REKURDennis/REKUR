@@ -1,0 +1,136 @@
+
+<!-- the project name might be set to an arbitrary identifier -->
+<project name="sampleproject" default="compile" basedir=".">
+
+  <!-- change 'component' to your own component identifier -->
+  <property name="compId" value="tourism" />
+
+  <!-- set your component version here (instead of '0.0.0') -->
+  <property name="compVersion" value="2.3.7" />
+
+  <!-- set your auxiliary data version here (instead of '0.0.0') -->
+  <property name="auxVersion" value="2.3.7" />
+
+  <!-- the following properties are adjusted to the given directory structure -->
+  <!-- if you keep the dir structure it's not necessary to change any entry -->
+  <property name="debug" value="true" />
+  <property name="src.dir" value="src" />
+  <property name="classes.dir" value="classes" />
+  <property name="lib.dir" value="lib" />
+  <property name="delivery.dir" value="delivery" />
+  <property name="docs.dir" value="doc" />
+  <property name="auxiliary.dir" value="data" />
+  <property name="javadoc.dir" value="${docs.dir}/javadoc" />
+  <property name="javadoc.resources.dir" value="${docs.dir}/javadoc_resources" />
+  <property name="upload.dir" value="upload" />
+
+
+
+  <target name="clean" description="Delete class files only (use 'ant cleanall' to clean up everything).">
+    <echo message="Cleaning up (classes only) ..." />
+    <delete  includeEmptyDirs="true" failOnError="false">
+      <fileset dir="${classes.dir}" includes="**/*" />
+    </delete>
+  </target>
+
+  <target name="cleanall" description="Delete all generated files (classes, delivery, javadoc).">
+    <echo message="Cleaning up (classes, delivery, javadoc) ..." />
+    <delete  includeEmptyDirs="true" failOnError="false">
+      <fileset dir="${classes.dir}" includes="**/*" />
+      <fileset dir="${delivery.dir}" includes="**/*" />
+      <fileset dir="${javadoc.dir}" includes="**/*" />
+    </delete>
+  </target>
+
+  <target name="compile" description="Compile new/modified classes in directory src to the directory classes. To compile all classes use 'ant clean' first." >
+    <mkdir dir="${classes.dir}" />
+    <javac destdir="${classes.dir}" debug="${debug}">
+      <src path="${src.dir}" />
+      <classpath>
+        <pathelement location="${classes.dir}" />
+        <fileset dir="lib" includes="**/*.jar" />
+      </classpath>
+    </javac>
+    <copy todir="${classes.dir}">
+      <fileset dir="${src.dir}" includes="**/*.properties" />
+    </copy>
+  </target>
+
+  <target name="delivery" description="Create delivery structure for ftp server." depends="clean, compile">
+    <delete dir="${delivery.dir}" failOnError="false" />
+    <mkdir dir="${delivery.dir}" />
+    <zip destfile="${delivery.dir}/${compId}_${compVersion}.zip" >
+      <fileset dir=".">
+        <include name="config/*" />
+        <include name="doc/uml/**/*" />
+        <include name="src/**/*.java" />
+        <include name="src/**/*.properties" />
+        <include name="lib/*.jar" />
+        <include name="test/**/*" />
+        <include name="build.xml" />
+      </fileset>
+    </zip>
+    <zip destfile="${delivery.dir}/${compId}_${auxVersion}_aux.zip">
+      <fileset dir=".">
+        <include name="${auxiliary.dir}/**/*" />
+      </fileset>
+    </zip>
+    <copy file="history.txt" tofile="${delivery.dir}/${compId}_history.txt" />
+  </target>
+
+
+  <target name="javadoc" description="Generate new JavaDoc documentation." depends="clean, compile">
+    <mkdir dir="${javadoc.dir}" />
+    <javadoc packagenames="org.glowa.danube.*"
+      destdir="${javadoc.dir}"
+      windowtitle="${compId} API Documentation"
+      maxmemory="400000000" >
+      <sourcepath>
+        <pathelement path="${src.dir}" />
+      </sourcepath>
+      <classpath>
+        <fileset dir="${lib.dir}" includes="**/*.jar" />
+      </classpath>
+      <link offline="false"
+        href="http://java.sun.com/j2se/1.4.2/docs/api/" />
+      <doctitle><![CDATA[
+        <center>
+          <img src="logo.gif" />
+          <p />
+          <h1>${compId} API Documentation</h1>
+        </center>
+      ]]></doctitle>
+    </javadoc>
+
+    <!-- copy javadoc resources -->
+    <copy todir="${javadoc.dir}">
+      <fileset dir="${javadoc.resources.dir}" />
+    </copy>
+  </target>
+  
+  <target name="upload" description="Create upload structure for file server." depends="cleanall, javadoc">
+    <delete dir="${upload.dir}" failOnError="false" />
+    <mkdir dir="${upload.dir}" />
+       
+    <copy file="history.txt" tofile="${upload.dir}/${compId}_history.txt" />
+   
+    <zip destfile="${upload.dir}//${compId}_${auxVersion}_aux.zip">
+      <fileset dir=".">
+        <include name="${auxiliary.dir}/**/*" />
+      </fileset>
+    </zip>
+   
+    <zip destfile="${upload.dir}/${compId}_${compVersion}_src.zip" >
+      <fileset dir=".">
+        <include name="src/**/*.java" />
+        <include name="src/**/*.properties" />
+        <include name="test/**/*" />
+        <include name="metadata/**/*" />
+        <include name="doc/**/*" />
+        <include name="lib/*.jar" />
+        <include name="build.xml" />
+      </fileset>
+    </zip>
+  </target>
+  
+</project>

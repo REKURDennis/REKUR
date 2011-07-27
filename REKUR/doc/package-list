@@ -1,0 +1,9 @@
+org.glowa.danube.components.actor.tourism
+org.glowa.danube.components.actor.tourism.deeptourism
+org.glowa.danube.components.actor.tourism.deeptourism.action
+org.glowa.danube.components.actor.tourism.deeptourism.event
+org.glowa.danube.components.actor.tourism.deeptourism.plan
+org.glowa.danube.components.actor.tourism.deeptourism.swimmingpool
+org.glowa.danube.components.actor.tourism.dummy
+org.glowa.danube.components.actor.tourism.gui
+org.glowa.danube.components.actor.tourism.utilities

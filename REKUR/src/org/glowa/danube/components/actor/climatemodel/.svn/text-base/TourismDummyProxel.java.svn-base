@@ -1,0 +1,23 @@
+package org.glowa.danube.components.actor.tourism.dummy;
+
+import org.glowa.danube.simulation.model.proxel.AbstractProxel;
+
+
+/**
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ *
+ */
+public class TourismDummyProxel extends AbstractProxel{
+
+	private static final long serialVersionUID = 11745238;
+
+}
+
+
+/**
+ * $Log: TourismDummyProxel.java,v $
+ * Revision 1.1  2007/10/31 10:25:47  janisch
+ * Initial local CVS import.
+ *
+ *
+ */

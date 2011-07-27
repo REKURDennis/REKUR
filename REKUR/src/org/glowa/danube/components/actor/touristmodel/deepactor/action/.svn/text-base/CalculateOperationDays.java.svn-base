@@ -1,0 +1,21 @@
+package org.glowa.danube.components.actor.tourism.deeptourism.action;
+
+import org.glowa.danube.deepactors.actors.action.*;
+import org.glowa.danube.components.actor.tourism.deeptourism.*;
+
+
+/**
+ * @author Alex Dinngeldey
+ * @see AbstractAction
+ */
+public class CalculateOperationDays extends AbstractAction<DT_AbstractDeepActor>{
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.actors.action.AbstractAction#execute()
+	 */
+	protected void execute() {
+		super.execute();
+		//environment().addOneOperationDay();
+		
+	}
+}

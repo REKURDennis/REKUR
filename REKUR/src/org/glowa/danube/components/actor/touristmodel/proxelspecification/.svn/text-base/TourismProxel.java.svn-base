@@ -1,0 +1,554 @@
+
+package org.glowa.danube.components.actor.tourism;
+
+import org.glowa.danube.simulation.model.proxel.AbstractProxel;
+
+
+//import java.util.*;
+
+/** 
+ * Is the class for one Tourismproxel object with its values and methods.
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ * 
+ * 
+ * 
+ */
+
+public class TourismProxel extends AbstractProxel
+{
+	
+	public static final long serialVersionUID = 1;
+	
+	
+	//Wasserbezogene Variablen Intern
+	
+	public float drinkingWaterDemand = 0f; //Wasserverbrauch
+
+	public float drinkingWaterKumul = 0f;
+    
+    public float tempWatSup = 0f;
+    
+    public float riverWaterDemand = 0f;
+    
+    public float riverWaterSupply = 0f;
+    
+    public float groundWaterDemand = 0f;
+    
+    public int drinkingWaterFlag = 1;
+   
+    public int riverWaterFlag = 1;
+    
+    public int groundWaterFlag = 1;
+    
+    public float wasteWater = 0f;
+    
+    public float sunduranceDaily = 8.0f;
+    
+    public float windVelocity = 0.0f;
+    
+    
+    public int gmt = 1; // Szenariovariable Gesellsch. Megatrend 1 = Base; 2=Liberal;3=Nachhaltig
+    
+   
+    public float drinkingWaterDemandGemeindem3;
+   
+    public float drinkingWaterDemandDeepActorm3;
+    
+    //Wasserbezogene Variablen Intern
+    public float yearlyDemandNearbyRecreation = 0;  
+    public float connectionWater = 1f;
+    public float cumulatedDrinkingWaterDemand = 0;
+    public float cumulatedUseWaterDemand = 0;
+    public float monthlyDemandSimmingpools = 0;
+    public long population = 1;
+    
+    //Klimabezogene Daten
+    
+    public  float snowDepth;
+    public float dailyMaxTemperatureInProxel;
+    public float dailyMeanTemperature;
+    public float[] maxTempArray;
+    public int maxTempArrayCounter;
+    public float minFeuchtkugeltemp;
+    public float percipitationSumDay = 0f;
+    public float evapoTranspiration = 0f;
+   
+    public float monthAvTemp = 0f;
+    
+    public int golfCourseSize;
+    
+    public float monthAvCumulated = 0f;
+    public float monthAvCounter = 0f;
+  
+    
+    
+    public long bedNights = -9999; //Uebernachtungszahlen
+    public long annualBedNights = 0;
+   
+    public long beds; //Anzahl der Betten
+    
+    
+    
+    //Touristische Variablen
+    
+    public long gemid; // gemid = Gemeinde ID
+    
+    
+    
+    public long kreisid; // Kreis ID
+    
+    public float snowCanon; //Schneekanonen
+    
+    public int gemtyp; //Gemeindetyp
+   
+    public int countryID;// Land
+    public float partOfPopKreis; //Bevoelkerungsantei des Kreises
+    public float partOfPopGemeinde; //Bevoelkerungsanteil der Gemeinde
+    
+    //Deep-Actor Daten
+    public int skiingAreaStatus;
+    public float skiAreaCapacity;
+    public int skiareaMonthlyOperationDays;
+    public int skiAreaMonthlyClosedDays;
+    public float artificalSnowedArea;
+    public boolean hasArtSnowingCapacities;
+    public boolean swimmingpoolWaterProblems;
+    public float fillHeightWaterStorage;
+    public int hotDay = 0;
+	public int summerDay = 0;
+	public int iceDay = 0;	// (Tmax pro Tag < 0)
+    public int veryHotDay = 0;// SehrHeissenTag ein (Tmax pro Tag >= 35°C)
+	public int extremeHotDay = 0;//ExtremHeissenTag ein (Tmax pro Tag >= 40°C)
+	public int rainyDay = 0;	//RegenTag ein (Tmax pro Tag >= 40°C)
+
+	
+	//Mario führt den Wärme/Regenquotinenten ein (Tmax/NS)
+	//Dieser Quotient bezieht sich auf die touristischen Aktivitäten im Sommer
+	public float tempRainQuot = 0;
+		
+	//Mario führt neue Größen zum Attraktivitätsspektrum ein
+	public int beachSwimming = 0;
+	public int swimmingSunbath = 0;
+	public float outdoorOptimalTemp = 0;
+	public float outdoorOptimalTechn = 0;
+	public float golfTemp = 0;
+	public float golfTechn = 0;
+	public int  motorboat = 0;
+	public int sailing = 0;
+	public int waterSki = 0;
+	public int strainActivities = 0;
+	public int passActivities = 0;
+	public int alpinerSkilaufTemp = 0;
+	public int alpinerSkilaufTechn = 0;
+	
+	//Die folgenden beiden Werte beziehen sich auf die Monate
+	public float summerIndexDays = 0;
+	public float summerIndexQuot = 0;
+	
+	
+	//Mario führt aggregierte Sommertage und Regenstage pro Monat ein
+	public float summerdaysMonth = 0;
+	public float rainydaysMonth = 0;
+	
+   
+  
+ 
+  
+  
+  /**
+ * 
+ */
+  
+ public TourismProxel()
+ {
+	 
+ }
+  
+  
+/**
+ * Initializes all variables and stes default values.
+ */
+public void initAndReset()
+  {
+  	drinkingWaterDemand = 0f; //Wasserverbrauch
+	tempWatSup = 0f;
+	riverWaterDemand = 0f;
+	riverWaterSupply = 0f;
+	drinkingWaterFlag = 1;
+	riverWaterFlag = 1;
+	groundWaterFlag = 1;
+	
+	bedNights = -9999; //Uebernachtungszahlen
+	beds = 0; //Anzahl der Betten
+	gemid = 0; // gemid = Gemeinde ID
+	kreisid = 0; // Kreis ID
+	snowCanon = 0; //Schneekanonen
+	gemtyp = 0; //Gemeindetyp
+	countryID = 0;// Land
+	partOfPopKreis = 0; //Bevoelkerungsantei des Kreises
+	partOfPopGemeinde = 0; //Bevoelkerungsanteil der Gemeinde
+	yearlyDemandNearbyRecreation = 0;
+	connectionWater = 1;
+	minFeuchtkugeltemp = 0f;
+	percipitationSumDay = 0f;
+	dailyMeanTemperature = 0f;
+	
+	cumulatedDrinkingWaterDemand = 0;
+	cumulatedUseWaterDemand = 0;
+	snowDepth = 0f;
+	skiingAreaStatus = 0;
+	skiAreaCapacity = 0f;
+	wasteWater = 0f;
+	fillHeightWaterStorage = 0f;
+	
+	maxTempArray = new float[7];
+	
+	
+	for (int i = 0; i < maxTempArray.length; i++)
+		{maxTempArray[i] = 273.0f;}
+	
+	maxTempArrayCounter = 1;
+	
+		
+ 	
+  }
+
+  
+//********************************************************************
+/** Returns the drinking water demand
+ * @return drinkingWater in m3
+ */
+
+  public float getDrinkingWaterDemand()
+  {
+    return this.drinkingWaterDemand;
+  }
+
+  /** Set the drinkking water demand
+ * @param DrinkingWater  in m3
+ */
+public void setDrinkingWaterDemand( float DrinkingWater )
+  {
+    this.drinkingWaterDemand = DrinkingWater;
+  }
+  
+  
+  
+//********************************************************************
+/**Returns the bed nights
+ * @return Number of bed nights per month
+ */
+
+  public long getBedNights()
+  {
+    return this.bedNights;
+  }
+
+
+  /** Sets the bed nights per month
+ * @param d Number of bed nights per month
+ */
+public void setBedNights(long d)
+  {
+    this.bedNights = d;
+  }
+
+
+//********************************************************************
+  /** Returns the number of beds
+ * @return Number of beds
+ */
+
+  public long getBetten()
+  {
+      return this.beds;
+  }
+
+  /** Sets the number of beds
+ * @param d Number of beds
+ */
+public void setBetten(long d)
+  {
+      this.beds = d;
+  }
+  
+//********************************************************************
+  /** Returns the gemId (Geminede Id)
+ * @return GemID of Proxels
+ */
+ 
+  public long getGemid()
+  {
+      return this.gemid;
+  }
+  /** Sets gemId
+ * @param d GemID of Proxels
+ */
+
+  public void setGemid(long d)
+  {
+      this.gemid = d;
+  }
+
+
+//********************************************************************
+  /** Returns kreisId
+ * @return KreisID
+ */
+ 
+  public long getKreisid()
+  {
+      return this.kreisid;
+  }
+
+  /** Sets KreiId
+ * @param d KreisID
+ */
+  
+public void setKreisid(long d)
+  {
+      this.kreisid = d;
+  }
+
+
+ 
+
+//********************************************************************
+  /** Returns the artifical snowed area
+ * @return area in km2
+ */
+  
+  public float getSnowca()
+  {
+      return this.snowCanon;
+  }
+
+  /** Sets the artifical snoed area
+ * @param d Size in km2
+ */
+public void setSchneeka(float d)
+  {
+      this.snowCanon = d;
+  }
+
+//********************************************************************
+  /**  Returns the gemType
+ * @return GemTyp
+ */
+ 
+  public int getGemtyp()
+  {
+      return this.gemtyp;
+  }
+
+  /** Sets the gemType
+ * @param d GemTyp
+ */
+public void setGemtyp(int d)
+  {
+      this.gemtyp = d;
+  }
+
+
+//********************************************************************
+  /**Returns the countryID
+ * @return <code>1</code>Germany, <code>2</code>Austria, <code>3</code>Swiss
+ */
+  
+   public int getCountry()
+   {
+	   return this.countryID;
+   }
+
+   /**Sets the country
+ * @param d <code>1</code>Germany, <code>2</code>Austria, <code>3</code>Swiss
+ */
+   
+public void setCountry(int d)
+   {
+	   this.countryID = d;
+   }
+
+// ********************************************************************
+
+ /** Returns the part of poputlation in one Kreis
+ * @return Part
+ */
+   public float getPartOfPopKreis()
+   {
+	   return this.partOfPopKreis;
+   }
+
+   /** Sets the part of population in one kreis
+ * @param d Part of population
+ */
+public void setPartOfPopKreis(float d)
+   {
+	   this.partOfPopKreis = d;
+   }
+   
+   
+// ********************************************************************
+/** Returns the part of poputlation in one Gemeinde
+ * @return Part
+ */
+
+	 public float getPartOfPopGemeinde()
+	 {
+		 return this.partOfPopGemeinde;
+	 }
+
+	 /** Sets the part of population in one gemeinde
+	  * @param d Part of population
+	  */
+
+	public void setPartOfPopGemeindeGemeinde(float d)
+	 {
+		 this.partOfPopGemeinde = d;
+	 }
+
+
+   
+//	********************************************************************
+
+	/** 
+	 * returns the water demand of nearby recreation areas.
+	* @return Water demand in m3
+	*/
+	   
+	public float getYearlyDemandNearbyRecreation()
+	{
+		return this.yearlyDemandNearbyRecreation;
+	}
+
+	   
+
+	/** Sets the water demand of nearby recreation areas.
+	 * @param d Water demand in m3
+	 */
+
+		public void setYearlyDemandNearbyRecreation(float d)
+		 {
+			 this.yearlyDemandNearbyRecreation = d;
+		 }
+
+	   
+//	***********************************************************************************		   
+  
+		/** Returns the cumulated drinking water demand
+		  * @return float Demand in m3
+		  */
+	public float getCumulatedDrinkingWaterDemand()
+	{
+		return this.cumulatedDrinkingWaterDemand;
+	}
+	
+  /** Returns the cumulated use water demand
+  * @return float Demand in m3
+  */
+  
+	public float getCumulatedUseWaterDemand()
+	{
+		return this.cumulatedUseWaterDemand;
+	}
+	
+			
+  /**
+   * Calculation of touristic water demand within proxel
+ * @param month 
+ * @param year  
+ * @param day 
+ */
+
+	
+  public void preCompute(int month,int year, int day)
+  {
+	  
+	  /*
+	   * Berechne gleitenden Durchschnitt fuer die Schwimmbaeder
+	   */
+	  maxTempArray[maxTempArrayCounter] = dailyMaxTemperatureInProxel;
+	  maxTempArrayCounter = maxTempArrayCounter +1;
+	  if (maxTempArrayCounter >= maxTempArray.length)
+	  		{maxTempArrayCounter = 0;}
+	  
+	  if ((month==11)&&(day==1))
+	  {
+		  hotDay = 0;
+		  summerDay = 0;
+	  }
+
+	  
+	  if (this.dailyMaxTemperatureInProxel >= 298.15)
+	 	{summerDay++;
+	  
+	 		if (this.dailyMaxTemperatureInProxel >= 303.15)
+	 			{hotDay++;
+	 			 	if (this.dailyMaxTemperatureInProxel >= 308.15)
+	 			 		{veryHotDay++;}
+	 			}
+	 	}
+	  else
+	  {
+		  if (dailyMaxTemperatureInProxel < 273.15)
+		 	{iceDay++;}
+	  }
+	  
+	if (percipitationSumDay >= 1.0)
+	 	{rainyDay++;}
+	
+	 
+	  
+	 if (day == 1)
+	 {
+		 monthAvCumulated = dailyMeanTemperature;
+		 monthAvCounter = 1;
+	 } else
+	 {
+		 monthAvCumulated = monthAvCumulated + dailyMeanTemperature;
+		 monthAvCounter++;
+	 }
+	 
+	  this.monthAvTemp = monthAvCumulated / (float)monthAvCounter;
+	  
+		  
+  }
+  
+  
+  /**
+   * PostCompute of water demand
+ * @param month 
+ * @param year
+ * @param day
+ */
+public void postCompute(int month,int year, int day)
+  {
+	  
+	  // Berechnungen des Wasserverbrauchs
+	  // Immer am letzten Tag des Monats
+	 
+		  // Berechnung wieviele Tage der Monat hat, Schaltjahr wird ignoriert
+	      float monmul = 31f;	 		
+	      if (month==2)
+			{monmul = 28f;}
+	      else
+			if ((month == 4)||(month == 6)||(month == 9)||(month == 11))
+				{monmul = 30f;}
+			else
+				{monmul = 31f;}
+		
+	    
+	      
+	    
+        	drinkingWaterDemand = 
+        		(drinkingWaterDemandGemeindem3 +
+        				drinkingWaterDemandDeepActorm3)
+        				/ (monmul*24f*60f*60f);
+                	
+         	drinkingWaterDemandGemeindem3 = 0;
+        	drinkingWaterDemandDeepActorm3 = 0;
+	  
+  }
+}
+
+

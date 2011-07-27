@@ -1,0 +1,324 @@
+package org.glowa.danube.components.actor.tourism;
+
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+
+import org.glowa.danube.components.actor.tourism.deeptourism.Tourism;
+import org.glowa.danube.metadata.AreaMetaData;
+import org.glowa.danube.simulation.model.proxel.ProxelTable;
+import org.glowa.danube.utilities.internal.DanubiaLogger;
+
+
+
+/*   
+ * import org.glowa.danube.database.*;
+import org.glowa.danube.datatypes.*;
+import org.glowa.danube.space.*;
+
+
+*/
+
+
+
+/** TourismProxelTable.java
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ * 
+ * 
+ * Tourism Proxel-Table: Vector with all proxel
+ * 
+ * 
+ */
+
+
+public class TourismProxelTable 
+{
+	private static DanubiaLogger logger = DanubiaLogger.getDanubiaLogger(Tourism.class);
+	private ProxelTable<TourismProxel> myPT;
+	static final long serialVersionUID = 1;
+	
+
+	/**
+	 * getTourismProxel(int) returns the proxel with given number
+	 * @param pid Number of proxel
+	 * @return Proxel object
+	 */
+	public TourismProxel getTourismProxel(int pid)
+	{
+		return myPT.getProxel(pid);
+		
+	}
+	
+	
+	/**
+	 * Constructor of class
+	 * @param amd Meta Data
+	 * @param pt Tabel to be fit in
+	 */
+	public TourismProxelTable(AreaMetaData amd, ProxelTable<TourismProxel> pt)
+	{
+		myPT = pt;
+
+		
+	}
+  
+  /** Reads in proxel Meta-Daten from data/actor/proxel/tourism/proxeltable.txt 
+   * Errors cause values 0
+ * 
+ */
+  
+  
+public void importMetaData()
+	{
+	
+	logger.debug("Lese Proxel-Meta-Daten ein...");
+
+	 int iterator;
+	 String line;
+	 
+	 
+	 	 
+	 try{
+	 
+	  BufferedReader reader = new BufferedReader(new FileReader("data" +
+		  File.separator + "tourism" +
+		  File.separator + "proxeltable.txt"));
+		 
+		 reader.readLine(); 							//Erste Zeile hat nur Datei-Infos!
+
+		 while ( (line = reader.readLine()) != null) { //Liest Zeile aus bis Datei-Ende
+
+// Variablendeklaration = 1. Hilfsvariable StringBuffer fuer jerde einzelne Variable
+		   StringBuffer ST_pid = new StringBuffer(10); //Spalte 1 = PID
+		   StringBuffer ST_land = new StringBuffer(10); //Spalte 2 = Land
+		   StringBuffer ST_kreisid = new StringBuffer(10); //Spalte 3 = Kreis ID
+		   StringBuffer ST_gemid= new StringBuffer(12); //Spalte 4 = Gemeinde ID
+		   StringBuffer ST_BevAntKreis = new StringBuffer(10); //Spalte 5 = Bevoelkerungsanteil Kreis
+		   StringBuffer ST_BevAntGemeinde = new StringBuffer(10); //Spalte 6 = Bevoelkerungsanteil Gemeinde
+		   StringBuffer ST_golf = new StringBuffer(10); //Spalte 7 = Golfplaetze
+		   StringBuffer ST_schnee = new StringBuffer(10); //Spalte 8 = Schneekanone
+		   StringBuffer ST_schwimm = new StringBuffer(10); //Spalte 9 = Schwimmbad
+		  		  		 
+// ****** Schritt 1 Alle einzelnen Variablen pro Zeile in einen String
+		 
+		   iterator = 0;
+		   //Spalte 1 Auslesen
+		   while (line.charAt(iterator)!= ';' && line.charAt(iterator) != '\t'&&  line.charAt(iterator) != ' '){ //solange wir nicht beim ; sind
+			 ST_pid.append(line.charAt(iterator)); //hänge alle Zeichen vor dem ; aneinander
+			 iterator++;
+		   } //while
+		   iterator++; // ; Ueberspringen
+	
+		   //Spalte 2 Auslesen
+		   while (line.charAt(iterator)!= ';' && line.charAt(iterator) != '\t'&&  line.charAt(iterator) != ' ') { 
+			 ST_land.append(line.charAt(iterator));
+			 iterator++;
+		   } //while
+		   iterator++;
+			  
+		   //Spalte 3
+		   while (line.charAt(iterator)!= ';' && line.charAt(iterator) != '\t'&&  line.charAt(iterator) != ' ') { 
+			 ST_kreisid.append(line.charAt(iterator));
+			 iterator++;
+		   } //while
+		   iterator++;
+	
+		   //Spalte 4
+		   while (line.charAt(iterator)!= ';' && line.charAt(iterator) != '\t'&&  line.charAt(iterator) != ' ') {
+			 ST_gemid.append(line.charAt(iterator));
+			 iterator++;
+		   } //while
+		   iterator++;
+	
+		   //Spalte 5
+		   while (line.charAt(iterator)!= ';' && line.charAt(iterator) != '\t'&&  line.charAt(iterator) != ' ') { 
+			 ST_BevAntKreis.append(line.charAt(iterator));
+			 iterator++;
+		   } //while
+		   iterator++;
+		  
+		   //Spalte 6
+		   while (line.charAt(iterator)!= ';' && line.charAt(iterator) != '\t'&&  line.charAt(iterator) != ' ') { //liest die LKR aus
+			 ST_BevAntGemeinde.append(line.charAt(iterator));
+			 iterator++;
+		   } //while
+		   iterator++;
+
+		   //Spalte 7
+		   while (line.charAt(iterator)!= ';' && line.charAt(iterator) != '\t'&&  line.charAt(iterator) != ' ') { //liest die LKR aus
+			 ST_golf.append(line.charAt(iterator));
+			 iterator++;
+		   } //while
+		   iterator++;
+		  
+		   //Spalte 8
+		   while (line.charAt(iterator)!= ';' && line.charAt(iterator) != '\t'&&  line.charAt(iterator) != ' ') { //liest die LKR aus
+			ST_schnee.append(line.charAt(iterator));
+			 iterator++;
+		   } //while
+		   iterator++;
+		   
+		   //Spalte 9
+		   while (iterator < line.length() && line.charAt(iterator) != ';' && line.charAt(iterator) != '\t' &&  line.charAt(iterator) != ' '&&  line.charAt(iterator) != '\n'&&  line.charAt(iterator) != '\r') { 
+			 ST_schwimm.append(line.charAt(iterator));
+			 iterator++;
+		   } //while
+		   iterator++;
+		  
+//	2. Hilfsvariable fuer den Typecast schon die echten Datentypen		  
+		   int I_pid = 0; // Spalte 1
+		   int I_land = 0; // Spalte 2
+		   long L_kreisid = 0; // Spalte 3
+		   long L_gemid = 0; // Spalte 4
+		   float F_BevAntKreis = 0f; // Spalte 5
+		   float F_BevAntGemeinde = 0f; // Spalte 6
+		   int I_golf = 0; // Spalte 7
+		   float F_schnee = 0; // Spalte 8
+		  
+		  
+			 try { I_pid = Integer.parseInt(ST_pid.toString());} //try
+			 catch (NumberFormatException nfe) {logger.fatal("Falscher Datentyp in proxeltable.txt - Spalte 1 - Zeile " + line.toString());} //catch			
+			
+			 try {I_land = Integer.parseInt(ST_land.toString());} //try
+			 catch (NumberFormatException nfe) {logger.fatal("Falscher Datentyp in proxeltable.txt - Spalte 2 - Zeile " + line.toString());} //catch			
+			
+			 try {L_kreisid = Long.parseLong(ST_kreisid.toString());} //try
+			 catch (NumberFormatException nfe) {logger.fatal("Falscher Datentyp in proxeltable.txt - Spalte 3 - Zeile " + line.toString());} //catch			
+			
+			 try {L_gemid = Long.parseLong(ST_gemid.toString());} //try
+			 catch (NumberFormatException nfe) {logger.fatal("Falscher Datentyp in proxeltable.txt - Spalte 4 - Zeile " + line.toString());} //catch			
+			
+			 try {F_BevAntKreis = Float.parseFloat(ST_BevAntKreis.toString());} //try
+			 catch (NumberFormatException nfe) {logger.fatal("Falscher Datentyp in proxeltable.txt - Spalte 5 - Zeile " + line.toString());} //catch			
+			
+			 try {F_BevAntGemeinde = Float.parseFloat(ST_BevAntGemeinde.toString());} //try
+			 catch (NumberFormatException nfe) {logger.fatal("Falscher Datentyp in proxeltable.txt - Spalte 6 - Zeile " + line.toString());} //catch			
+
+			 try {I_golf = Integer.parseInt(ST_golf.toString());} //try
+			 catch (NumberFormatException nfe) {logger.fatal("Falscher Datentyp in proxeltable.txt - Spalte 7 - Zeile " + line.toString());} //catch			
+
+			 try {F_schnee = Float.parseFloat(ST_schnee.toString());} //try
+			 catch (NumberFormatException nfe) {logger.fatal("Falscher Datentyp in proxeltable.txt - Spalte 8 - Zeile " + line.toString());} //catch			
+
+	
+			
+						 if  (myPT.getProxel(I_pid).isInside()) // Spalte 1
+						 {
+							 myPT.getProxel(I_pid).setCountry(I_land); // Spalte 2
+							 myPT.getProxel(I_pid).setKreisid(L_kreisid); // Spalte 3
+							 myPT.getProxel(I_pid).setGemid(L_gemid); // Spalte 4
+							 myPT.getProxel(I_pid).setPartOfPopKreis(F_BevAntKreis); // Splate 5
+							 myPT.getProxel(I_pid).setPartOfPopGemeindeGemeinde(F_BevAntGemeinde); // Spalte 6
+							 myPT.getProxel(I_pid).golfCourseSize = I_golf;// Spalte 7
+							 myPT.getProxel(I_pid).setSchneeka(F_schnee);// Spalte 8
+						 }
+			  
+		 } //while
+		 reader.close();
+		 reader = null;
+		  }
+		  catch(Exception e)
+		  {
+			logger.fatal("Dateieinlesen aus proxels.txt fehlgeschlagen" + e.getLocalizedMessage());
+		  }
+    	
+	}
+	
+	/** Validates proxel data
+	 * 0 = ok ProxelID with proxel caused one error
+	 */
+	public void checkImportedProxelData()
+	{
+		
+		logger.debug("Beginn mit der Uerberpruefung der Import-Daten - Checking imported data...");
+		//Keine Importierten Daten von anderen Modellen
+		int my_proxID;
+		int ErrorProxel = 0;
+
+		//Ueberpruefung der internen Daten!
+		for( int i=0; i< myPT.insidePIDs().length; i++ )
+		{
+			my_proxID =  myPT.insidePIDs()[i];
+			TourismProxel p = myPT.getProxel(my_proxID);
+
+			if (p.getBedNights() > 450000)
+			{
+				logger.warn("Wrong data - Bednights zu hoch  Wert = " + p.getBedNights()+" in Proxel "+ my_proxID);
+				myPT.getProxel(my_proxID).setBedNights(0);
+				logger.warn("Wrong data manipulated - Bednights auf 0 gesetzt in Proxel "+ my_proxID);
+				ErrorProxel = my_proxID;
+			}
+
+			if (p.getBetten() > 18000)
+			{
+				logger.warn("Wrong data - Betten zu hoch Wert = " + p.getBetten() + " in Proxel "+ my_proxID);
+				myPT.getProxel(my_proxID).setBetten(0);
+				logger.warn("Wrong data manipulated - Betten auf 0 gesetzt in Proxel "+ my_proxID);
+				ErrorProxel = my_proxID;
+			}
+
+			if (p.golfCourseSize > 40)
+			{
+				logger.warn("Wrong data - Golf zu hoch  Wert = " + p.golfCourseSize + " in Proxel "+ my_proxID);
+				myPT.getProxel(my_proxID).golfCourseSize = 0;
+				logger.warn("Wrong data manipulated - Golf auf 0 gesetzt in Proxel "+ my_proxID);
+				ErrorProxel = my_proxID;
+			}
+
+
+			if (p.getSnowca() > 350000)
+			{
+				logger.warn("Wrong data - Schneekanone zu hoch Wert = " + p.getSnowca()+" in Proxel "+ my_proxID);
+				myPT.getProxel(my_proxID).setSchneeka(0);
+				logger.warn("Wrong data manipulated - Schneekanone auf 0 gesetzt in Proxel "+ my_proxID);
+				ErrorProxel = my_proxID;
+			}        	
+			}// For   
+
+        
+
+		logger.warn("... Ende der Ueberpruefung der Import-Daten - checking imported data finished!");
+
+	
+	
+	}// checkImportedProxelData
+	
+	/* Schreibt die Kumulierten Tourismus-Daten in die Datei modelout/text/actor/toursim/kumjahr_*JAHR*_*MONAT*.txt
+	 * @param monat
+	 * @param jahr
+	 */
+	
+/*	public void LogKumulierteProxelDaten(int monat,int jahr)
+	{
+
+		try
+		{
+				
+		DataOutputStream dos = new DataOutputStream(
+		new FileOutputStream("modelout" + File.separator + "text" + File.separator +
+			"actor" + File.separator + "tourism" + File.separator +"kumjahr_"+jahr+"_"+monat+".txt"));
+            
+		dos.writeBytes("pid"+"\t"+"Gmeinde ID"+"\t"+"Kum_Trinkwassernachfrage in m3/Jahr!!!"+"\t"+"Kum_Uebernachtungen"+"\n");
+		
+		
+			for (int i=0; i< myAmd.getAreaNProxels(); i++ ) {
+						//Speicherplatzsparen nur gueltige Proxel werden Ausgegeben!!
+						if  (myPT.getProxel(i).isInside()){
+						dos.writeBytes(myPT.getProxel(i).pid()+"\t"+myPT.getProxel(i).getGemid()+"\t"+myPT.getProxel(i).getKumulierteTrinkwassernachfrage()+"\t");
+			
+						dos.writeChar('\n');
+						}// if			
+		}//for
+		dos.close();
+		}//try
+		catch(Exception e)
+		{
+			logger.warn("Fehler bei der Ausgabe der Kumulierten Dateien: "+e.getLocalizedMessage());
+		}//catch
+
+		
+	}
+*/
+}
+

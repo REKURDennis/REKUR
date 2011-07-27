@@ -1,0 +1,1624 @@
+package org.glowa.danube.components.actor.tourism.deeptourism;
+
+import java.awt.Color;
+import java.io.File;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.glowa.danube.components.actor.interfaces.ActorControllerToTourist;
+import org.glowa.danube.components.actor.interfaces.TouristToActorController;
+import org.glowa.danube.components.actor.tourism.TourismGemeinde;
+import org.glowa.danube.components.actor.tourism.TourismGemeindeTable;
+import org.glowa.danube.components.actor.tourism.TourismProxel;
+import org.glowa.danube.components.actor.tourism.TourismProxelTable;
+import org.glowa.danube.components.actor.tourism.TourismResult;
+import org.glowa.danube.components.actor.tourism.deeptourism.swimmingpool.DT_AbstractSwimmingPool;
+import org.glowa.danube.components.actor.tourism.deeptourism.swimmingpool.DT_WaterPark;
+import org.glowa.danube.components.actor.tourism.deeptourism.swimmingpool.DT_OutdoorPool;
+import org.glowa.danube.components.actor.tourism.deeptourism.swimmingpool.DT_IndoorPool;
+import org.glowa.danube.components.actor.tourism.deeptourism.swimmingpool.DT_InAndOutdoorPool;
+import org.glowa.danube.components.actor.tourism.deeptourism.swimmingpool.DT_ThermalSpa;
+import org.glowa.danube.components.actor.tourism.gui.GUI;
+import org.glowa.danube.components.actor.tourism.utilities.Skiareapropertyreader;
+import org.glowa.danube.components.actor.tourism.utilities.TourismUtilities;
+import org.glowa.danube.datatypes.SkiingAreaStatusType;
+import org.glowa.danube.deepactors.model.AbstractActorModel;
+import org.glowa.danube.tables.FloatDataTable;
+import org.glowa.danube.tables.IntegerDataTable;
+import org.glowa.danube.tables.LongDataTable;
+import org.glowa.danube.tables.MassPerAreaTable;
+import org.glowa.danube.tables.PopulationNumberTable;
+import org.glowa.danube.tables.SkiingAreaCapacityTable;
+import org.glowa.danube.tables.SkiingAreaStatusTypeTable;
+import org.glowa.danube.tables.TemperatureTable;
+import org.glowa.danube.tables.WaterFluxTable;
+import org.glowa.danube.utilities.datacheck.CheckTypes;
+import org.glowa.danube.utilities.datacheck.ICheckFailedLogger;
+import org.glowa.danube.utilities.execution.GetDataEngine;
+import org.glowa.danube.utilities.execution.GetDataTask;
+import org.glowa.danube.utilities.execution.ProvideEngine;
+import org.glowa.danube.utilities.execution.ProvideTask;
+import org.glowa.danube.utilities.graphics.ImageGenerator;
+import org.glowa.danube.utilities.internal.DanubiaLogger;
+import org.glowa.danube.utilities.output.TimeSeriesWriter;
+import org.glowa.danube.utilities.time.DanubiaCalendar;
+import org.glowa.danube.utilities.visualization.LocalVisualization;
+
+/**
+ * The class <tt>DT_model</tt> is the mainclass of the subcomponent Tourismus of component actor .
+ * 
+ * 
+ * 
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ */
+
+
+
+public class Tourism extends AbstractActorModel<TourismProxel> 
+implements 	TouristToActorController,  TourismResult
+{
+  static final long serialVersionUID = 1;
+  public TourismProxelTable tourismProxelTable = null;
+  
+  public int gmt = 1; // 
+  public int mas = 0;
+  public int mag = 0;
+  
+  private boolean logging = true;
+  private int[] pids = null;
+  private ActorControllerToTourist controller;  
+  private TourismGemeindeTable tourismGemeindeTable = null;
+  private WaterFluxTable drinkingWater;
+  private MassPerAreaTable accumulatedSnowTable = null;
+  private PopulationNumberTable populationTable = null;
+  private IntegerDataTable drinkingWaterFlagTable = null;
+  private IntegerDataTable groundWaterFlagTable = null;
+  private IntegerDataTable riverWaterFlagTable = null;
+  private WaterFluxTable riverWaterDemandExportTable = null;
+  private WaterFluxTable groundWaterDemandExportTable = null;
+  private WaterFluxTable wasteWaterDemandExportTable = null;
+  private FloatDataTable fillLevelWaterStorageExportTable = null;
+  private FloatDataTable artSnoedAreaExportTable = null;
+  private LongDataTable bedNights = null;
+  private PopulationNumberTable annualBedNigths = null;
+  private SkiingAreaStatusTypeTable DTSkiinAreaStatusTable = null;
+  private SkiingAreaCapacityTable DTSkingAreaCapacityTable = null;
+  private FloatDataTable DTSkiinAreaStatusFloatTable = null;
+  private FloatDataTable bedNightsFloat = null;
+  private TemperatureTable dailyMaxTemperature;
+  private TemperatureTable dailyMeanTemperature;
+  private TemperatureTable minFeuchtkugelTemp;
+  private TemperatureTable airTemperatureMonthlyMeanTable;
+  
+  private MassPerAreaTable precipitationDailySumTable = null;
+  private MassPerAreaTable evapoTransTable = null;
+  
+  private FloatDataTable sunduranceDailySumTable = null;
+  
+  private FloatDataTable avWindVelocityTable = null;
+  private boolean readInit = true;
+  private ImageGenerator imGen1 = null;
+  private String imageOutPath;
+  private TourismUtilities utility = new TourismUtilities();
+  private TimeSeriesWriter[] tsw;
+  public ICheckFailedLogger myCheckFailedLogger;
+  private static DanubiaLogger logger = DanubiaLogger.getDanubiaLogger(Tourism.class);
+  private boolean da_Timeseries = true;
+  private boolean deepActorOut = true;
+  private boolean timeseries = true;
+  private boolean overall = true;
+  
+  
+  /**
+ * Tourism() is the Constructor of the Tourism- Class
+ */
+	public Tourism(){
+		//new GUI(this);
+  }
+  
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
+	 */
+	protected void init() {
+		
+		int monat = 1;
+		int jahr = simulationTime().getYear();
+		
+		Set<DT_AbstractDeepActor> taset = actorMap().getEntries(DT_AbstractDeepActor.class).getEntries();		
+	    Set<DT_SkiingArea> skiActors = actorMap().getEntries(DT_SkiingArea.class).getEntries();		
+	    Set<DT_WaterPark> erlBadActors = actorMap().getEntries(DT_WaterPark.class).getEntries();
+	    Set<DT_ThermalSpa> therBadActors = actorMap().getEntries(DT_ThermalSpa.class).getEntries();
+	    Set<DT_IndoorPool> hallenBadActors = actorMap().getEntries(DT_IndoorPool.class).getEntries();
+	    Set<DT_InAndOutdoorPool> kombiBadActors = actorMap().getEntries(DT_InAndOutdoorPool.class).getEntries();
+	    Set<DT_GolfCourse> golfActors = actorMap().getEntries(DT_GolfCourse.class).getEntries();	
+	    Set<DT_OutdoorPool> freiBadActors = actorMap().getEntries(DT_OutdoorPool.class).getEntries();
+
+		readInit = true;
+		
+		this.initLocalVariables();
+
+		this.initGMT(); //Lese Gesellschaftliche megatrend Variablen ein
+		
+		this.tourismProxelTable.importMetaData(); // Alle Proxeldaten werden aus der Datei gelesen
+		
+		this.tourismProxelTable.checkImportedProxelData();	
+
+		this.tourismGemeindeTable = new TourismGemeindeTable(simulationTime().getYear());
+				
+		
+		float f;
+		float F_jahrnah = 0f;
+		
+		for( int i=0; i<pids.length; i++ )
+		{
+			int myPid = this.pids[i];
+			long L_Over = 0;
+			long L_Betten = 0;
+			long L_annualBedNights = 0;
+			
+			float F_bevAntGem = proxel(myPid).getPartOfPopGemeinde();
+			TourismGemeinde g = this.tourismGemeindeTable.Gemeinde.get((long)proxel(myPid).gemid);
+			
+			if (g==null)
+				{g = this.tourismGemeindeTable.nullGemeinde;}
+			
+			if (F_bevAntGem > 0) // Nur wenn Bevoelkerung auf Proxel
+			{
+				g.gemPopProxels.add((Integer)myPid);
+				// Verteile Uebernachtungen auf Proxel
+				f = (float)g.getGuestNights(monat) * F_bevAntGem;
+				L_Over = (long)f;
+				
+				f = (float)g.beds * F_bevAntGem;
+				L_Betten = (long)f;
+				
+				
+				f= (float)g.bedNightsPerYear * F_bevAntGem;
+				L_annualBedNights = (long)f;
+				
+			}
+			
+			// Daten wieder in die Proxel scheiben	
+			proxel(myPid).setBedNights(L_Over);
+			proxel(myPid).setBetten(L_Betten);
+			proxel(myPid).setYearlyDemandNearbyRecreation(F_jahrnah);						
+			proxel(myPid).connectionWater = g.anschlussgrad;
+			proxel(myPid).annualBedNights = L_annualBedNights;
+			
+		}//for
+		
+		if (logging) {logger.debug("****Proxelberechnung zur Initialiserung Abgeschlossen");}
+
+	    for( int i=0; i<this.pids.length; i++ )
+	    {
+	        proxel(this.pids[i]).postCompute(monat,jahr,i); 
+	    }
+	    
+	     // Hier werden die Skigebietskapazitaeten in das Proxel geschrieben und die Exporttabelle initialisiert
+	    try{
+	    Skiareapropertyreader mySkigebietsdata = new Skiareapropertyreader();
+	    mySkigebietsdata.initSkipropertyreader();
+	
+	    for (int i=0; i<mySkigebietsdata.skiareadata.length; i++)
+	    {
+	    		if (mySkigebietsdata.skiareadata[i].location != 0)
+	    		{
+	    			int myPID = mySkigebietsdata.skiareadata[i].location;
+	    			float myKAP = mySkigebietsdata.skiareadata[i].capacity;
+	    			proxel(myPID).skiAreaCapacity = myKAP;
+	    			proxel(myPID).hasArtSnowingCapacities = mySkigebietsdata.skiareadata[i].artificalSnowed;
+	    			proxel(myPID).artificalSnowedArea = mySkigebietsdata.skiareadata[i].artificalSnowdArea;
+	    			DTSkingAreaCapacityTable.setValue(myPID, myKAP);	    			
+	    		}
+	    	
+	    }
+	    }catch (Exception e)
+	    {if (logging) {logger.warn("*****Einlesen der Skigebietsdaten fehlgeschlagen....");}}
+	    
+	    
+		String m = modeloutpath();
+		
+		
+		for(DT_AbstractDeepActor a:taset) 
+			{
+				TourismProxel p = proxel(a.myProxelloc);				
+
+				a.setGmt(gmt,mas,mag);
+				a.initDeepActorsTimeSeriesWriter(m);
+				a.initDataFromProxels(p);
+				
+			}
+			
+
+	    
+	    
+	    for (DT_SkiingArea ska : skiActors)
+			{
+				int myPid = ska.myProxelloc;
+				TourismProxel p = proxel(myPid);				
+				
+				for (TourismGemeinde g : this.tourismGemeindeTable.Gemeinde.values())
+				{
+					TourismProxel z = proxel(g.zentroidPID);
+					//Distanz wird in Metern gemssen
+					//Auswahl der fuer die Gemeinde relevanten Skigebiete 20 km Radius
+					if (utility.distanceOfProxels(z,p) < 20000d)
+					{
+						g.skiAreaPIDs.add((Integer)myPid);
+					}
+					z = null;
+				}															
+			}
+		
+	
+		
+		//Zuordnung von Erlebnisbaedern und Gemeinden
+
+
+	    
+	    
+	    for (DT_WaterPark eba : erlBadActors)
+		{	
+	    		int myPid = eba.myProxelloc;	    		
+	    		TourismProxel p = proxel(myPid);	
+	    		
+	    		for (TourismGemeinde gem : this.tourismGemeindeTable.Gemeinde.values())
+				{	
+	    				if (gem.tourismgemeinde)
+					{
+					TourismProxel z = proxel(gem.zentroidPID);
+					//Distanz wird in Metern gemssen
+					//Auswahl der fuer die Gemeinde relevanten Erlebnisbaeder 20 km Radius
+					if (utility.distanceOfProxels(z,p) < 20000d)
+						{gem.waterParkPIDs.add((Integer)myPid);}
+					z = null;
+					}
+				}
+	   	    		this.tourismGemeindeTable.Gemeinde.get(p.gemid).sumWaterPark++;
+		}
+	    
+	    	    
+	    for (DT_ThermalSpa tba : therBadActors)
+		{
+	    		int myPid = tba.myProxelloc;
+	    		TourismProxel p = proxel(myPid);				
+	
+	    		for (TourismGemeinde g : this.tourismGemeindeTable.Gemeinde.values())
+				{	if (g.tourismgemeinde)
+					{
+					TourismProxel z = proxel(g.zentroidPID);
+					//Distanz wird in Metern gemssen
+					//Auswahl der fuer die Gemeinde relevanten Thermalbaeder 20 km Radius
+					if (utility.distanceOfProxels(z,p) < 20000d)
+						{g.thermalspaPIDs.add((Integer)myPid);}
+					z = null;
+					}
+				}
+	    		this.tourismGemeindeTable.Gemeinde.get(p.gemid).sumThermalspa++;
+		}	    
+	    
+	    for (DT_OutdoorPool fba : freiBadActors)
+	    {
+	    		this.tourismGemeindeTable.Gemeinde.get(proxel(fba.myProxelloc).gemid).sumOutdoorPool++;
+	    }
+	    	
+	
+	    for (DT_IndoorPool hba : hallenBadActors)
+	    {    
+	    		this.tourismGemeindeTable.Gemeinde.get(proxel(hba.myProxelloc).gemid).sumIndoorPool++;
+	    }
+	    
+
+	    
+	    for (DT_InAndOutdoorPool kba : kombiBadActors)
+	    {	    
+    			this.tourismGemeindeTable.Gemeinde.get(proxel(kba.myProxelloc).gemid).sumInAndOutdoorPool++;
+	    }
+		    	    
+/*	    Set<DT_Naturbad> naturBadActors = actorMap().getEntries(DT_Naturbad.class).getEntries();
+	    for (DT_Naturbad nba : naturBadActors)
+	    {
+    			this.tourismGemeindeTable.Gemeinde.get(proxel(nba.myProxelloc).gemid).sumNaturbad++;
+	    }
+*/
+	    
+
+	    for (DT_GolfCourse ga : golfActors)
+			{
+			 	TourismProxel pr = proxel(ga.myProxelloc);
+				this.tourismGemeindeTable.Gemeinde.get(pr.gemid).sumGolfCourse++;
+		
+			 	for (TourismGemeinde gem : this.tourismGemeindeTable.Gemeinde.values())
+				{
+					if (gem.tourismgemeinde)
+					{
+						TourismProxel z = proxel(gem.zentroidPID);
+						//Distanz wird in Metern gemssen
+						//Auswahl der fuer die Gemeinde relevanten Skigebiete 30 km Radius
+						if (utility.distanceOfProxels(z,pr) < 30000d)//Alex
+						{	ga.suroundingGemeinde.add((Long)gem.gemID);
+							ga.numberOfBeds = ga.numberOfBeds + gem.beds;
+						}
+						z = null;
+					}
+				}
+							
+			}
+		
+
+		for (DT_AbstractDeepActor a : taset)
+		{
+			proxel(a.myProxelloc).drinkingWaterDemandDeepActorm3 += a.getDrinkingWaterConsuption();			
+		}
+
+		
+		this.tourismGemeindeTable.setGmt(gmt);
+ 
+		this.tourismGemeindeTable.calculateWaterUsage(monat,jahr);
+		
+		for (TourismGemeinde g : this.tourismGemeindeTable.Gemeinde.values())
+		{
+		 	for (int bevPID : g.gemPopProxels )
+    		 	{
+    				TourismProxel p = proxel(bevPID);
+    				p.drinkingWaterDemandGemeindem3 += g.waterDemandMonthm3 * p.partOfPopGemeinde;
+    		 	}
+		}
+
+		
+		
+	
+			 
+		 for( int i=0; i<pids.length; i++ )
+		    {
+		    	int myPID = pids[i];
+		      	TourismProxel p = proxel(myPID);
+
+		      	p.postCompute(monat,simulationTime().getYear(),1);
+		      	
+		        drinkingWater.setValue( pids[i], (float)p.getDrinkingWaterDemand());
+		        bedNights.setValue( pids[i], (long)p.getBedNights());
+		        bedNightsFloat.setValue( pids[i], (float)p.getBedNights());
+		        annualBedNigths.setValue( pids[i], p.annualBedNights);
+		        p.gmt = gmt;
+		    }  
+	    
+	    	    	   
+	    
+	}
+
+	/** The get monthly data engine. */
+	private GetDataEngine getMonthlyDataEngine = new GetDataEngine();
+	{
+	/*	getMonthlyDataEngine.add( new GetDataTask()
+		{
+			public void run() throws Exception
+				{
+					airTemperatureMonthlyMeanTable = controller.getAirTemperatureMonthlyMean();
+				    //Daten in die ProxelTable einpflegen
+					for( int i=0; i<pids.length; i++ ){ 
+						proxel(pids[i]).monatsDurchschnittsTemp = (float)airTemperatureMonthlyMeanTable.getValue(pids[i]);
+				//		if ((proxel(pids[i]).monatsDurchschnittsTemp < 220f)||(proxel(pids[i]).monatsDurchschnittsTemp > 370f))
+				//			{logger.warn("Tourism MonatsDurchschnitstemp fehlerhaft: Proxel" + pids[i]+" Wert: "+proxel(pids[i]).monatsDurchschnittsTemp);}
+			
+					}//for
+				}//run
+		});
+*/
+		
+		getMonthlyDataEngine.add( new GetDataTask()
+		{
+			public void run() throws Exception
+				{
+					populationTable = controller.getTotalPopulation();
+					
+				    //Daten in die ProxelTable einpflegen
+					for( int i=0; i<pids.length; i++ ){ 
+						proxel(pids[i]).population = (long)populationTable.getValue(pids[i]);
+						
+						if (proxel(pids[i]).population < 0)
+						{
+							//logger.warn("Population falsch importiert! Wert=" + proxel(pids[i]).population + " PID="+pids[i]);+
+							proxel(pids[i]).population = 0;
+						}
+					}//for
+				}//run
+		});
+
+		getMonthlyDataEngine.add( new GetDataTask()
+		{
+			public void run() throws Exception
+				{
+					drinkingWaterFlagTable = controller.getDrinkingWaterQuantityFlag();
+					
+				    //Daten in die ProxelTable einpflegen
+					for( int i=0; i<pids.length; i++ ){ 
+						proxel(pids[i]).drinkingWaterFlag = drinkingWaterFlagTable.getValue(pids[i]);
+					}//for
+				}//run
+		});
+
+		
+	}
+	
+	
+	/** The get dayly data engine. */
+	private GetDataEngine getDaylyDataEngine = new GetDataEngine();
+	{
+		
+		getDaylyDataEngine.add( new GetDataTask()
+				{
+					public void run() throws Exception
+						{
+							accumulatedSnowTable = controller.getAccumulatedSnow();
+							
+						    //Daten in die ProxelTable einpflegen
+							for( int i=0; i<pids.length; i++ ){ 
+								proxel(pids[i]).snowDepth = (float)accumulatedSnowTable.getValue(pids[i]);
+							}//for
+						}//run
+				});
+		
+		
+		getDaylyDataEngine.add( new GetDataTask()
+				{
+					public void run() throws Exception
+						{
+							riverWaterFlagTable = controller.getRiverWaterQuantityFlagDaily();
+							
+						    //Daten in die ProxelTable einpflegen
+							for( int i=0; i<pids.length; i++ ){ 
+								proxel(pids[i]).riverWaterFlag = riverWaterFlagTable.getValue(pids[i]);
+							}//for
+						}//run
+				});
+		
+		getDaylyDataEngine.add( new GetDataTask()
+				{
+					public void run() throws Exception
+						{
+							groundWaterFlagTable = controller.getGroundwaterQuantityFlag();
+							
+						    //Daten in die ProxelTable einpflegen
+							for( int i=0; i<pids.length; i++ ){ 
+								proxel(pids[i]).groundWaterFlag = groundWaterFlagTable.getValue(pids[i]);
+							}//for
+						}//run
+				});
+
+
+		
+		
+		getDaylyDataEngine.add( new GetDataTask()
+				{
+					public void run() throws Exception
+						{
+						dailyMaxTemperature = controller.getAirTemperatureDailyMax();
+							
+						    //Daten in die ProxelTable einpflegen
+							for( int i=0; i<pids.length; i++ ){ 
+								proxel(pids[i]).dailyMaxTemperatureInProxel = (float)dailyMaxTemperature.getValue(pids[i]);
+							}//for
+						}//run
+				});
+		
+		getDaylyDataEngine.add( new GetDataTask()
+		{
+			public void run() throws Exception
+				{
+				
+
+				dailyMeanTemperature = controller.getAirTemperatureDailyMean();
+				
+				    //Daten in die ProxelTable einpflegen
+					for( int i=0; i<pids.length; i++ ){ 
+						proxel(pids[i]).dailyMeanTemperature = (float)dailyMeanTemperature.getValue(pids[i]);
+					}//for
+				}//run
+		});
+		
+		getDaylyDataEngine.add( new GetDataTask()
+				{
+					public void run() throws Exception
+						{
+						minFeuchtkugelTemp = controller.getWetBulbTemperatureDailyMin();
+							
+						    //Daten in die ProxelTable einpflegen
+							for( int i=0; i<pids.length; i++ ){ 
+								proxel(pids[i]).minFeuchtkugeltemp = (float)minFeuchtkugelTemp.getValue(pids[i]);
+							}//for
+						}//run
+				});
+
+		getDaylyDataEngine.add( new GetDataTask()
+				{
+					public void run() throws Exception
+						{
+							precipitationDailySumTable = controller.getPrecipitationDailySum();							
+						    //Daten in die ProxelTable einpflegen
+							for( int i=0; i<pids.length; i++ ){ 
+								proxel(pids[i]).percipitationSumDay = (float)precipitationDailySumTable.getValue(pids[i]);
+							}//for
+						}//run
+				});
+		
+			
+		
+		
+		getDaylyDataEngine.add( new GetDataTask()
+				{
+					public void run() throws Exception
+						{								
+							evapoTransTable = controller.getEvapotranspirationDailySum();
+							
+						    //Daten in die ProxelTable einpflegen
+							for( int i=0; i<pids.length; i++ ){ 
+								proxel(pids[i]).evapoTranspiration = (float)evapoTransTable.getValue(pids[i]);
+							}//for
+						}//run
+				});
+		
+		getDaylyDataEngine.add( new GetDataTask()
+		{
+			public void run() throws Exception
+				{								
+					sunduranceDailySumTable = controller.getSunshineDurationDailySum();
+					
+				    //Daten in die ProxelTable einpflegen
+					for( int i=0; i<pids.length; i++ ){ 
+						proxel(pids[i]).sunduranceDaily = (float)sunduranceDailySumTable.getValue(pids[i]);
+					}//for
+				}//run
+		});
+		
+		getDaylyDataEngine.add( new GetDataTask()
+		{
+			public void run() throws Exception
+				{								
+					avWindVelocityTable = controller.getHorizontalVelocityDailyMean();
+					
+				    //Daten in die ProxelTable einpflegen
+					for( int i=0; i<pids.length; i++ ){ 
+						proxel(pids[i]).windVelocity = (float)avWindVelocityTable.getValue(pids[i]);
+					}//for
+				}//run
+		});
+		
+		
+		
+
+
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#getData()
+	 */
+	public void getData() {
+		
+		getDaylyDataEngine.getData();
+		// Monatsdaten werden nur am 1. des Monats eingelesen
+		// Temperatur am Ende des Monats, Flaggen am Anfang!
+		if ((simulationTime().getDay() == 1)  || readInit)
+		{
+			readInit = false;
+			getMonthlyDataEngine.getData();
+	 	 
+		}
+	
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#preCompute()
+	 */
+	protected void preCompute() {
+		 int monat = this.simulationTime().getMonth();
+		 int jahr = this.simulationTime().getYear();
+		 int tag = this.simulationTime().getDay();
+		 
+		 for( int i=0; i<this.pids.length; i++ )
+	      { //Neuberechnung des Demand
+	          proxel(this.pids[i]).preCompute(monat,jahr,tag);
+	      }//For
+		 
+		 
+		
+		Set<DT_AbstractDeepActor> deepActors = actorMap().getEntries(DT_AbstractDeepActor.class).getEntries();
+		for (DT_AbstractDeepActor myDeepActor : deepActors)
+		{
+			myDeepActor.preCompute(proxel(myDeepActor.myProxelloc));
+		}
+		
+		
+		if ((tag==1)&&(monat==1))
+		{
+			Set<DT_SkiingArea> skiActors = actorMap().getEntries(DT_SkiingArea.class).getEntries();
+			for (DT_SkiingArea mySkiActor : skiActors)
+				{
+					mySkiActor.setBreakEvenOperationDays(proxel(mySkiActor.myProxelloc).countryID);		
+				}
+		}
+		
+		// Massnahmen Ausfuehern
+		if (((mas == 2)||(mas==3))&&(jahr==2025)&&(monat==5)&&(tag==3))
+		{
+			Set<DT_SkiingArea> skiActors = actorMap().getEntries(DT_SkiingArea.class).getEntries();
+			System.out.println("Groesse "+skiActors.size());
+			DT_SkiingArea[] skiActorArray = new DT_SkiingArea[skiActors.size()];
+			
+			int i = 0;
+			for (DT_SkiingArea mySkiActor : skiActors)
+			{				
+				skiActorArray[i] = mySkiActor;
+				i++;				
+			}
+						
+			skiActorArray = utility.quickSortSkiingAreas(skiActorArray, 0, skiActorArray.length-1);
+			//Die 30 Groessten Skigebiete
+			if (mas==2)
+			for (int a = skiActorArray.length-30 ; a < skiActorArray.length ; a++)
+			{
+				skiActorArray[a].extendAction = true;
+			}
+			//Die 30 Kleinsten Skigebie
+			if (mas==3)
+				for (int a = 0 ; a < 30 ; a++)
+				{
+					skiActorArray[a].extendAction = true;
+				}	
+			
+		}
+		if ((mas == 1)&&(jahr==2025)&&(monat==5)&&(tag==3))
+		{
+			Set<DT_SkiingArea> skiActors = actorMap().getEntries(DT_SkiingArea.class).getEntries();
+			for (DT_SkiingArea mySkiActor : skiActors)
+			{				
+				if ((mySkiActor.countryID==1)&&(mySkiActor.myProxelloc <= 60000))
+				{				
+					mySkiActor.extendAction = true;
+				}
+			}
+		}
+		
+		 
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#postCompute()
+	 */
+	protected void postCompute(){
+		 // Durchfuehrung alle monatlichen Berechnungen zum 1. des Monats!
+		 int monat = this.simulationTime().getMonth();
+		 int jahr = this.simulationTime().getYear();
+		 int tag = this.simulationTime().getDay();
+		 
+		/* Daten in das lokale Modell kopieren
+		 * Skiegebiete werden die Betriebstage kopiert
+		 * Status und FloatStatus (fŸr die Bildschirmdarstellung)
+		 * KapazitŠt im Proxel bleibt Konstant
+		 * KapazitŠt fŸr den Export wird auf 0 gesetzt, wenn Skigebiet au§er Betrieb
+		 */		 
+	
+		DTSkiinAreaStatusTable.fill(0);
+		DTSkiinAreaStatusFloatTable.fill(0f);
+		
+		Set<DT_SkiingArea> skiActors = actorMap().getEntries(DT_SkiingArea.class).getEntries();
+		Set<DT_GolfCourse> golfActors = actorMap().getEntries(DT_GolfCourse.class).getEntries();
+		Set<DT_AbstractDeepActor> deepActors = actorMap().getEntries(DT_AbstractDeepActor.class).getEntries();
+	
+		
+		for (DT_SkiingArea a : skiActors)
+			{
+				int myPid = a.myProxelloc;
+				TourismProxel p = proxel(myPid);
+				p.skiingAreaStatus = a.actorstatus;
+				p.skiareaMonthlyOperationDays = a.getOperationDaysMonth();
+				p.skiAreaMonthlyClosedDays = a.getClosedDaysMonth();
+				if (a.artSnowPossible)
+				{p.fillHeightWaterStorage = a.getWaterStorageVolume();}
+				else{p.fillHeightWaterStorage = 0.0f;}
+				p.artificalSnowedArea = a.artSnowArea;
+				DTSkiinAreaStatusTable.setValue(myPid,a.actorstatus);
+				DTSkiinAreaStatusFloatTable.setValue(myPid,((float)a.actorstatus));			
+			}
+
+		
+		//Wennn letzter Tag des Monats...
+		if (((monat == 2)&&(tag >= 28))||(((monat == 4)||(monat == 6)||(monat == 9)||(monat == 11))&&(tag >= 30))||(tag >= 31))				
+		 {
+			this.tourismGemeindeTable.resetNaherholungsBetriebstage();
+			
+			//Betriebstage aus dem Skigebieten in die Proxel auslesen
+			
+			for (DT_AbstractDeepActor a : deepActors)
+			{
+				TourismProxel p = proxel(a.myProxelloc);
+				switch (a.typeID)
+				{
+					case 1:{this.tourismGemeindeTable.Gemeinde.get(p.gemid).sumOutdoorPool += a.getOperationDaysMonth();}break;
+					case 2:{this.tourismGemeindeTable.Gemeinde.get(p.gemid).sumIndoorPool += a.getOperationDaysMonth();}break;
+					case 3:{this.tourismGemeindeTable.Gemeinde.get(p.gemid).sumInAndOutdoorPool += a.getOperationDaysMonth();}break;
+					case 4:{this.tourismGemeindeTable.Gemeinde.get(p.gemid).sumWaterPark += a.getOperationDaysMonth();}break;
+					case 5:{this.tourismGemeindeTable.Gemeinde.get(p.gemid).sumThermalspa += a.getOperationDaysMonth();}break;
+					case 10:{this.tourismGemeindeTable.Gemeinde.get(p.gemid).sumGolfCourse += a.getOperationDaysMonth();}break;			
+				}
+				
+				
+			}
+			
+			//Golfplatze
+			if ((monat >=3)&&(monat<=11))
+			{
+				for (DT_GolfCourse g : golfActors)
+				{
+					TourismProxel p = proxel(g.myProxelloc);
+					this.tourismGemeindeTable.Gemeinde.get(p.gemid).sumGolfCourse += g.getOperationDaysMonth();
+					
+					if ((g.actorstatus ==  SkiingAreaStatusType.OUT_OF_SERVICE))
+					{
+						for (long l : g.suroundingGemeinde)
+						{
+							TourismGemeinde tg = this.tourismGemeindeTable.Gemeinde.get(l);
+							tg.reduceDueInopGolfCourses(monat,g.numberOfBeds);
+						}//for
+					}//if
+				}//for
+			}//Golf
+			
+			for (TourismGemeinde g : this.tourismGemeindeTable.Gemeinde.values())
+			{	//Aktuelle Bevoelkerung importieren
+				// Das Attraktivitaetsmodell
+				g.calculateAttractions(tourismProxelTable,monat);
+			}
+		
+			// Berechne die totalen Verluste an Wintersportgaesten
+			long abgewanderteGaesteWgSki = 0;
+			double gesSkiKapazitaetInBetrieb = 0f;
+			long abgewanderteGaesteWgSkiOhneTemp = 0;
+			double gesSkiKapazitaetInBetriebOhneTemp = 0f;
+			for (TourismGemeinde g : this.tourismGemeindeTable.Gemeinde.values())
+			{
+				abgewanderteGaesteWgSki = abgewanderteGaesteWgSki + g.reductionSki;
+				gesSkiKapazitaetInBetrieb = gesSkiKapazitaetInBetrieb + g.skiingAreaCapacityInOperation;
+				
+				abgewanderteGaesteWgSkiOhneTemp = abgewanderteGaesteWgSkiOhneTemp + g.reductionSki;
+				gesSkiKapazitaetInBetriebOhneTemp = gesSkiKapazitaetInBetriebOhneTemp + g.skiingAreaCapacityInOperation;
+
+			}
+
+			//Verteile auf andere Gemeinden
+			//Berechne Naherholungsmodell
+			
+			tourismGemeindeTable.calculateMaximum();
+			
+			for (TourismGemeinde g : this.tourismGemeindeTable.Gemeinde.values())
+			{
+				g.addSkiersFromOtherAreas(abgewanderteGaesteWgSki,gesSkiKapazitaetInBetrieb,monat);
+				g.addSkiersFromOtherAreasWithoutTemp(abgewanderteGaesteWgSkiOhneTemp,gesSkiKapazitaetInBetriebOhneTemp,monat);
+				
+				g.calculateSameDayVisitorsFactors(tourismProxelTable,monat);			
+			}
+		
+			tourismGemeindeTable.countDailyGuests(monat,tourismProxelTable);
+								
+			
+			// Berechne neue Uebernachtungszahlen
+			// Schreibe diese in die neuen Werte in die Proxel
+			// Verteilung nach Bevoelkerungsanteil
+			
+			for (TourismGemeinde g : this.tourismGemeindeTable.Gemeinde.values())
+			{
+			 	for (int bevPID : g.gemPopProxels )
+	    		 	{
+	    				TourismProxel p = proxel(bevPID);
+	    				float f =  (float)g.getGuestNights(monat) * p.partOfPopGemeinde;	    		 	
+	    				p.bedNights = (long)f;
+	    				
+	    		 	}
+				if(monat == 12)
+				{
+					g.prepareNextYear();					
+					for (int bevPID : g.gemPopProxels )
+	    		 		{
+	    					TourismProxel p = proxel(bevPID);
+	    					float f =  (float)g.bedNightsPerLastYear * p.partOfPopGemeinde;	    		 	
+	    					p.annualBedNights = (long)f;
+	    					
+	    		 		}
+					
+				}
+			} 
+		 }// If letzter Tag des Monats
+		
+		
+		//Wasserverbrauch Deep Actors in Proxel uebertragen
+		// Ground und River Water taeglich
+		 for( int i=0; i<this.pids.length; i++ )
+	      {		
+	 		 //
+			 TourismProxel p = proxel(this.pids[i]);
+			 p.riverWaterDemand = 0f;
+			 p.groundWaterDemand = 0f;
+			 
+	      }//For
+
+		 
+		 //Rigver und Ground Water in die Proxel Schreiben
+		 for (DT_AbstractDeepActor da : deepActors)
+		 {
+			 int myPid = da.myProxelloc;
+			 TourismProxel p = proxel(myPid);
+			 p.riverWaterDemand = p.riverWaterDemand + (da.getRiverWaterDemand()/(24f*60f*60f));
+			 p.groundWaterDemand = p.groundWaterDemand + (da.getGroundWaterDemand()/(24f*60f*60f));
+			 
+		 }
+		 
+		 
+		 
+		 
+		 //Drinking Water am Ende des Monats
+		 if (((monat == 2)&&(tag >= 28))||(((monat == 4)||(monat == 6)||(monat == 9)||(monat == 11))&&(tag >= 30))||(tag >= 31))
+		 {	
+			 for (DT_AbstractDeepActor da : deepActors)
+			 {
+				 int myPid = da.myProxelloc;
+				 TourismProxel p = proxel(myPid);
+				 p.drinkingWaterDemandDeepActorm3 = da.getDrinkingWaterConsuption();
+			 }
+			 
+			 this.tourismGemeindeTable.calculateWaterUsage(monat,jahr);
+			 for (TourismGemeinde g : this.tourismGemeindeTable.Gemeinde.values())
+				{
+				 	for (int bevPID : g.gemPopProxels )
+		    		 	{
+		    				TourismProxel p = proxel(bevPID);
+		    				float f =  (float)g.getGuestNights(monat) * p.partOfPopGemeinde;	    		 	
+		    				p.bedNights = (long)f;
+		    				p.drinkingWaterDemandGemeindem3 = g.waterDemandMonthm3 * p.partOfPopGemeinde;
+		    				p.wasteWater = g.wasteWaterMonthm3 * p.partOfPopGemeinde;
+		    		 	}
+					
+				}
+			 
+			
+			 Set<DT_AbstractSwimmingPool> swimmingActors = actorMap().getEntries(DT_AbstractSwimmingPool.class).getEntries();
+			 for (DT_AbstractSwimmingPool swa :  swimmingActors)
+			 {
+				TourismProxel p = proxel(swa.myProxelloc);
+				p.wasteWater = p.wasteWater + (swa.drinkingWaterDemand);
+	    							 
+			 }
+			 
+			 
+			    for( int i=0; i<pids.length; i++ )
+			    {
+			    		int myPID = pids[i];
+			      	TourismProxel tp = proxel(myPID);
+			      	tp.postCompute(monat,jahr,tag);
+			    }
+
+			 
+			 
+
+		 }
+		 
+		 
+		    
+		    
+			String name = modeloutpath() + File.separator + "tourism" + File.separator +
+	        "deepActorOut" + File.separator  + jahr+"_"+ monat+"_";
+	 		
+			String nameOverAll = modeloutpath() + File.separator + "tourism" + File.separator +
+	        "deepActorOut" + File.separator + "OverAll.txt";
+			
+			String namePerMonth = modeloutpath() + File.separator + "tourism" + File.separator +
+	        "deepActorOut" + File.separator + "BetriebstageProMonat.txt";
+			
+			if(deepActorOut){
+				if (((monat == 2)&&(tag >= 28))||(((monat == 4)||(monat == 6)||(monat == 9)||(monat == 11))&&(tag >= 30))||(tag >= 31))
+				{
+					String datum = tag + "." + monat + "." + jahr;	      
+					utility.writeDeepActors(deepActors, name + tag + "_deepActorsOut.txt", datum);
+					utility.writeDeepActorsPerMonth(deepActors, namePerMonth, monat+"/"+jahr);
+				}
+			}
+			
+			if(overall){
+				if((monat == 12)&&(tag == 31)){
+					utility.writeDeepActorsYear(deepActors, nameOverAll, jahr);
+				}
+			}
+			
+			if(da_Timeseries){	
+			    for (DT_AbstractDeepActor a : deepActors)
+			    {
+			    	a.writeOutDATimeseries();
+			    }
+			}
+		 
+	}
+
+	
+	//Parallelisierung von Commit
+	/** 
+	 * The tourism_provide engine.
+	 */
+	private ProvideEngine tourism_provideEngine = new ProvideEngine();
+	{
+		tourism_provideEngine.add(new ProvideTask()
+		{
+			public void run()throws Exception
+			{
+				for( int i=0; i<pids.length; i++ )
+					{
+					// Hier werden alle Bed Nigts in die Datentabelle geschrieben
+						int myPid = pids[i];
+						TourismProxel p = proxel(myPid );
+						bedNights.setValue( myPid, (long)p.getBedNights());
+						bedNightsFloat.setValue( myPid, (float)p.getBedNights());
+					
+						if (p.getBedNights() <  0)
+						{
+							bedNights.setValue( myPid, 0);
+							bedNightsFloat.setValue( myPid, 0f);
+							myCheckFailedLogger.logCheckFailedAndReset("bednights-export", myPid, CheckTypes.NEGATIVE, p.getBedNights(),0);						
+						}
+						
+						
+					  }//For
+				}//run
+				
+				
+		});//Add
+		
+		tourism_provideEngine.add(new ProvideTask()//DrinkingWaterDemand
+		{
+			public void run()throws Exception
+			{				
+				for( int i=0; i<pids.length; i++ )
+				{
+				// Hier werden alle Proxel-Daten in die Datentabelle geschrieben
+				//
+					int myPid = pids[i];
+					TourismProxel p = proxel(myPid);
+					float wf = (float)p.getDrinkingWaterDemand();
+					drinkingWater.setValue(myPid, wf);
+					if (0.2f <  wf)
+					{
+						drinkingWater.setValue(pids[i], 0.1f);
+						myCheckFailedLogger.logCheckFailedAndReset("tourdwd-export", myPid, CheckTypes.UPPER_BOUND, wf,0.1f);
+					}
+					if (0.0f >  wf)
+					{
+						drinkingWater.setValue(pids[i], 0.0f);
+						myCheckFailedLogger.logCheckFailedAndReset("tourdwd-export", myPid, CheckTypes.NEGATIVE, wf,0.0f);
+					}
+
+  
+				}//for
+	
+									  
+				}//run				
+		});//Add
+		
+		tourism_provideEngine.add(new ProvideTask()//RiverWaterDemand
+				{
+					public void run()throws Exception
+					{
+				
+						for( int i=0; i<pids.length; i++ )
+						{
+						// Hier werden alle Proxel-Daten in die Datentabelle geschrieben
+						//
+							int myPid = pids[i];
+							TourismProxel p = proxel(myPid );
+							float wf = (float)p.riverWaterDemand;
+							
+							riverWaterDemandExportTable.setValue( myPid, wf);
+							if (0.2f <  wf)
+							{
+								riverWaterDemandExportTable.setValue(pids[i], 0.1f);
+								myCheckFailedLogger.logCheckFailedAndReset("tourrwd-export", myPid, CheckTypes.UPPER_BOUND, wf,0.1f);
+							}// If		
+						}
+						  
+						}//run				
+				});//Add
+		
+		tourism_provideEngine.add(new ProvideTask()//GroundWaterDemand
+				{
+					public void run()throws Exception
+					{
+				
+						for( int i=0; i<pids.length; i++ )
+						{
+						// Hier werden alle Proxel-Daten in die Datentabelle geschrieben
+						//
+							int myPid = pids[i];
+							TourismProxel p = proxel(myPid );
+							float wf = (float)p.groundWaterDemand;
+							
+							groundWaterDemandExportTable.setValue( myPid, wf);
+							if (0.2f <  wf)
+							{
+								groundWaterDemandExportTable.setValue(pids[i], 0.1f);
+								myCheckFailedLogger.logCheckFailedAndReset("tourrwd-export", myPid, CheckTypes.UPPER_BOUND, wf,0.1f);
+							}// If		
+						}
+						  
+						}//run				
+				});//Add
+		
+		
+		tourism_provideEngine.add(new ProvideTask()//Annual BedNights fuer Economy
+				{
+					public void run()throws Exception
+					{
+				
+						for( int i=0; i<pids.length; i++ )
+						{
+						// Hier werden alle Proxel-Daten in die Datentabelle geschrieben
+						//
+							int myPid = pids[i];
+							TourismProxel p = proxel(myPid );
+							long abn = p.annualBedNights;
+							
+							annualBedNigths.setValue( myPid, abn);
+							if (0 > abn)
+							{
+								annualBedNigths.setValue(myPid, 0);
+								myCheckFailedLogger.logCheckFailedAndReset("annualBednights-export", myPid, CheckTypes.LOWER_BOUND, abn,0);
+							}// If		
+						}
+						  
+						}//run				
+				});//Add
+
+		tourism_provideEngine.add(new ProvideTask()//Fuellstand Speicherteich
+		{
+			public void run()throws Exception
+			{
+		
+				for( int i=0; i<pids.length; i++ )
+				{
+				// Hier werden alle Proxel-Daten in die Datentabelle geschrieben
+				//
+					int myPid = pids[i];
+					TourismProxel p = proxel(myPid );
+					fillLevelWaterStorageExportTable.setValue( myPid, p.fillHeightWaterStorage);
+					
+					if (0 > p.fillHeightWaterStorage)
+					{
+						fillLevelWaterStorageExportTable.setValue(pids[i], 0);
+						myCheckFailedLogger.logCheckFailedAndReset("fuellstandSpeicherTeich-export", myPid, CheckTypes.LOWER_BOUND,  p.fillHeightWaterStorage,0);
+					}// If		
+				}
+				  
+				}//run				
+		});//Add
+		
+		tourism_provideEngine.add(new ProvideTask()//Beschneite Flaeche
+		{
+			public void run()throws Exception
+			{
+		
+				for( int i=0; i<pids.length; i++ )
+				{
+				// Hier werden alle Proxel-Daten in die Datentabelle geschrieben
+				//
+					int myPid = pids[i];
+					TourismProxel p = proxel(myPid );
+					artSnoedAreaExportTable.setValue( myPid, p.artificalSnowedArea);
+					
+					
+					if (0 > p.artificalSnowedArea)
+					{
+						artSnoedAreaExportTable.setValue(pids[i], 0);
+						myCheckFailedLogger.logCheckFailedAndReset("BeschneiteFlaeche-export", myPid, CheckTypes.LOWER_BOUND,  p.artificalSnowedArea,0);
+					}// If		
+				}
+				  
+				}//run				
+		});//Add
+		
+		
+		
+		tourism_provideEngine.add(new ProvideTask()//Skigebietareastatus&Kapazitaet
+				{
+					public void run()throws Exception
+					{
+										
+						for( int i=0; i<pids.length; i++ )
+								{	
+									int myPID = pids[i];
+									TourismProxel p = proxel(myPID);
+									
+									int mySkigebietsstatus = p.skiingAreaStatus;
+									DTSkiinAreaStatusTable.setValue(myPID,mySkigebietsstatus);
+						
+									if ((mySkigebietsstatus == SkiingAreaStatusType.SKIING)||(mySkigebietsstatus == SkiingAreaStatusType.SKIING_WITH_ARTIFICIAL_SNOW))
+									{					
+										DTSkingAreaCapacityTable.setValue(myPID,p.skiAreaCapacity);
+									} else
+									{	DTSkingAreaCapacityTable.setValue(myPID,0f);}
+
+									
+									int teststatus = DTSkiinAreaStatusTable.getValue(myPID);
+									
+									if (teststatus < 0)
+									{
+										DTSkiinAreaStatusTable.setValue(pids[i], 0);
+										myCheckFailedLogger.logCheckFailedAndReset("SkiingAreaStatus", myPID, CheckTypes.LOWER_BOUND, teststatus,0);
+									}//If
+									//Berechnung Gesamter Verbrauch in Periode und Maximaler Verbrauch				
+									// Ueberpruefen der Output-Parameter: Wertebereich 0 bis 4
+									if (teststatus >= 5)
+									{
+										if (DTSkingAreaCapacityTable.getValue(myPID)>0)
+										{
+										DTSkiinAreaStatusTable.setValue(pids[i], 1);
+										myCheckFailedLogger.logCheckFailedAndReset("SkiingAreaStatus", myPID, CheckTypes.UPPER_BOUND, teststatus,1);
+										}
+										else
+										{
+											DTSkiinAreaStatusTable.setValue(pids[i], 0);
+											myCheckFailedLogger.logCheckFailedAndReset("SkiingAreaStatus", myPID, CheckTypes.UPPER_BOUND, teststatus,0);
+										}
+									
+									}// If
+								}//for
+						  
+						}//run				
+				});//Add
+		
+		
+		tourism_provideEngine.add(new ProvideTask()
+		{
+			public void run()throws Exception
+			{
+				for( int i=0; i<pids.length; i++ )
+					{
+					// Hier wird der WasteWaterSupply in die Export-Tabelle geschriben
+						int myPid = pids[i];
+						TourismProxel p = proxel(myPid );
+						wasteWaterDemandExportTable.setValue( myPid, p.wasteWater);
+					
+						if (p.wasteWater <  0)
+						{
+							wasteWaterDemandExportTable.setValue( myPid, 0.0f);
+							myCheckFailedLogger.logCheckFailedAndReset("wasteWater-export", myPid, CheckTypes.NEGATIVE, p.wasteWater,0);						
+						}
+						
+						
+					  }//For
+				}//Run
+		});//Add	
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#commit()
+	 */
+	public void commit()
+	{
+		tourism_provideEngine.provide();
+	}
+	
+	
+	
+	/**
+	 * Provide.
+	 */
+	public void provide()
+	{
+		this.commit();
+	} // provide
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#store()
+	 */
+	protected void store()
+	{
+		DanubiaCalendar writeOutTime = simulationTime();
+		
+
+		if (writeOutTime.getDay() == 1)
+			{localVisualization().updateView("drinkingWater", writeOutTime, drinkingWater);
+			localVisualization().updateView("bedNights",writeOutTime, bedNightsFloat);
+		}
+		localVisualization().updateView("DTSkiinAreaStatusTable",writeOutTime, DTSkiinAreaStatusFloatTable);
+       
+		
+		if(timeseries){
+			
+			String name = modeloutpath() + File.separator + "tourism" + File.separator +
+	        "timeseries" + File.separator  + writeOutTime.getYear()+"_"+ writeOutTime.getMonth()+"_";
+			
+			String nameOverAll = modeloutpath() + File.separator + "tourism" + File.separator +
+	        "timeseries" + File.separator;
+			
+			 for (int i = 0; i < tsw.length; i++)
+	    		{
+	    			tsw[i].writeData(writeOutTime, drinkingWater);
+	   		 }//for
+	
+	        		
+	        
+	        if (writeOutTime.getDay() == 26)
+	        {
+	        		if (writeOutTime.getMonth() == 1)
+	        		{
+	        			imGen1.writeImageToFile(drinkingWater, writeOutTime);
+	        		}
+	        	       
+	        		
+	        		
+					// ASCII Grid
+				
+					//utility.writeArcinfoGrid( (FloatDataTable)drinkingWater, name + "tourism_demand.asc");
+	        
+					FloatDataTable out_bedNights = new FloatDataTable(areaMetaData());
+		
+					for( int i=0; i<pids.length; i++ )
+					{
+						// Hier werden alle Proxel-Daten in die Datentabelle geschrieben
+						TourismProxel p = proxel( pids[i] );
+						out_bedNights.setValue( pids[i], (float)p.bedNights);			
+					}
+					this.tourismGemeindeTable.writeOut(name +"_GemeindeOut.txt", nameOverAll + "bedPerMonth.txt", writeOutTime.getMonth(), writeOutTime.getYear());
+			
+			}
+		}
+	}//Store
+	
+		
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.TouristToActorController#getTourismDrinkingWaterDemand()
+	 */
+	public WaterFluxTable getTourismDrinkingWaterDemand()
+	  {
+
+	       return this.drinkingWater;
+	      // Gibt den Wasserverbrauch aus
+	  }
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.TouristToActorController#getTourismRiverWaterDemand()
+	 */
+	public WaterFluxTable getTourismRiverWaterDemand()
+	   {
+			return this.riverWaterDemandExportTable;
+		   // Gibt den Wasserverbrauch aus
+	   }
+	
+	/**
+	 * Gets the tourism ground water demand.
+	 * 
+	 * @return the tourism ground water demand
+	 */
+	public WaterFluxTable getTourismGroundWaterDemand()
+	   {
+			return this.groundWaterDemandExportTable;
+		   // Gibt den Wasserverbrauch aus
+	   }
+
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.TouristToActorController#getSkiingArea()
+	 */
+	public SkiingAreaStatusTypeTable getSkiingArea()
+	{
+		return this.DTSkiinAreaStatusTable;		
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.TouristToActorController#getCapacity()
+	 */
+	public SkiingAreaCapacityTable getCapacity()
+	{
+		return this.DTSkingAreaCapacityTable;
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.TouristToActorController#getBednightsPerYear()
+	 */
+	public PopulationNumberTable getBednightsPerYear()
+	{
+		return this.annualBedNigths;
+	}
+	
+	
+    /* (non-Javadoc)
+     * @see org.glowa.danube.components.actor.tourism.TourismResult#getBednightsPerMonth()
+     */
+    public LongDataTable getBednightsPerMonth()
+    {
+    	return this.bedNights;
+    }
+
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.TouristToActorController#getSnowinArea()
+	 */
+	public FloatDataTable getSnowinArea()
+	{
+		//Baustelle!
+		return artSnoedAreaExportTable;
+	}	
+	
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.TouristToActorController#getTourismGroundwaterDemand()
+	 */
+	public WaterFluxTable getTourismGroundwaterDemand() {
+		return this.riverWaterDemandExportTable;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.TouristToActorController#getTourismWasteWaterQuantity()
+	 */
+	public WaterFluxTable getTourismWasteWaterQuantity() {
+		
+		return this.wasteWaterDemandExportTable;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.glowa.danube.components.actor.interfaces.TouristToActorController#getWaterStorageCapacityForSnowing()
+	 */
+	public FloatDataTable getWaterStorageCapacityForSnowing() {
+		return fillLevelWaterStorageExportTable;
+	}
+	
+	
+	/**
+	 * setDa_Timeseries(boolean) switches the output of da_timeseries on and off.
+	 * @param b  true= on, false=off.
+	 * @uml.property  name="da_Timeseries"
+	 */
+	public void setDa_Timeseries(boolean b){
+		da_Timeseries = b;
+	}
+	
+	/**
+	 * setTimeseries(boolean) switches the output of Timeseries on and off.
+	 * @param b  true= on, false=off.
+	 * @uml.property  name="timeseries"
+	 */
+	public void setTimeseries(boolean b){
+		timeseries = b;
+	}
+	
+	/**
+	 * setOverall(boolean) switches the output of Overall on and off.
+	 * @param b  true= on, false=off.
+	 * @uml.property  name="overall"
+	 */
+	public void setOverall(boolean b){
+		overall = b;
+	}
+	
+	/**
+	 * setDeepActorOut(boolean) switches the output of DeppActors on and off.
+	 * @param b  true= on, false=off.
+	 * @uml.property  name="deepActorOut"
+	 */
+	public void setDeepActorOut(boolean b){
+		deepActorOut = b;
+	}
+	
+	
+	/**
+	 * getDa_Timeseries() returns the output status.
+	 * @return  switches the output of Timesries on and off.
+	 * @uml.property  name="da_Timeseries"
+	 */
+	public boolean getDa_Timeseries(){
+		return(da_Timeseries);
+	}
+	
+	/**
+	 * getTimeseries() returns the output status.
+	 * @return  switches the output of Timesries on and off.
+	 * @uml.property  name="timeseries"
+	 */
+	public boolean getTimeseries(){
+		return(timeseries);
+	}
+	
+	/**
+	 * getOverall() returns the output status.
+	 * @return  switches the output of Timesries on and off.
+	 * @uml.property  name="overall"
+	 */
+	public boolean getOverall(){
+		return(overall);
+	}
+	
+	/**
+	 * getDeepActorOut() returns the output status.
+	 * @return  switches the output of Timesries on and off.
+	 * @uml.property  name="deepActorOut"
+	 */
+	public boolean getDeepActorOut(){
+		return(deepActorOut);
+	}
+	
+	  /**
+  	 * Inits the local variables.
+  	 */
+  	protected void initLocalVariables()
+	  {
+		  
+			utility.setOutputDirectories(modeloutpath());
+			
+			imageOutPath =  modeloutpath() + File.separator + "tourism" + File.separator + "jpg" +  File.separator;
+					
+	  	    this.tourismProxelTable = new TourismProxelTable(areaMetaData(),proxelTable()); // Geaendert TourismProxel-Table
+		  
+		    controller = (ActorControllerToTourist)getImport("org.glowa.danube.components.actor.interfaces.ActorControllerToTourist");
+		  
+
+			// Visualisierungen:
+		  	imGen1 = new ImageGenerator("Tour_wat_dem", "value", "m3/s",
+		                                  imageOutPath, "0", "0.001",
+		                                  LocalVisualization.COLORENCODING_LINEAR_HSB,
+		                                  Color.blue, Color.red, Color.lightGray,
+		                                  ImageGenerator.IMAGEENCODER_PNG);
+		 	    
+			myCheckFailedLogger = checkFailedLogger();
+
+		      
+		      // Time Series
+
+		      String[] names = {"tourWaterDemand"};
+		      
+			int[] chosenPids = {116745,7502,11333,11758,19831,19831,21124,43677,51296,52144,52570,54279,59863,59864,62303,66933,66933,70314,70316,81137,81705,83083,83934,85765,86190,87618,88090,88090,88894,89501,89515,92154,92901,92954,93751,93763,93804,94185,94848,96123,100404,100406,102762,104830,105255,106099,107376,109169,109861,111205,112458,112883,113816,117244,117245,117245,120072,121095,121347,122203,123900,125175}; 
+		         
+		          // loop over all chosen proxels to create new time series data files and write header information
+		          // into it:
+		          // Set the output path for the timeseries files
+		      tsw = new TimeSeriesWriter[chosenPids.length];
+		          for (int i = 0; i < tsw.length; i++) {
+		              tsw[i] = new TimeSeriesWriter(modeloutpath() + File.separator + "tourism" + File.separator +  "timeseries" + File.separator,"tourism", chosenPids[i]);
+		              tsw[i].writeHeader(names);
+		          }
+		          // free memory (both arrays are not used any more):
+		          names = null;
+		          chosenPids = null;
+		          
+
+			    this.pids = pids();
+
+			    // Exporttabellen initialisieren!!!!
+			    // Nicht vergessen!!!
+			    
+			    this.drinkingWater = new WaterFluxTable(areaMetaData());
+			    this.bedNights = new LongDataTable(areaMetaData());
+			    this.bedNightsFloat = new FloatDataTable(areaMetaData());
+				this.annualBedNigths = new PopulationNumberTable(areaMetaData());
+			    			    
+			    this.riverWaterDemandExportTable = new WaterFluxTable(areaMetaData());	    
+			    this.groundWaterDemandExportTable  = new WaterFluxTable(areaMetaData());
+			    this.wasteWaterDemandExportTable = new WaterFluxTable(areaMetaData());
+			    this.fillLevelWaterStorageExportTable = new FloatDataTable(areaMetaData());
+			    this.artSnoedAreaExportTable =  new FloatDataTable(areaMetaData());
+			    
+			    
+			    
+			    this.DTSkiinAreaStatusTable = new SkiingAreaStatusTypeTable(areaMetaData());
+			    this.DTSkiinAreaStatusFloatTable = new FloatDataTable(areaMetaData());
+			    
+			    this.DTSkingAreaCapacityTable = new SkiingAreaCapacityTable(areaMetaData());
+			    this.drinkingWaterFlagTable = new  IntegerDataTable(areaMetaData());
+			    this.groundWaterFlagTable = new  IntegerDataTable(areaMetaData());
+			    this.riverWaterFlagTable = new  IntegerDataTable(areaMetaData());
+			    
+			    this.sunduranceDailySumTable = new FloatDataTable(areaMetaData());
+			    this.avWindVelocityTable = new FloatDataTable(areaMetaData());
+			    			    
+			    this.wasteWaterDemandExportTable.fill(0.0f);
+			    this.groundWaterDemandExportTable.fill(0.0f);
+			    this.riverWaterDemandExportTable.fill(0.0f);
+			    this.fillLevelWaterStorageExportTable.fill(0.0f);
+			    this.artSnoedAreaExportTable.fill(0.0f);
+			    this.drinkingWater.fill(0.0f);
+			    this.bedNightsFloat.fill(0.0f);
+			    this.DTSkiinAreaStatusFloatTable.fill(0.0f);
+			    this.bedNights.fill(0);
+			    this.DTSkingAreaCapacityTable.fill(0.0f);
+			    this.DTSkiinAreaStatusTable.fill(0);
+			    
+			    this.sunduranceDailySumTable.fill(8.0f);
+			    this.avWindVelocityTable.fill(0.0f);
+			    
+			    for( int i=0; i<pids.length; i++ )
+			    {
+			    		int myPID = pids[i];
+			      	proxel(myPID).initAndReset();
+			      	//Initialisierung: Werte auf 0 setzen	  
+			    }
+			    
+			    
+			    this.drinkingWaterFlagTable.fill(1);
+			    this.riverWaterFlagTable.fill(1);
+			    this.groundWaterFlagTable.fill(1);
+			    
+			    
+			    localVisualization().addView( "drinkingWater", "Nachfrage nach Trinkwasser", "value", "m2³/s", 0, 0.001,
+		                LocalVisualization.COLORENCODING_LINEAR_HSB, new Color( 195, 124, 31 ), Color.blue);
+
+			    localVisualization().addView("DTSkiinAreaStatusTable", "Status der Skigebiete", "value", "Status", 0, 2.0,
+		                LocalVisualization.COLORENCODING_LINEAR_HSB,Color.lightGray, Color.blue);
+
+			    localVisualization().addView("bedNights", "Uebernachtungen", "value", "Anzahl", 0, 1000,
+			  			LocalVisualization.COLORENCODING_LINEAR_HSB, new Color( 195, 124, 31 ), Color.blue);
+			    
+	  }
+
+/**
+ * Inits the gmt: Societal scenario and Actions will be initialized.
+ */
+protected void initGMT()
+{
+	// Gesellschaftliche Megatrends
+	
+    try
+    {gmt = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("gmt"));}
+    catch (NumberFormatException nfe)
+	   {if (logging) 
+	   		{logger.warn("******NumberFormatException GMT!!");
+		   	gmt = 1;
+	   		}//if
+	   }//Catch
+    
+    if ((gmt < 1)||(gmt>3))
+    {
+    	if (logging) {logger.warn("***** GMT Variable ist Muell");}
+    	gmt = 1;
+    }
+    
+    // Massnahmen Skigebiete
+    try
+    {mas = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("mas"));}
+    catch (NumberFormatException nfe)
+	   {if (logging) 
+	   		{logger.warn("******NumberFormatException MAS!!");
+		   	mas = 0;
+	   		}//if
+	   }//Catch
+   
+    if ((mas < 0)||(mas>4))
+    {
+    	if (logging) {logger.warn("***** MAS Variable ist Muell");}
+    	mas = 0;
+    }
+    
+    // Massnahmen Golfplaetze
+    try
+    {mag = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("mag"));}
+    catch (NumberFormatException nfe)
+	   {if (logging) 
+	   		{logger.warn("******NumberFormatException MAG!!");
+		   	mag = 0;
+	   		}//if
+	   }//Catch
+   
+    if ((mag < 0)||(mag>4))
+    {
+    	if (logging) {logger.warn("***** MAG Variable ist Muell");}
+    	mag = 0;
+    }
+    
+    
+}
+	
+	
+	  
+	  
+}//Tourism.java
+
+
+
+
+

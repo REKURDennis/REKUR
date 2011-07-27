@@ -1,0 +1,61 @@
+package org.glowa.danube.components.actor.tourism.deeptourism;
+
+/**
+ * This is the Hotel DeepActor with its specific variables and methods.
+ * @author Dr. Alexander Dingedey alex@dingel.org, Dennis Joswig
+ *
+ */
+public class DT_Hotel {
+
+	public float yearlyImprovingRate = 1.0f;
+
+	public long beds;
+	public long enterprises;
+	public float status = 1.0f;
+	private float statusWithoutSaving = 1.0f;
+	public int savingStep = 0;
+	public boolean waterProblems = false;
+	
+	/**
+	 * Inits the variables.
+	 */
+	public void init()
+	
+	{
+		status = 1.0f;
+		statusWithoutSaving = 1.0f;
+		savingStep = 0;
+		waterProblems = false;
+
+	}
+	
+	/**
+	 * Calculates mothly processes.
+	 * @param flag turns on and of <code>>4<code> to turn on
+	 */
+	public void processMonthly(int flag)
+	{
+		if ((flag >= 4)&&(waterProblems == false))
+		{
+			savingStep = savingStep + 1;
+			if (savingStep <=5)
+			{status = statusWithoutSaving * (1.0f - ((float)savingStep * 0.05f));}
+			else
+				status = statusWithoutSaving * 0.75f;		
+			waterProblems = true;
+		}
+	
+	}
+	
+	
+	/**
+	 *  Calculates yearly processes.
+	 */
+	public void processEndOfYear()
+	{
+		waterProblems = false;
+		status = status * yearlyImprovingRate;
+		statusWithoutSaving = statusWithoutSaving * yearlyImprovingRate;
+	}
+	
+}

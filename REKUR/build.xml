@@ -1,0 +1,197 @@
+<!--
+  $Log$
+-->
+
+<project name="danubia_core" default="startServer" basedir=".">
+
+	<property name="classes.dir" value="classes" />
+	<property name="lib.dir" value="lib" />
+	<property name="log4j.configuration" value="log.properties"/>
+	<property name="log4j.server_configuration" value="log_server.properties"/>
+	<property name="log4j.properties.dir" value="${basedir}"/>
+	<property name="metadata.dir" value="metadata"/>
+	<property name="danubiaserver.hostname" value="localhost"/>
+	<property name="webcontentfile" value="webserver/webapps/danubiaweb/WEB-INF/content-conf.xml"/>
+	<property name="maxheapsize" value="3000M"/>
+	<property name="scenario.id" value="default"/>
+
+	<target name="startServer" description="Start DANUBIA Server" >
+	
+		<echo message="Starting DANUBIA Server..." />
+		<java classname="org.glowa.danube.utilities.tools.RunTool" fork="true" failonerror="true">
+			<classpath>
+				<fileset dir="${lib.dir}" includes="**/*.jar" />
+			</classpath>
+			<jvmarg value="-Xmx1000M" />
+			<jvmarg value="-Djava.security.policy=policy"/>
+			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.server_configuration}"/>
+			<jvmarg value="-Dorg.glowa.danube.server.rmihost=${danubiaserver.hostname}"/>
+			<jvmarg value="-Dwebcontentfile=${webcontentfile}" />
+			<jvmarg value="-Dscenario.id=${scenario.id}" />
+			<arg value="org.glowa.danube.DanubiaServer" />
+			<arg value="-PROPERTIES" />
+			<arg value="run_server.properties" />
+		</java>
+	</target>
+
+	<target name="startMonitor" description="Start DANUBIA Monitor" >
+	
+		<echo message="Starting DANUBIA Monitor..." />
+		<java classname="org.glowa.danube.utilities.tools.RunTool" fork="true" failonerror="true">
+			<classpath>
+				<fileset dir="${lib.dir}" includes="**/*.jar" />
+			</classpath>
+			<jvmarg value="-Djava.security.policy=policy"/>
+			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.server_configuration}"/>
+			<jvmarg value="-Dorg.glowa.danube.server.rmihost=${danubiaserver.hostname}"/>
+			<jvmarg value="-Dscenario.id=${scenario.id}" />
+			<arg value="org.glowa.danube.DanubiaMonitor" />
+			<arg value="-PROPERTIES" />
+			<arg value="run_server.properties" />
+			<arg value="${danubiaserver.hostname}" />
+		</java>
+	</target>
+
+
+	<target name="startClient" description="Start DanubiaClient" >
+
+		<echo message="Starting client..." />
+		<java classname="org.glowa.danube.utilities.tools.RunTool" fork="true" failonerror="true">
+			<classpath>
+				<fileset dir="${lib.dir}" includes="**/*.jar" />
+			</classpath>
+			<jvmarg value="-Xmx${maxheapsize}" />
+			<jvmarg value="-Djava.security.policy=policy"/>
+			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.configuration}"/>
+			<jvmarg value="-Dscenario.id=${scenario.id}" />
+			<arg value="org.glowa.danube.DanubiaClient" />
+			<arg value="-PROPERTIES" />
+			<arg value="run.properties" />
+			<arg value="${danubiaserver.hostname}" />
+			<arg value="${danubiaclient.id}" />
+		</java>
+	</target>
+
+	<target name="startSimulation" description="Start Simulation" >
+	    
+		<echo message="Starting simulation..." />
+		<java classname="org.glowa.danube.utilities.tools.RunTool" fork="true" failonerror="true">
+			<classpath>
+				<fileset dir="${lib.dir}" includes="**/*.jar" />
+			</classpath>
+			<jvmarg value="-Djava.security.policy=policy"/>	      
+			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.configuration}"/>
+			<jvmarg value="-Dscenario.id=${scenario.id}" />
+			<arg value="org.glowa.danube.DanubiaCommander" />
+			<arg value="-PROPERTIES" />
+			<arg value="run.properties" />
+			<arg value="${danubiaserver.hostname}" />
+			<arg value="startSimulation" />
+			<arg value="${simrun.id}" />
+		</java>
+	</target>
+
+	<target name="recoverSimulation" description="Recover Simulation" >
+
+		<echo message="Recovering simulation..." />
+		<java classname="org.glowa.danube.utilities.tools.RunTool" fork="true" failonerror="true">
+			<classpath>
+				<fileset dir="${lib.dir}" includes="**/*.jar" />
+			</classpath>
+			<jvmarg value="-Djava.security.policy=policy"/>
+			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.configuration}"/>
+			<jvmarg value="-Dscenario.id=${scenario.id}" />
+			<arg value="org.glowa.danube.DanubiaCommander" />
+			<arg value="-PROPERTIES" />
+			<arg value="run.properties" />
+			<arg value="${danubiaserver.hostname}" />
+			<arg value="recoverSimulation" />
+			<arg value="${simrun.id}" />
+		</java>
+	</target>
+
+	<target name="stopSimulation" description="Stop Simulation" >
+
+		<echo message="Stopping simulation..." />
+		<java classname="org.glowa.danube.utilities.tools.RunTool" fork="true" failonerror="true">
+			<classpath>
+			<fileset dir="${lib.dir}" includes="**/*.jar" />
+			</classpath>
+			<jvmarg value="-Djava.security.policy=policy"/>
+			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.configuration}"/>
+			<jvmarg value="-Dscenario.id=${scenario.id}" />
+			<arg value="org.glowa.danube.DanubiaCommander" />
+			<arg value="-PROPERTIES" />
+			<arg value="run.properties" />
+			<arg value="${danubiaserver.hostname}" />
+			<arg value="stopSimulation" />
+		</java>
+	</target>
+
+	<target name="resetServer" description="Reset Danubia Server" >
+
+		<echo message="Resetting server..." />
+		<java classname="org.glowa.danube.utilities.tools.RunTool" fork="true" failonerror="true">
+			<classpath>
+				<fileset dir="${lib.dir}" includes="**/*.jar" />
+			</classpath>
+			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.configuration}"/>
+			<jvmarg value="-Dscenario.id=${scenario.id}" />
+			<arg value="org.glowa.danube.DanubiaCommander" />
+			<arg value="-PROPERTIES" />
+			<arg value="run.properties" />
+			<arg value="${danubiaserver.hostname}" />
+			<arg value="resetServer" />
+		</java>
+	</target>
+
+	<target name="checkMetadata" description="Check the metadata files." >
+		<echo message="Checking metadata files..." />
+		<java classname="org.glowa.danube.utilities.tools.RunTool" fork="true" failonerror="true">
+			<classpath>
+				<fileset dir="${lib.dir}" includes="**/*.jar" />
+			</classpath>
+			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.configuration}"/>
+			<arg value="MetaDataAdminTest" />
+		</java>
+	</target>
+
+	<target name="timecontrollerStatus" description="Print out Timecontroller Status" >
+		
+		<echo message="Timecontroller status:" />
+		<java classname="org.glowa.danube.utilities.tools.RunTool" fork="true" failonerror="true">
+			<classpath>
+				<fileset dir="${lib.dir}" includes="**/*.jar" />
+			</classpath>
+			<jvmarg value="-Djava.security.policy=policy"/>	      
+			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.configuration}"/>
+			<jvmarg value="-Dscenario.id=${scenario.id}" />
+			<arg value="org.glowa.danube.DanubiaCommander" />
+			<arg value="-PROPERTIES" />
+			<arg value="run.properties" />
+			<arg value="${danubiaserver.hostname}" />
+			<arg value="timecontrollerStatus" />
+			<arg value="${simrun.id}" />
+		</java>
+	</target>
+	
+	<target name="timecontrollerProgress" description="Print out Timecontroller Progress" >
+		
+		<echo message="Timecontroller progress:" />
+		<java classname="org.glowa.danube.utilities.tools.RunTool" fork="true" failonerror="true">
+			<classpath>
+				<fileset dir="${lib.dir}" includes="**/*.jar" />
+			</classpath>
+			<jvmarg value="-Djava.security.policy=policy"/>	      
+			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.configuration}"/>
+			<jvmarg value="-Dscenario.id=${scenario.id}" />
+			<arg value="org.glowa.danube.DanubiaCommander" />
+			<arg value="-PROPERTIES" />
+			<arg value="run.properties" />
+			<arg value="${danubiaserver.hostname}" />
+			<arg value="timecontrollerProgress" />
+			<arg value="${simrun.id}" />
+		</java>
+	</target>
+
+</project>

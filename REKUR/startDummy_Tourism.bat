@@ -1,0 +1,1 @@
+ant -v -d -Dcomponent=TourismDummy startComponent

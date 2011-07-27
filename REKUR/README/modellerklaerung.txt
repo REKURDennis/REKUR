@@ -1,0 +1,46 @@
+- build.xml
+Wird von ant aufgerufen. Sozusagen die Steuerdatei für das ganze Projekt
+
+- classes
+Die Compilierten Java Klassen unseres Modells. Werden von ant automatisch erzeugt. Nichts ändern.
+
+- config
+Die Konfiugurationsdateien für das Modell
+
+- config/tourist.cfg 
+Hauptkonfigurationsdatei Tourismusmodell
+
+- data
+Unsere eigenen Einlesedaten
+
+- data/actor/tourist/proxeltable.txt
+Proxeldaten Zahlenformate mit Punkt und Wissenschaftlich
+
+- data/actor/tourist/gemeindetable.txt
+Gemeindedaten
+
+- data/actor/tourist/fein/
+Feindaten für angegebene Jahre. Wenn nicht vorhanden wird die 
+Regression verwendet
+
+- doc
+Das UML
+
+- lib
+Die restlichen Komponenten des Modells.
+.jar sind JAva ARchive. Dies ist spezielles .zip-File mit vielen Klassen.
+
+- modelout
+Modellausgabe
+
+- src
+Der Quellcode in .java
+
+- testdb.*
+Die Danubia-Basisdaten für das Testmodell
+
+- tourist_history.txt
+Alles was geschraubt wurde.
+
+
+

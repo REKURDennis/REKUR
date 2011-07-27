@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/!svn/ver/506/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism
+END
+DT_GolfCourse.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/DT_GolfCourse.java
+END
+DT_AbstractDeepActor.java
+K 25
+svn:wc:ra_dav:version-url
+V 120
+/svn/!svn/ver/509/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/DT_AbstractDeepActor.java
+END
+DT_Hotel.java
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/DT_Hotel.java
+END
+Tourism.java
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/Tourism.java
+END
+DT_SkiingArea.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/DT_SkiingArea.java
+END
+DT_SkiingEnv.java
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/DT_SkiingEnv.java
+END
+DT_Gastronomy.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/svn/!svn/ver/506/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/DT_Gastronomy.java
+END
+DT_WaterStorage.java
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svn/!svn/ver/502/components/tourism/src/org/glowa/danube/components/actor/tourism/deeptourism/DT_WaterStorage.java
+END
