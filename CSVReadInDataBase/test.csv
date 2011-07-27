@@ -1,0 +1,4 @@
+Id;Name;Country;Holyday Type;Activity; min costs per day;Monthly Mean Temp Jan;MT Feb;MT Mar;MT Apr;MT May;MT Jun;MT Jul;MT Aug;MT Sep;MT Okt;MT Nov;MT Dec;Monthly Sum Percipitation Jan;SP Feb;SP Mar;SP Apr;SP May;SP Jun;SP Jul;SP Aug;SP Sep;SP Okt;SP Nov;SP Dec;Occupancy Rate Jan;OR Feb;OR Mar;OR Apr;OR May;OR Jun;OR Jul;OR Aug;OR Sep;OR Okt;OR Nov;OR Dec;Tourists Per Month Jan;TPM Feb;TPM Mar;TPM Apr;TPM May;TPM Jun;TPM Jul;TPM Aug;TPM Sep;TPM Okt;TPM Nov;TPM Dec
+1;MŸnchen;Deutschland;1;0;80;12;11;13;14;14;16;21;25;20;20;18;14;100;50;50;50;0;0;0;0;50;50;100;50;1;2;3;2;3;4;4;2;2;3;3;1;0;1;0;0;0;0;0;0;0;0;0;0;
+2;Rom;Italien;1;0;40;12;11;13;14;14;16;21;25;20;20;18;14;100;50;50;50;0;0;0;0;50;50;100;50;1;2;3;4;4;4;3;4;2;1;3;2;0;0;1;0;0;0;0;0;0;0;0;0;
+3;Lissabon;Italien;1;0;40;12;11;13;14;14;16;21;25;20;20;18;14;100;50;50;50;0;0;0;0;50;50;100;50;1;2;3;4;4;4;3;4;2;1;3;2;0;0;1;0;0;0;0;0;0;0;0;0;
