@@ -1,1 +1,1 @@
-1.6s - load 92% (wait_getdata 49ms , getdata 8ms , compute 613ms , store 0ms , wait_provide 59ms , provide 914ms) - mem 969/1191MB
+335ms - load 80% (wait_getdata 24ms , getdata 8ms , compute 254ms , store 0ms , wait_provide 37ms , provide 7ms) - mem 971/1563MB
