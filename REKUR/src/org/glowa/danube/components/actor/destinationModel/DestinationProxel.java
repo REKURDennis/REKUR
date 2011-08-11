@@ -1,8 +1,7 @@
 
 package org.glowa.danube.components.actor.destinationModel;
 
-import org.glowa.danube.components.actor.utilities.ClimateData;
-import org.glowa.danube.simulation.model.proxel.AbstractProxel;
+import org.glowa.danube.components.actor.utilities.AbstractActorModelProxel;
 
 
 /** 
@@ -11,14 +10,9 @@ import org.glowa.danube.simulation.model.proxel.AbstractProxel;
  * 
  */
 
-public class DestinationProxel extends AbstractProxel
+public class DestinationProxel extends AbstractActorModelProxel
 {
-	public ClimateData cd = new ClimateData();
-	
-	public static final long serialVersionUID = 1;
-	
-	
-	
+	public static final long serialVersionUID = 1;	
 }
 
 

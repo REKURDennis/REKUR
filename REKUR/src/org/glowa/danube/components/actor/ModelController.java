@@ -6,6 +6,7 @@ import org.glowa.danube.components.actor.interfaces.*;
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.simulation.controller.AbstractController;
 import org.glowa.danube.tables.FloatDataTable;
+import org.glowa.danube.tables.IntegerDataTable;
 import org.glowa.danube.tables.MassPerAreaTable;
 import org.glowa.danube.tables.TemperatureTable;
 
@@ -24,22 +25,22 @@ public class ModelController extends AbstractController implements ModelControll
 	protected void init() throws RuntimeException {
 		// -- internal interfaces --------------------------------------------------
 		try {
-			tourist = (RekurTouristModelToModelController) getImport("org.glowa.danube.components.actor.interfaces.RekurTouristModelToActorController");
+			tourist = (RekurTouristModelToModelController) getImport("org.glowa.danube.components.actor.interfaces.RekurTouristModelToModelController");
 		} catch (Exception ex) {
 			this.logger().warn(ex);
 		}
 		try {
-			climate = (RekurClimateModelToModelController) getImport("org.glowa.danube.components.actor.interfaces.RekurClimateModelToActorController");
+			climate = (RekurClimateModelToModelController) getImport("org.glowa.danube.components.actor.interfaces.RekurClimateModelToModelController");
 		} catch (Exception ex) {
 			this.logger().warn(ex);
 		}
 		try {
-			destination = (RekurDestinationModelToModelController) getImport("org.glowa.danube.components.actor.interfaces.RekurDestinationModelToActorController");
+			destination = (RekurDestinationModelToModelController) getImport("org.glowa.danube.components.actor.interfaces.RekurDestinationModelToModelController");
 		} catch (Exception ex) {
 			this.logger().warn(ex);
 		}
 		try {
-			hydrological = (RekurHydrologicalModelToModelController) getImport("org.glowa.danube.components.actor.interfaces.RekurHydrologicalModelToActorController");
+			hydrological = (RekurHydrologicalModelToModelController) getImport("org.glowa.danube.components.actor.interfaces.RekurHydrologicalModelToModelController");
 		} catch (Exception ex) {
 			this.logger().warn(ex);
 		}
@@ -59,7 +60,7 @@ public class ModelController extends AbstractController implements ModelControll
 	}
 
 	
-//	ClimateModel to DestinationModel interfacemethods
+//	ClimateModel to Other Models (Tourist and Destination) interfacemethods
 	@Override
 	public TemperatureTable getAirTemperatureDailyMean() {
 		// TODO Auto-generated method stub
@@ -103,11 +104,16 @@ public class ModelController extends AbstractController implements ModelControll
 	}
 
 	@Override
-	public FloatDataTable getRelativeHuminityDailyMean() {
+	public FloatDataTable getRelativeHumidityDailyMean() {
 		// TODO Auto-generated method stub
-		return climate.getRelativeHuminityDailyMean();
+		return climate.getRelativeHumidityDailyMean();
 	}
-
+	
+	@Override
+	public IntegerDataTable getTempHumidityIndex() {
+		// TODO Auto-generated method stub
+		return climate.getTempHumidityIndex();
+	}
 	
 //	Destinationmodel to TouristModel interfaceMethods
 	@Override

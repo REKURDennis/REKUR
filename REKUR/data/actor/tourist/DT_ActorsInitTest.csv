@@ -1,4 +1,0 @@
-id;class;location;collaborators;initialPlans;;
-intVal;string;intSet;intSet;intSet;;
-11000001;org.glowa.danube.components.actor.touristmodel.deepactors.DA_SourceArea;{49468};{};{1001}
-11000002;org.glowa.danube.components.actor.touristmodel.deepactors.DA_SourceArea;{49469};{};{1001}

@@ -2,8 +2,6 @@ package org.glowa.danube.components.actor.utilities;
 
 import java.util.Set;
 
-import org.glowa.danube.components.actor.destinationModel.DestinationProxel;
-
 public class ClimateDataAggregator {
 	public AggregatedClimateData dailyClimate = new AggregatedClimateData();
 	public AggregatedClimateData lastMonthClimate = new AggregatedClimateData();
@@ -12,7 +10,7 @@ public class ClimateDataAggregator {
 	private int daysInMonth = 1;
 	
 	
-	public void aggregateClimateData(Set<DestinationProxel> dp, int dayOfMonth){
+	public void aggregateClimateData(Set<AbstractActorModelProxel> dp, int dayOfMonth){
 		
 		if(dayOfMonth == 1){
 			currentMonth.airTemperatureMean /= daysInMonth;
@@ -26,7 +24,7 @@ public class ClimateDataAggregator {
 			currentMonth = new AggregatedClimateData();
 			daysInMonth = 1;	
 		}
-		for(DestinationProxel currentProxel:dp){
+		for(AbstractActorModelProxel currentProxel:dp){
 			dailyClimate.airTemperatureMean += currentProxel.cd.airTemperatureMean;
 			if(dailyClimate.airTemperatureMax < currentProxel.cd.airTemperatureMax){
 				dailyClimate.airTemperatureMax = currentProxel.cd.airTemperatureMax;

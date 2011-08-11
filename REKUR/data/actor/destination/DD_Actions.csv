@@ -1,1 +1,1 @@
-id;class;period;mandatoryintVal;string;period;bool100;org.glowa.danube.components.actor.touristmodel.deepactor.action.Attract;ALWAYS;false
+id;class;period;mandatoryintVal;string;period;bool100;org.glowa.danube.components.actor.touristmodel.ScenarioAction1;ALWAYS;false

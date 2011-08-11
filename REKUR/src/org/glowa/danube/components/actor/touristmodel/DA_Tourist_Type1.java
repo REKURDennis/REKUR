@@ -4,7 +4,6 @@ import java.util.GregorianCalendar;
 import java.util.Map.Entry;
 import java.util.Vector;
 
-import org.glowa.danube.components.actor.utilities.ClimateData;
 
 public class DA_Tourist_Type1 extends DA_Tourist{
 	

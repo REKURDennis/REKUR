@@ -5,7 +5,7 @@ import java.util.HashMap;
 import org.glowa.danube.components.DanubiaInterface;
 import org.glowa.danube.components.actor.utilities.ClimateData;
 
-public interface ModelControllerToRekurTouristModel extends DanubiaInterface
+public interface ModelControllerToRekurTouristModel extends DanubiaInterface, ModelControllerProvideClimate
 {
     public HashMap<Integer, boolean[]> getHolidayTypes();
     public HashMap<Integer, Integer> getCountryIDs();

@@ -1,6 +1,0 @@
-package org.glowa.danube.components.actor.interfaces;
-
-import org.glowa.danube.components.DanubiaInterface;
-
-public interface ActorControllerToRekurHydrologicalModel extends DanubiaInterface{
-}

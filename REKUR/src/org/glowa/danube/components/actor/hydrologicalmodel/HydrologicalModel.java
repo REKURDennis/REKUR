@@ -2,7 +2,7 @@ package org.glowa.danube.components.actor.hydrologicalmodel;
 
 
 
-import org.glowa.danube.components.actor.interfaces.RekurHydrologicalModelToActorController;
+import org.glowa.danube.components.actor.interfaces.RekurHydrologicalModelToModelController;
 import org.glowa.danube.simulation.model.AbstractModel;
 import org.glowa.danube.utilities.time.DanubiaCalendar;
 
@@ -16,7 +16,7 @@ import org.glowa.danube.utilities.time.DanubiaCalendar;
  * Reads in the hydrological Dummydata for simulation runs
  * 
  */
-public class HydrologicalModel extends AbstractModel<HydrologicalProxel> implements RekurHydrologicalModelToActorController
+public class HydrologicalModel extends AbstractModel<HydrologicalProxel> implements RekurHydrologicalModelToModelController
 
 {
 	// PIDs for computation

@@ -1,5 +1,6 @@
 package org.glowa.danube.components.actor.climatemodel;
 
+import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.simulation.model.proxel.AbstractProxel;
 import org.glowa.danube.utilities.time.DanubiaCalendar;
 
@@ -11,14 +12,7 @@ import org.glowa.danube.utilities.time.DanubiaCalendar;
  */
 public class ClimateProxel extends AbstractProxel{
 	
-	public float airTemperatureDailyMean = 0f;
-	public float airTemperatureDailyMax = 0f;
-	public float airTemperatureDailyMin = 0f;
-	public float precipitationDailySum = 0f;
-	public float sunshineDurationDailySum = 0f;
-	public float windSpeedDailyMean = 0f;
-	public float windSpeedDailyMax = 0f;
-	public float relativeHuminityDailyMean = 0f;
+	public ClimateData cd = new ClimateData();
 	
 	private int lonBucket;
 	private int latBucket;
@@ -71,14 +65,14 @@ public class ClimateProxel extends AbstractProxel{
 	
 	private void getClimateData(){
 		try{
-			airTemperatureDailyMean = netCDFReader.airTemperatureDailyMean[latBucket][lonBucket];
-			airTemperatureDailyMax = netCDFReader.airTemperatureDailyMax[latBucket][lonBucket];
-			airTemperatureDailyMin = netCDFReader.airTemperatureDailyMin[latBucket][lonBucket];
-			precipitationDailySum = netCDFReader.precipitationDailySum[latBucket][lonBucket];
-			sunshineDurationDailySum = netCDFReader.sunshineDurationDailySum[latBucket][lonBucket];
-			windSpeedDailyMean = netCDFReader.windSpeedDailyMean[latBucket][lonBucket];
-			windSpeedDailyMax = netCDFReader.windSpeedDailyMax[latBucket][lonBucket];
-			relativeHuminityDailyMean = netCDFReader.relativeHuminityDailyMean[latBucket][lonBucket];
+			cd.airTemperatureMean = netCDFReader.airTemperatureDailyMean[latBucket][lonBucket];
+			cd.airTemperatureMax = netCDFReader.airTemperatureDailyMax[latBucket][lonBucket];
+			cd.airTemperatureMin = netCDFReader.airTemperatureDailyMin[latBucket][lonBucket];
+			cd.precipitationSum = netCDFReader.precipitationDailySum[latBucket][lonBucket];
+			cd.sunshineDurationSum = netCDFReader.sunshineDurationDailySum[latBucket][lonBucket];
+			cd.windSpeedMean = netCDFReader.windSpeedDailyMean[latBucket][lonBucket];
+			cd.windSpeedMax = netCDFReader.windSpeedDailyMax[latBucket][lonBucket];
+			cd.relativeHumidityMean = netCDFReader.relativeHumidityDailyMean[latBucket][lonBucket];
 		}
 		catch(Exception e){
 			

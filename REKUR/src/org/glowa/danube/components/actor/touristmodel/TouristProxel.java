@@ -1,7 +1,7 @@
 
 package org.glowa.danube.components.actor.touristmodel;
 
-import org.glowa.danube.simulation.model.proxel.AbstractProxel;
+import org.glowa.danube.components.actor.utilities.AbstractActorModelProxel;
 
 
 /** 
@@ -12,7 +12,7 @@ import org.glowa.danube.simulation.model.proxel.AbstractProxel;
  * 
  */
 
-public class TouristProxel extends AbstractProxel
+public class TouristProxel extends AbstractActorModelProxel
 {
 	public static final long serialVersionUID = 1;
 }

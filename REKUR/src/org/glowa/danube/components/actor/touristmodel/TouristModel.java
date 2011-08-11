@@ -18,6 +18,12 @@ import org.glowa.danube.deepactors.actors.actor.Actor;
 import org.glowa.danube.deepactors.model.AbstractActorModel;
 //import org.glowa.danube.utilities.time.DanubiaCalendar;
 //import org.glowa.danube.utilities.visualization.LocalVisualization;
+import org.glowa.danube.tables.FloatDataTable;
+import org.glowa.danube.tables.IntegerDataTable;
+import org.glowa.danube.tables.MassPerAreaTable;
+import org.glowa.danube.tables.TemperatureTable;
+import org.glowa.danube.utilities.execution.GetDataEngine;
+import org.glowa.danube.utilities.execution.ProvideTask;
 import org.glowa.danube.utilities.internal.DanubiaLogger;
 
 /**
@@ -173,7 +179,10 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 			ex.printStackTrace();
 		}
 	}
-	
+	/**
+	 * Updates the Demography for this year
+	 * @param year current simulation year
+	 */
 	
 	public void updateDemography(int year){
 		try {
@@ -237,6 +246,9 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 		}
 	}
 	
+	/**
+	 * Writes out the sourcearea map to check the correct initialisation
+	 */
 	private void writemap(){
 		FileWriter writeOut;
 		String outputName = "sourcearea.asc";
@@ -345,8 +357,129 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 		if(preSimulation && startDay == simulationTime().getDay() && startMonth == simulationTime().getMonth() && startYear == simulationTime().getYear()+preSimulationTime){
 			preSimulation = false;
 		}
+		
+		try {
+			getDaylyDataEngine.getData();
+		} catch (Exception ex) {
+			this.logger().warn(ex);
+		}
+		
+		
 	}
 
+	
+	/**
+	 * getData engine parallelizes the import of the ClimateData provided by the ClimateModel via ModelController. 
+	 */
+	
+	private GetDataEngine getDaylyDataEngine = new GetDataEngine();
+    {
+		
+    	
+//    	MeanTemp
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			TemperatureTable airTemperatureDailyMean = controller.getAirTemperatureDailyMean();
+    			for( int i=0; i<pids().length; i++ ){ 
+					proxel(i).cd.airTemperatureMean = airTemperatureDailyMean.getValueByIndex(i);
+				}
+    		}
+    	});
+//    	MaxTemp
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			TemperatureTable airTemperatureDailyMax= controller.getAirTemperatureDailyMax();
+    			for( int i=0; i<pids().length; i++ ){ 
+					proxel(i).cd.airTemperatureMax = airTemperatureDailyMax.getValueByIndex(i);
+				}
+    		}
+    	});
+//    	MinTemp
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			TemperatureTable airTemperatureDailyMin = controller.getAirTemperatureDailyMin();
+    			for( int i=0; i<pids().length; i++ ){ 
+					proxel(i).cd.airTemperatureMin = airTemperatureDailyMin.getValueByIndex(i);
+				}
+    		}
+    	});
+//    	PrecepSum
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			MassPerAreaTable precipitationDailySum = controller.getPrecipitationDailySum();
+    			for( int i=0; i<pids().length; i++ ){ 
+    				proxel(i).cd.precipitationSum = precipitationDailySum.getValueByIndex(i);
+				}
+    		}
+    	});
+//    	SunDurance
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			FloatDataTable sunshineDurationDailySum = controller.getSunshineDurationDailySum();
+    			for( int i=0; i<pids().length; i++ ){ 
+    				proxel(i).cd.sunshineDurationSum = sunshineDurationDailySum.getValueByIndex(i);
+				}
+    		}
+    	});
+//    	MeanWindSpeed
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			FloatDataTable windSpeedDailyMean = controller.getWindSpeedDailyMean();
+    			for( int i=0; i<pids().length; i++ ){ 
+					proxel(i).cd.windSpeedMean = windSpeedDailyMean.getValueByIndex(i);
+				}
+    		}
+    	});
+//    	MaxWindSpeed
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			FloatDataTable windSpeedDailyMax = controller.getWindSpeedDailyMax();
+    			for( int i=0; i<pids().length; i++ ){ 
+					proxel(i).cd.windSpeedMax = windSpeedDailyMax.getValueByIndex(i);
+				}
+    		}
+    	});
+//    	RelativeHumidity
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			FloatDataTable relativeHuminityDailyMean = controller.getRelativeHumidityDailyMean();
+    			for( int i=0; i<pids().length; i++ ){ 
+    				proxel(i).cd.relativeHumidityMean = relativeHuminityDailyMean.getValueByIndex(i);
+				}
+    		}
+    	});
+    	
+//    	TemperatureHumidityIndex
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			IntegerDataTable temperatureHumidityIndex = controller.getTempHumidityIndex();
+    			for( int i=0; i<pids().length; i++ ){ 
+    				proxel(i).cd.temperatureHumidityIndex = temperatureHumidityIndex.getValueByIndex(i);
+				}
+    		}
+    	});
+    }
+	
+	
+	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#preCompute()
 	 */

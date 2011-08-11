@@ -4,14 +4,14 @@ package org.glowa.danube.components.actor.climatemodel;
 
 import java.io.File;
 
-import org.glowa.danube.components.actor.interfaces.RekurClimateModelToActorController;
+import org.glowa.danube.components.actor.interfaces.RekurClimateModelToModelController;
 import org.glowa.danube.simulation.model.AbstractModel;
 import org.glowa.danube.tables.FloatDataTable;
+import org.glowa.danube.tables.IntegerDataTable;
 import org.glowa.danube.tables.MassPerAreaTable;
 import org.glowa.danube.tables.TemperatureTable;
 import org.glowa.danube.utilities.execution.ProvideEngine;
 import org.glowa.danube.utilities.execution.ProvideTask;
-import org.glowa.danube.utilities.internal.DanubiaLogger;
 import org.glowa.danube.utilities.time.DanubiaCalendar;
 
 
@@ -21,7 +21,7 @@ import org.glowa.danube.utilities.time.DanubiaCalendar;
  * Handles the climatedata for simulation runs
  * 
  */
-public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurClimateModelToActorController
+public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurClimateModelToModelController
 
 {
 	private TemperatureTable airTemperatureDailyMean;
@@ -31,18 +31,8 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
 	private FloatDataTable sunshineDurationDailySum;
 	private FloatDataTable windSpeedDailyMean;
 	private FloatDataTable windSpeedDailyMax;
-	private FloatDataTable relativeHuminityDailyMean;
-	
-	private String airTemperatureDailyMeanFileName = "";
-	private String airTemperatureDailyMaxFileName = "";
-	private String airTemperatureDailyMinFileName = "";
-	private String precipitationDailySumFileName = "";
-	private String sunshineDurationDailySumFileName = "";
-	private String windSpeedDailyMeanFileName = "";
-	private String windSpeedDailyMaxFileName = "";
-	private String relativeHuminityDailyMeanFileName = "";
-	
-	private String climateFolderPath = modeloutpath() + File.separator + "ClimateData"+ File.separator;
+	private FloatDataTable relativeHumidityDailyMean;
+	private IntegerDataTable temperatureHumidityDailyIndex;
 	private NetCDFReader netCDFReader;
 	private int currentday = 0;
 	
@@ -63,21 +53,24 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
 		sunshineDurationDailySum = new FloatDataTable(areaMetaData());
 		windSpeedDailyMean = new FloatDataTable(areaMetaData());
 		windSpeedDailyMax = new FloatDataTable(areaMetaData());
-		relativeHuminityDailyMean = new FloatDataTable(areaMetaData());
-		
-    	//this.provide(this.simulationStart());
-		climateFolderPath = "ClimateData"+ File.separator;
-		airTemperatureDailyMeanFileName = this.componentConfig().getComponentProperties().getProperty("airTemperatureDailyMeanFileName");
-		airTemperatureDailyMaxFileName = this.componentConfig().getComponentProperties().getProperty("airTemperatureDailyMaxFileName");
-		airTemperatureDailyMinFileName = this.componentConfig().getComponentProperties().getProperty("airTemperatureDailyMinFileName");
-		precipitationDailySumFileName = this.componentConfig().getComponentProperties().getProperty("precipitationDailySumFileName");
-		sunshineDurationDailySumFileName = this.componentConfig().getComponentProperties().getProperty("sunshineDurationDailySumFileName");
-		windSpeedDailyMeanFileName = this.componentConfig().getComponentProperties().getProperty("windSpeedDailyMeanFileName");
-		windSpeedDailyMaxFileName = this.componentConfig().getComponentProperties().getProperty("windSpeedDailyMaxFileName");
-		relativeHuminityDailyMeanFileName = this.componentConfig().getComponentProperties().getProperty("relativeHuminityDailyMeanFileName");
-		
+		relativeHumidityDailyMean = new FloatDataTable(areaMetaData());
+		temperatureHumidityDailyIndex = new IntegerDataTable(areaMetaData());
 		
 		netCDFReader = new NetCDFReader();
+		
+    	//this.provide(this.simulationStart());
+		netCDFReader.climateFolderPath = "ClimateData"+ File.separator;
+		netCDFReader.airTemperatureDailyMeanFileName = this.componentConfig().getComponentProperties().getProperty("airTemperatureDailyMeanFileName");
+		netCDFReader.airTemperatureDailyMaxFileName = this.componentConfig().getComponentProperties().getProperty("airTemperatureDailyMaxFileName");
+		netCDFReader.airTemperatureDailyMinFileName = this.componentConfig().getComponentProperties().getProperty("airTemperatureDailyMinFileName");
+		netCDFReader.precipitationDailySumFileName = this.componentConfig().getComponentProperties().getProperty("precipitationDailySumFileName");
+		netCDFReader.sunshineDurationDailySumFileName = this.componentConfig().getComponentProperties().getProperty("sunshineDurationDailySumFileName");
+		netCDFReader.windSpeedDailyMeanFileName = this.componentConfig().getComponentProperties().getProperty("windSpeedDailyMeanFileName");
+		netCDFReader.windSpeedDailyMaxFileName = this.componentConfig().getComponentProperties().getProperty("windSpeedDailyMaxFileName");
+		netCDFReader.relativeHumidity3hFileName = this.componentConfig().getComponentProperties().getProperty("relativeHumidity3hFileName");
+		netCDFReader.airTemperature3hFileName = this.componentConfig().getComponentProperties().getProperty("airTemperature3hFileName");
+		
+		
 		
 		netCDFReader.airTemperatureDailyMeanValueName = this.componentConfig().getComponentProperties().getProperty("airTemperatureDailyMeanValueName");
 		netCDFReader.airTemperatureDailyMaxValueName = this.componentConfig().getComponentProperties().getProperty("airTemperatureDailyMaxValueName");
@@ -86,10 +79,11 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
 		netCDFReader.sunshineDurationDailySumValueName = this.componentConfig().getComponentProperties().getProperty("sunshineDurationDailySumValueName");
 		netCDFReader.windSpeedDailyMeanValueName = this.componentConfig().getComponentProperties().getProperty("windSpeedDailyMeanValueName");
 		netCDFReader.windSpeedDailyMaxValueName = this.componentConfig().getComponentProperties().getProperty("windSpeedDailyMaxValueName");
-		netCDFReader.relativeHuminityDailyMeanValueName = this.componentConfig().getComponentProperties().getProperty("relativeHuminityDailyMeanValueName");
+		netCDFReader.relativeHumidity3hValueName = this.componentConfig().getComponentProperties().getProperty("relativeHumidity3hValueName");
+		netCDFReader.airTemperature3hValueName = this.componentConfig().getComponentProperties().getProperty("airTemperature3hValueName");
 		
 //		netCDFReader.initFile(climateFolderPath+meanTempFileName);
-		netCDFReader.initCoordinateSystem(climateFolderPath+airTemperatureDailyMeanFileName);
+		netCDFReader.initCoordinateSystem();
 		
 	}
 
@@ -108,14 +102,14 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
 		/*
 		 * Neue Klimadaten einlesen
 		*/
-		netCDFReader.readAirTemperatureDailyMean(currentday, climateFolderPath+airTemperatureDailyMeanFileName);
-		netCDFReader.readAirTemperatureDailyMax(currentday, climateFolderPath+airTemperatureDailyMaxFileName);
-		netCDFReader.readAirTemperatureDailyMin(currentday, climateFolderPath+airTemperatureDailyMinFileName);
-		netCDFReader.readPrecipitationDailySum(currentday, climateFolderPath+precipitationDailySumFileName);
-		netCDFReader.readSunshineDurationDailySum(currentday, climateFolderPath+sunshineDurationDailySumFileName);
-		netCDFReader.readWindSpeedDailyMean(currentday, climateFolderPath+windSpeedDailyMeanFileName);
-		netCDFReader.readWindSpeedDailyMax(currentday, climateFolderPath+windSpeedDailyMaxFileName);
-		netCDFReader.readRelativeHuminityDailyMean(currentday, climateFolderPath+relativeHuminityDailyMeanFileName);
+		netCDFReader.readAirTemperatureDailyMean(currentday);
+		netCDFReader.readAirTemperatureDailyMax(currentday);
+		netCDFReader.readAirTemperatureDailyMin(currentday);
+		netCDFReader.readPrecipitationDailySum(currentday);
+		netCDFReader.readSunshineDurationDailySum(currentday);
+		netCDFReader.readWindSpeedDailyMean(currentday);
+		netCDFReader.readWindSpeedDailyMax(currentday);
+		netCDFReader.readRelativeHumidityDailyMean(currentday);
 	}
 
 	/* (non-Javadoc)
@@ -151,7 +145,7 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
     		{
     			
     			for( int i=0; i<pids().length; i++ ){ 
-					airTemperatureDailyMean.setValue(i, proxel(i).airTemperatureDailyMean);
+					airTemperatureDailyMean.setValue(i, proxel(i).cd.airTemperatureMean);
 				}
     		}
     	});
@@ -161,7 +155,7 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
     		public void run()
     		{
     			for( int i=0; i<pids().length; i++ ){ 
-					airTemperatureDailyMax.setValue(i, proxel(i).airTemperatureDailyMax);
+					airTemperatureDailyMax.setValue(i, proxel(i).cd.airTemperatureMax);
 				}
     		}
     	});
@@ -171,7 +165,7 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
     		public void run()
     		{
     			for( int i=0; i<pids().length; i++ ){ 
-					airTemperatureDailyMin.setValue(i, proxel(i).airTemperatureDailyMin);
+					airTemperatureDailyMin.setValue(i, proxel(i).cd.airTemperatureMin);
 				}
     		}
     	});
@@ -181,7 +175,7 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
     		public void run()
     		{
     			for( int i=0; i<pids().length; i++ ){ 
-    				precipitationDailySum.setValue(i, proxel(i).precipitationDailySum);
+    				precipitationDailySum.setValue(i, proxel(i).cd.precipitationSum);
 				}
     		}
     	});
@@ -191,7 +185,7 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
     		public void run()
     		{
     			for( int i=0; i<pids().length; i++ ){ 
-    				sunshineDurationDailySum.setValue(i, proxel(i).sunshineDurationDailySum);
+    				sunshineDurationDailySum.setValue(i, proxel(i).cd.sunshineDurationSum);
 				}
     		}
     	});
@@ -202,7 +196,7 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
     		{
     			
     			for( int i=0; i<pids().length; i++ ){ 
-					windSpeedDailyMean.setValue(i, proxel(i).windSpeedDailyMean);
+					windSpeedDailyMean.setValue(i, proxel(i).cd.windSpeedMean);
 				}
     		}
     	});
@@ -213,18 +207,31 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
     		{
     			
     			for( int i=0; i<pids().length; i++ ){ 
-					windSpeedDailyMax.setValue(i, proxel(i).windSpeedDailyMax);
+					windSpeedDailyMax.setValue(i, proxel(i).cd.windSpeedMax);
 				}
     		}
     	});
-//    	RelatuveHuminity
+//    	RelativeHuminity
     	provideEngineDaily.add(new ProvideTask()
     	{
     		public void run()
     		{
     			
     			for( int i=0; i<pids().length; i++ ){ 
-    				relativeHuminityDailyMean.setValue(i, proxel(i).relativeHuminityDailyMean);
+    				relativeHumidityDailyMean.setValue(i, proxel(i).cd.relativeHumidityMean);
+				}
+    		}
+    	});
+    	
+    	
+//    	TemperatureHumidityIndex
+    	provideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			
+    			for( int i=0; i<pids().length; i++ ){ 
+    				temperatureHumidityDailyIndex.setValue(i, proxel(i).cd.temperatureHumidityIndex);
 				}
     		}
     	});
@@ -275,8 +282,14 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
 	}
 
 	@Override
-	public FloatDataTable getRelativeHuminityDailyMean() {
+	public FloatDataTable getRelativeHumidityDailyMean() {
 		// TODO Auto-generated method stub
-		return relativeHuminityDailyMean;
+		return relativeHumidityDailyMean;
+	}
+
+	@Override
+	public IntegerDataTable getTempHumidityIndex() {
+		// TODO Auto-generated method stub
+		return temperatureHumidityDailyIndex;
 	}
 }

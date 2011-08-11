@@ -3,7 +3,6 @@ package org.glowa.danube.components.actor.climatemodel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 import ucar.ma2.Array;
 import ucar.ma2.Range;
@@ -18,7 +17,20 @@ public class NetCDFReader {
 	public float[][] sunshineDurationDailySum;
 	public float[][] windSpeedDailyMean;
 	public float[][] windSpeedDailyMax;
-	public float[][] relativeHuminityDailyMean;
+	public float[][] relativeHumidityDailyMean;
+	public int[][] temperaturHumidityIndex;
+	
+	public String climateFolderPath;
+	
+	public String airTemperatureDailyMeanFileName = "";
+	public String airTemperatureDailyMaxFileName = "";
+	public String airTemperatureDailyMinFileName = "";
+	public String precipitationDailySumFileName = "";
+	public String sunshineDurationDailySumFileName = "";
+	public String windSpeedDailyMeanFileName = "";
+	public String windSpeedDailyMaxFileName = "";
+	public String relativeHumidity3hFileName = "";
+	public String airTemperature3hFileName = "";
 	
 	public String airTemperatureDailyMeanValueName;
 	public String airTemperatureDailyMaxValueName;
@@ -27,7 +39,8 @@ public class NetCDFReader {
 	public String sunshineDurationDailySumValueName;
 	public String windSpeedDailyMeanValueName;
 	public String windSpeedDailyMaxValueName;
-	public String relativeHuminityDailyMeanValueName;
+	public String relativeHumidity3hValueName;
+	public String airTemperature3hValueName;
 	
 	public double[] lon;
 	public double[] lat;
@@ -39,9 +52,9 @@ public class NetCDFReader {
 	}
 	
 	
-	public void initCoordinateSystem(String filename){
+	public void initCoordinateSystem(){
 		try {
-		    ncfile = NetcdfFile.open(filename);
+		    ncfile = NetcdfFile.open(climateFolderPath+airTemperatureDailyMeanFileName);
 		    List<Variable> vList = ncfile.getVariables();
 		    Variable lonVariable = null;
 		    Variable latVariable = null;
@@ -66,50 +79,90 @@ public class NetCDFReader {
 		    }
 		}
 		catch (IOException ioe) {
-		    System.out.println("trying to open " + filename+ ioe.getMessage());
+		    System.out.println("trying to open " + climateFolderPath+airTemperatureDailyMeanFileName+ ioe.getMessage());
 		} 
 		finally { 
 		    if (null != ncfile) try {
 		      ncfile.close();
 		    } catch (IOException ioe) {
-		    	System.out.println("trying to close " + filename+ ioe.getMessage());
+		    	System.out.println("trying to close " + climateFolderPath+airTemperatureDailyMeanFileName+ ioe.getMessage());
 		    }
 		}	
 	}
 	
-	public void readAirTemperatureDailyMean(int day, String filename){
+	public void readAirTemperatureDailyMean(int day){
+		String filename = climateFolderPath+airTemperatureDailyMeanFileName;
 		airTemperatureDailyMean = readClimateData(day, filename, airTemperatureDailyMeanValueName);
 	}
 	
-	public void readAirTemperatureDailyMax(int day, String filename){
+	public void readAirTemperatureDailyMax(int day){
+		String filename = climateFolderPath+airTemperatureDailyMaxFileName;
 		airTemperatureDailyMax = readClimateData(day, filename, airTemperatureDailyMaxValueName);
 	}
 	
-	public void readAirTemperatureDailyMin(int day, String filename){
+	public void readAirTemperatureDailyMin(int day){
+		String filename = climateFolderPath+airTemperatureDailyMinFileName;
 		airTemperatureDailyMin = readClimateData(day, filename, airTemperatureDailyMinValueName);
 	}
 	
-	public void readPrecipitationDailySum(int day, String filename){
+	public void readPrecipitationDailySum(int day){
+		String filename = climateFolderPath+precipitationDailySumFileName;
 		precipitationDailySum = readClimateData(day, filename, precipitationDailySumValueName);
 	}
 	
-	public void readSunshineDurationDailySum(int day, String filename){
+	public void readSunshineDurationDailySum(int day){
+		String filename = climateFolderPath+sunshineDurationDailySumFileName;
 		sunshineDurationDailySum = readClimateData(day, filename, sunshineDurationDailySumValueName);
 	}
 	
-	public void readWindSpeedDailyMean(int day, String filename){
+	public void readWindSpeedDailyMean(int day){
+		String filename = climateFolderPath+windSpeedDailyMeanFileName;
 		windSpeedDailyMean = readClimateData(day, filename, windSpeedDailyMeanValueName);
 	}
 	
-	public void readWindSpeedDailyMax(int day, String filename){
+	public void readWindSpeedDailyMax(int day){
+		String filename = climateFolderPath+windSpeedDailyMaxFileName;
 		windSpeedDailyMax = readClimateData(day, filename, windSpeedDailyMaxValueName);
 	}
 	
 	
-	public void readRelativeHuminityDailyMean(int day, String filename){
-		relativeHuminityDailyMean = readClimateData(day, filename, relativeHuminityDailyMeanValueName);
+	public void readRelativeHumidityDailyMean(int day){
+		try{
+			String filename = climateFolderPath+relativeHumidity3hFileName;
+			relativeHumidityDailyMean = readClimateData((day*8), filename, relativeHumidity3hValueName);
+			for(int i = 1; i<8;i++){
+				float[][] relativeHuminity3hMean = readClimateData((day*8)+i, filename, relativeHumidity3hValueName);
+				for(int x = 0; x<relativeHuminity3hMean.length; x++){
+					for(int y = 0; y<relativeHuminity3hMean[0].length; y++){
+						relativeHumidityDailyMean[x][y] += relativeHuminity3hMean[x][y];
+						if(i == 8){
+							relativeHumidityDailyMean[x][y] /=8;
+						}
+					}
+				}
+			}
+		}
+		catch(Exception e){
+			System.out.println("no relhum available");
+		}
 	}
 	
+	public void calcTempHumidityIndex(int day){
+		String relHumFilePath = climateFolderPath+relativeHumidity3hFileName;
+		String airTemp3hFilePath = climateFolderPath+airTemperature3hFileName;
+		for(int i = 0; i<8;i++){
+			float[][] relHum3h = readClimateData((day*8+i), relHumFilePath, relativeHumidity3hValueName);
+			float[][] airTemp3h =  readClimateData((day*8+i), airTemp3hFilePath, airTemperature3hValueName);
+			for(int x = 0; x<relHum3h.length; x++){
+				for(int y = 0; y<relHum3h[0].length; y++){
+					if(temperaturHumidityIndex[x][y] == 0){
+						temperaturHumidityIndex[x][y] = (int)((Math.exp((-849.424)+13.5372*(double)(airTemp3h[0][0])+2.386084*relHum3h[x][y]))/
+														(1+Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y])+2.386084*relHum3h[0][0]))*100.0);
+					}
+				}
+			}	
+		}
+	}
 	
 	private float[][] readClimateData(int day, String filename, String valueName){
 		try {

@@ -1,5 +1,11 @@
 package org.glowa.danube.components.actor.destinationModel;
 
-public class ScenarioAction1 {
+import org.glowa.danube.deepactors.actors.action.AbstractAction;
 
+/**
+ * @author Dennis Joswig
+ *@see AbstractAction
+ */
+
+public class ScenarioAction1 extends AbstractAction<DD_Destination>{
 }

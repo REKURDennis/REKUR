@@ -8,20 +8,16 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
 
-import org.glowa.danube.components.actor.destinationModel.deepactors.DD_Destination;
-import org.glowa.danube.components.actor.destinationModel.proxelspecifications.DestinationProxel;
-import org.glowa.danube.components.actor.interfaces.ActorControllerToRekurDestinationModel;
-import org.glowa.danube.components.actor.interfaces.RekurDestinationModelToActorController;
+import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurDestinationModel;
+import org.glowa.danube.components.actor.interfaces.RekurDestinationModelToModelController;
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.deepactors.actors.actor.Actor;
 import org.glowa.danube.deepactors.model.AbstractActorModel;
-//import org.glowa.danube.utilities.visualization.LocalVisualization;
 import org.glowa.danube.tables.FloatDataTable;
+import org.glowa.danube.tables.IntegerDataTable;
 import org.glowa.danube.tables.MassPerAreaTable;
 import org.glowa.danube.tables.TemperatureTable;
 import org.glowa.danube.utilities.execution.GetDataEngine;
-import org.glowa.danube.utilities.execution.GetDataTask;
-import org.glowa.danube.utilities.execution.ProvideEngine;
 import org.glowa.danube.utilities.execution.ProvideTask;
 
 /**
@@ -29,7 +25,7 @@ import org.glowa.danube.utilities.execution.ProvideTask;
  * @author Dennis Joswig
  */
 
-public class DestinationModel extends AbstractActorModel<DestinationProxel> implements RekurDestinationModelToActorController
+public class DestinationModel extends AbstractActorModel<DestinationProxel> implements RekurDestinationModelToModelController
 {
 	public static int simulationWeek = 0;
 	
@@ -42,7 +38,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 	private HashMap<Integer, Integer> countryIDs = new HashMap<Integer, Integer>();
 	private HashMap<Integer, ClimateData> dailyClimateData = new HashMap<Integer, ClimateData>();
 	private HashMap<Integer, ClimateData> lastMonthClimateData = new HashMap<Integer, ClimateData>();
-	private ActorControllerToRekurDestinationModel controller;
+	private ModelControllerToRekurDestinationModel controller;
 	private final int holidayTypeNumber = 10;
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
@@ -56,7 +52,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 	    database = "jdbc:mysql://localhost/"+dataBaseName+"?user="+userName+"&password="+password;
 		
 		
-		initdestinaionsFromDataBase();
+		initDestinationsFromDataBase();
 		for(Actor entry :actorMap().getEntries()){
 			DD_Destination dest = (DD_Destination)entry;
 			holidayTypes.put(entry.getId(), dest.holidayTypes);
@@ -66,7 +62,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 	}
 	
 	
-	private void initdestinaionsFromDataBase(){
+	private void initDestinationsFromDataBase(){
 		try {
             // Der Aufruf von newInstance() ist ein Workaround
 	        // für einige misslungene Java-Implementierungen
@@ -165,7 +161,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 	 */
 	public void getData() {
 		try {
-			controller = (ActorControllerToRekurDestinationModel) getImport("org.glowa.danube.components.actor.interfaces.ActorControllerToRekurDestinationModel");
+			controller = (ModelControllerToRekurDestinationModel) getImport("org.glowa.danube.components.actor.interfaces.ModelControllerToRekurDestinationModel");
 			//System.out.println(data.getNumberOfTourists());
 			getDaylyDataEngine.getData();
 		} catch (Exception ex) {
@@ -175,9 +171,8 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 	
 	
 	/**
-	 * getData engine parallelizes the import of the climatedata provided by the climatemodel via actorcontroller. 
+	 * getData engine parallelizes the import of the ClimateData provided by the ClimateModel via ModelController. 
 	 */
-	
 	private GetDataEngine getDaylyDataEngine = new GetDataEngine();
     {
 		
@@ -189,7 +184,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
     		{
     			TemperatureTable airTemperatureDailyMean = controller.getAirTemperatureDailyMean();
     			for( int i=0; i<pids().length; i++ ){ 
-					proxel(i).airTemperatureDailyMean = airTemperatureDailyMean.getValueByIndex(i);
+					proxel(i).cd.airTemperatureMean = airTemperatureDailyMean.getValueByIndex(i);
 				}
     		}
     	});
@@ -200,7 +195,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
     		{
     			TemperatureTable airTemperatureDailyMax= controller.getAirTemperatureDailyMax();
     			for( int i=0; i<pids().length; i++ ){ 
-					proxel(i).airTemperatureDailyMax = airTemperatureDailyMax.getValueByIndex(i);
+					proxel(i).cd.airTemperatureMax = airTemperatureDailyMax.getValueByIndex(i);
 				}
     		}
     	});
@@ -211,7 +206,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
     		{
     			TemperatureTable airTemperatureDailyMin = controller.getAirTemperatureDailyMin();
     			for( int i=0; i<pids().length; i++ ){ 
-					proxel(i).airTemperatureDailyMin = airTemperatureDailyMin.getValueByIndex(i);
+					proxel(i).cd.airTemperatureMin = airTemperatureDailyMin.getValueByIndex(i);
 				}
     		}
     	});
@@ -222,7 +217,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
     		{
     			MassPerAreaTable precipitationDailySum = controller.getPrecipitationDailySum();
     			for( int i=0; i<pids().length; i++ ){ 
-    				proxel(i).precipitationDailySum = precipitationDailySum.getValueByIndex(i);
+    				proxel(i).cd.precipitationSum = precipitationDailySum.getValueByIndex(i);
 				}
     		}
     	});
@@ -233,7 +228,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
     		{
     			FloatDataTable sunshineDurationDailySum = controller.getSunshineDurationDailySum();
     			for( int i=0; i<pids().length; i++ ){ 
-    				proxel(i).sunshineDurationDailySum = sunshineDurationDailySum.getValueByIndex(i);
+    				proxel(i).cd.sunshineDurationSum = sunshineDurationDailySum.getValueByIndex(i);
 				}
     		}
     	});
@@ -244,7 +239,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
     		{
     			FloatDataTable windSpeedDailyMean = controller.getWindSpeedDailyMean();
     			for( int i=0; i<pids().length; i++ ){ 
-					proxel(i).windSpeedDailyMean = windSpeedDailyMean.getValueByIndex(i);
+					proxel(i).cd.windSpeedMean = windSpeedDailyMean.getValueByIndex(i);
 				}
     		}
     	});
@@ -255,18 +250,30 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
     		{
     			FloatDataTable windSpeedDailyMax = controller.getWindSpeedDailyMax();
     			for( int i=0; i<pids().length; i++ ){ 
-					proxel(i).windSpeedDailyMax = windSpeedDailyMax.getValueByIndex(i);
+					proxel(i).cd.windSpeedMax = windSpeedDailyMax.getValueByIndex(i);
 				}
     		}
     	});
-//    	RelativeHuminity
+//    	RelativeHumidity
     	getDaylyDataEngine.add(new ProvideTask()
     	{
     		public void run()
     		{
-    			FloatDataTable relativeHuminityDailyMean = controller.getRelativeHuminityDailyMean();
+    			FloatDataTable relativeHuminityDailyMean = controller.getRelativeHumidityDailyMean();
     			for( int i=0; i<pids().length; i++ ){ 
-    				proxel(i).relativeHuminityDailyMean = relativeHuminityDailyMean.getValueByIndex(i);
+    				proxel(i).cd.relativeHumidityMean = relativeHuminityDailyMean.getValueByIndex(i);
+				}
+    		}
+    	});
+    	
+//    	TemperatureHumidityIndex
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			IntegerDataTable temperatureHumidityIndex = controller.getTempHumidityIndex();
+    			for( int i=0; i<pids().length; i++ ){ 
+    				proxel(i).cd.temperatureHumidityIndex = temperatureHumidityIndex.getValueByIndex(i);
 				}
     		}
     	});
@@ -298,9 +305,9 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 		lastMonthClimateData = new HashMap<Integer, ClimateData>();
 		for(Actor a : actorMap().getEntries()){
 			DD_Destination d = (DD_Destination)a;
-			dailyClimateData.put(d.getId(), d.dailyClimate);
+			dailyClimateData.put(d.getId(), d.ca.dailyClimate);
 			if(simulationTime().getDay()==1){
-				lastMonthClimateData.put(d.getId(), d.lastMonthClimate);
+				lastMonthClimateData.put(d.getId(), d.ca.lastMonthClimate);
 			}
 		}
 	}
