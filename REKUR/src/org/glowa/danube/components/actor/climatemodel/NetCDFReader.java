@@ -18,7 +18,7 @@ public class NetCDFReader {
 	public float[][] windSpeedDailyMean;
 	public float[][] windSpeedDailyMax;
 	public float[][] relativeHumidityDailyMean;
-	public int[][] temperaturHumidityIndex;
+	public double[][] temperaturHumidityIndex;
 	
 	public String climateFolderPath;
 	
@@ -150,16 +150,20 @@ public class NetCDFReader {
 	public void calcTempHumidityIndex(int day){
 		String relHumFilePath = climateFolderPath+relativeHumidity3hFileName;
 		String airTemp3hFilePath = climateFolderPath+airTemperature3hFileName;
+		float[][] initsize = readClimateData((day), relHumFilePath, relativeHumidity3hValueName);
+		temperaturHumidityIndex = new double[initsize.length][initsize[0].length];
 		for(int i = 0; i<8;i++){
 			float[][] relHum3h = readClimateData((day*8+i), relHumFilePath, relativeHumidity3hValueName);
 			float[][] airTemp3h =  readClimateData((day*8+i), airTemp3hFilePath, airTemperature3hValueName);
 			for(int x = 0; x<relHum3h.length; x++){
 				for(int y = 0; y<relHum3h[0].length; y++){
 					if(temperaturHumidityIndex[x][y] == 0){
-						temperaturHumidityIndex[x][y] = (int)((Math.exp((-849.424)+13.5372*(double)(airTemp3h[0][0])+2.386084*relHum3h[x][y]))/
-														(1+Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y])+2.386084*relHum3h[0][0]))*100.0);
+						temperaturHumidityIndex[x][y] = (Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y])+(0.2527834*(100.0*relHum3h[x][y])+(airTemp3h[x][y]-273.15)))/
+														(1+Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y]+(0.2527834*(100.0*relHum3h[x][y])+(airTemp3h[x][y]-273.15))));
+						System.out.print(temperaturHumidityIndex[x][y]+" ");
 					}
 				}
+				System.out.println();
 			}	
 		}
 	}
@@ -168,9 +172,11 @@ public class NetCDFReader {
 		try {
 		    ncfile = NetcdfFile.open(filename);
 			List<Variable> vList = ncfile.getVariables();
+			
 		    Variable temp = null;
 		    for(int i=0; i < vList.size();i++){
 		    	Variable v = vList.get(i);
+		    	
 		    	if(v.getName().equals(valueName)){
 		    		//vList.remove(v);
 		    		temp = v;
