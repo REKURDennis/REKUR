@@ -110,6 +110,7 @@ public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurC
 		netCDFReader.readWindSpeedDailyMean(currentday);
 		netCDFReader.readWindSpeedDailyMax(currentday);
 		netCDFReader.readRelativeHumidityDailyMean(currentday);
+		netCDFReader.calcTempHumidityIndex(currentday);
 	}
 
 	/* (non-Javadoc)
