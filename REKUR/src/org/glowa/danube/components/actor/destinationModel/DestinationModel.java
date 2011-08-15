@@ -56,11 +56,11 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 	 */
 	private HashMap<Integer, Integer> countryIDs = new HashMap<Integer, Integer>();
 	/**
-	 * HashMap with the destinations-ids as key and their daily climatedata.
+	 * HashMap with the destinations-ids as key and their daily climate data.
 	 */
 	private HashMap<Integer, ClimateData> dailyClimateData = new HashMap<Integer, ClimateData>();
 	/**
-	 * HashMap with the destinations-ids as key and their last month climate data .
+	 * HashMap with the destinations-ids as key and their last month climate data.
 	 */
 	private HashMap<Integer, ClimateData> lastMonthClimateData = new HashMap<Integer, ClimateData>();
 	/**
