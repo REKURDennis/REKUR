@@ -11,7 +11,7 @@ import ucar.nc2.Variable;
 
 /**
  * The NetCDFReader-Class offers methods and attributes to read in Climatedata saved as NetCDF-Format.
- * @author lxiii_universe
+ * @author Dennis Joswig
  *
  */
 
@@ -49,7 +49,7 @@ public class NetCDFReader {
 	 */
 	public float[][] relativeHumidityDailyMean;
 	/**
-	 * Saves the doubletable with temperature humidity of the current simulationday.
+	 * Saves the integertable with temperature humidity of the current simulationday.
 	 */
 	public double[][] temperaturHumidityIndex;
 	/**

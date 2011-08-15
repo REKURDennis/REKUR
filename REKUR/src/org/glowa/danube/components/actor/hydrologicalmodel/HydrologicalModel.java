@@ -13,7 +13,6 @@ import org.glowa.danube.utilities.time.DanubiaCalendar;
 /**
  * @author Dennis Joswig
  * @version 30. Juni 2010
- * Reads in the hydrological Dummydata for simulation runs
  * 
  */
 public class HydrologicalModel extends AbstractModel<HydrologicalProxel> implements RekurHydrologicalModelToModelController

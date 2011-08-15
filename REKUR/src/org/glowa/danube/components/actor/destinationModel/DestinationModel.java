@@ -1,4 +1,4 @@
-package org.glowa.danube.components.actor.destinationModel;
+ package org.glowa.danube.components.actor.destinationModel;
 
 
 import java.io.FileWriter;
@@ -27,18 +27,49 @@ import org.glowa.danube.utilities.execution.ProvideTask;
 
 public class DestinationModel extends AbstractActorModel<DestinationProxel> implements RekurDestinationModelToModelController
 {
-	public static int simulationWeek = 0;
-	
-	private String citiesTable = "cities";
+	/**
+	 * Saves the name for the destinationsrelation.
+	 */
+	private String destinationsTable;
+	/**
+	 * Saves the accesstring for databaseconnection.
+	 */
 	private String database = "jdbc:mysql://localhost/rekur?user=root&password=bla";
+	/**
+	 * Saves the database name.
+	 */
 	private String dataBaseName;
+	/**
+	 * Saves the username for the database connection.
+	 */
 	private String userName;
+	/**
+	 * Saves the password for the database connection.
+	 */
 	private String password;
+	/**
+	 * HashMap with the destinations-ids as key and their holiday types.
+	 */
 	private HashMap<Integer, boolean[]> holidayTypes = new HashMap<Integer, boolean[]>();
+	/**
+	 * HashMap with the destinations-ids as key and their country-ids.
+	 */
 	private HashMap<Integer, Integer> countryIDs = new HashMap<Integer, Integer>();
+	/**
+	 * HashMap with the destinations-ids as key and their daily climatedata.
+	 */
 	private HashMap<Integer, ClimateData> dailyClimateData = new HashMap<Integer, ClimateData>();
+	/**
+	 * HashMap with the destinations-ids as key and their last month climate data .
+	 */
 	private HashMap<Integer, ClimateData> lastMonthClimateData = new HashMap<Integer, ClimateData>();
+	/**
+	 * References the ModelController for importdata.
+	 */
 	private ModelControllerToRekurDestinationModel controller;
+	/**
+	 * Specifies the number of holidaytypes.
+	 */
 	private final int holidayTypeNumber = 10;
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
@@ -49,6 +80,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 		dataBaseName = this.componentConfig().getComponentProperties().getProperty("dataBaseName");
 	    userName = this.componentConfig().getComponentProperties().getProperty("userName");
 	    password = this.componentConfig().getComponentProperties().getProperty("password");
+	    destinationsTable = this.componentConfig().getComponentProperties().getProperty("destinationrelation");
 	    database = "jdbc:mysql://localhost/"+dataBaseName+"?user="+userName+"&password="+password;
 		
 		
@@ -61,6 +93,9 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 		writemap();
 	}
 	
+	/**
+	 * Inits all data saved in the database.
+	 */
 	
 	private void initDestinationsFromDataBase(){
 		try {
@@ -71,7 +106,7 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 			Connection con = DriverManager.getConnection(database);
 			Statement stmt = con.createStatement();
 			
-			String query = " select * from "+citiesTable+";";
+			String query = " select * from "+destinationsTable+";";
 			
 			ResultSet sa = stmt. executeQuery(query);
 			int i = 1;
@@ -98,7 +133,9 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 		}
 	}
 	
-	
+	/**
+	 * writes out the destinationmap.
+	 */
 	private void writemap(){
 		FileWriter writeOut;
 		String outputName = "destinations.asc";
@@ -311,15 +348,6 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 			}
 		}
 	}
-	
-	
-/**
- * 
- */
-	public void provide()
-	{
-	} // provide
-	
 	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#store()

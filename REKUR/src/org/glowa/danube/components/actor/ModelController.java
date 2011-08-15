@@ -10,12 +10,28 @@ import org.glowa.danube.tables.IntegerDataTable;
 import org.glowa.danube.tables.MassPerAreaTable;
 import org.glowa.danube.tables.TemperatureTable;
 
+/**
+ * The ModelController implements all import interfaces and provides all export methods.
+ * @author Dennis Joswig
+ *
+ */
 public class ModelController extends AbstractController implements ModelControllerToRekurDestinationModel, 
 	ModelControllerToRekurTouristModel, ModelControllerToRekurHydrologicalModel{
-	
+	/**
+	 * Object to import TouristModel-Values.
+	 */
 	private RekurTouristModelToModelController tourist = null;
+	/**
+	 * Object to import ClimateModel-Values.
+	 */
 	private RekurClimateModelToModelController climate = null;
+	/**
+	 * Object to import DestinationModel-Values.
+	 */
 	private RekurDestinationModelToModelController destination = null;
+	/**
+	 * Object to import HydrologicalModel-Values.
+	 */
 	private RekurHydrologicalModelToModelController hydrological = null;
 	
 	/**

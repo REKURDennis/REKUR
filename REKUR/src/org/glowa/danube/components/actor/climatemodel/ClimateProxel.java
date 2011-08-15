@@ -11,30 +11,45 @@ import org.glowa.danube.utilities.time.DanubiaCalendar;
  *
  */
 public class ClimateProxel extends AbstractProxel{
-	
+	/**
+	 * Saves the daily climatedata for this proxel.
+	 */
 	public ClimateData cd = new ClimateData();
 	
+	/**
+	 * the appropriate longitude-bucket of the climatedata-files.
+	 */
 	private int lonBucket;
+	/**
+	 * the appropriate latitude-bucket of the climatedata-files.
+	 */
 	private int latBucket;
+	/**
+	 * Saves the NetCDFReader-Object reference.
+	 */
 	private NetCDFReader netCDFReader;
+	/**
+	 * Saves if the proxel is already init.
+	 */
 	private boolean init = true;
-	
+	/**
+	 * Unique number for serialization. 
+	 */
 	private static final long serialVersionUID = 11745238;
 	@Override
 	public void computeProxel(DanubiaCalendar actTime, Object data) {
 		netCDFReader = (NetCDFReader)data;
-//		if(isInside())System.out.println("isInside");
-//		else System.out.println("isOutside");
 		if(init){
 			initLonLatBuckets();
-//			System.out.println("initLonLat");
 			init = false;
 		}
 		getClimateData();
 		super.computeProxel(actTime, data);
 	}
 	
-	
+	/**
+	 * init the longitude and latitude buckets for reading the climatedata.
+	 */
 	private void initLonLatBuckets(){
 		int lon = (int)(easting()*100);
 		int lat = (int)(northing()*100);
@@ -56,13 +71,11 @@ public class ClimateProxel extends AbstractProxel{
 				latBucket = i;
 			}
 		}
-//		System.out.println(isInside());
-//		System.out.println("ProxelID: "+pid()+" Longitude: "+lon+" Latitude: "+ lat);
-//		System.out.println("ProxelID: "+pid()+" LongitudeBucketValue: "+netCDFReader.lon[lonBucket]+" LatitudeBucketValue: "+ netCDFReader.lat[latBucket]);
-//		System.out.println("ProxelID: "+pid()+" LongitudeBucketNumber: "+lonBucket+" LatitudeBucketNumber: "+ latBucket);
 	}
 	
-	
+	/**
+	 * gets the climatedata from the netCDFReader.
+	 */
 	private void getClimateData(){
 		try{
 			cd.airTemperatureMean = netCDFReader.airTemperatureDailyMean[latBucket][lonBucket];
@@ -77,10 +90,5 @@ public class ClimateProxel extends AbstractProxel{
 		catch(Exception e){
 			
 		}
-
-//		System.out.println("ProxelID: "+pid()+" LongitudeBucketValue: "+netCDFReader.lon[lonBucket]+" LatitudeBucketValue: "+ netCDFReader.lat[latBucket]);
-//		System.out.println("ProxelID: "+pid()+" MeanTemp "+ meanTemp);
-//		System.out.println("ProxelID: "+pid()+" LongitudeBucketValue: "+netCDFReader.lon[lonBucket]+" LatitudeBucketValue: "+ netCDFReader.lat[latBucket]);
-//		System.out.println("ProxelID: "+pid()+" MeanWindSpeed "+ meanWindSpeed);
 	}
 }

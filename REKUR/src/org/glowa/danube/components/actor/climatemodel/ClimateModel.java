@@ -16,24 +16,60 @@ import org.glowa.danube.utilities.time.DanubiaCalendar;
 
 
 /**
+ * Handles the climatedata for simulation runs.
  * @author Dennis Joswig
  * @version 30. Juni 2010
- * Handles the climatedata for simulation runs
+ * 
  * 
  */
 public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurClimateModelToModelController
 
 {
+	/**
+	 * Saves the TemperatureTable with the air mean temperature of the current simulationday.
+	 */
 	private TemperatureTable airTemperatureDailyMean;
+	/**
+	 * Saves the TemperatureTable with the air max temperature of the current simulationday.
+	 */
 	private TemperatureTable airTemperatureDailyMax;
+	/**
+	 * Saves the TemperatureTable with the air min temperature of the current simulationday.
+	 */
 	private TemperatureTable airTemperatureDailyMin;
+	/**
+	 * Saves the MassPerAreaTable with the precipitationsum of the current simulationday.
+	 */
 	private MassPerAreaTable precipitationDailySum;
+	/**
+	 * Saves the FloatDataTable with the sunshineduration of the current simulationday.
+	 */
 	private FloatDataTable sunshineDurationDailySum;
+	/**
+	 * Saves the FloatDataTable with the mean windspeed of the current simulationday.
+	 */
 	private FloatDataTable windSpeedDailyMean;
+	/**
+	 * Saves the FloatDataTable with the max windspeed of the current simulationday.
+	 */
 	private FloatDataTable windSpeedDailyMax;
+	/**
+	 * Saves the FloatDataTable with the mean relative humidity of the current simulationday.
+	 */
 	private FloatDataTable relativeHumidityDailyMean;
+	/**
+	 * Saves the IntegerDataTable with the max temperature humidity of the current simulationday.
+	 */
 	private IntegerDataTable temperatureHumidityDailyIndex;
+	
+	/**
+	 * svaes the refence on the NetCDFReader-Object.
+	 */
 	private NetCDFReader netCDFReader;
+	
+	/**
+	 * Total number of simulationdays starting with 0.
+	 */
 	private int currentday = 0;
 	
 	
