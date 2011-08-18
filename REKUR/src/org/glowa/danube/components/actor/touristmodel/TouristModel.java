@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Vector;
 import java.util.Map.Entry;
 
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurTouristModel;
@@ -74,9 +75,27 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
    *  Configurationfile can be found unter metadata/components/touristmodel.cfg
    */
   private String landkreisIDtoSourceAreaIDTable = "landkreise";
+  /**
+   * holds the name of the ralation containing the touristTypes. Given in the config-file.
+   *  Configurationfile can be found unter metadata/components/touristmodel.cfg
+   */
+  private String touristTypesTable = "touristTypes";
   //private HashMap<Integer,Integer[][]> numberOfTourists;
+  /**
+   * HasmAp with estination-Ids and thir DATA-Objects.
+   */
   public HashMap<Integer,DATA_Destination> destinations = new HashMap<Integer, DATA_Destination>();
+  /**
+   * This HashMap contains all touristTypes.
+   */
+  public HashMap<Integer, DA_AbstractTouristType> touristTypes = new HashMap<Integer, DA_AbstractTouristType>();
+  /**
+   * Reference to the Importcontroller. 
+   */
   public ModelControllerToRekurTouristModel controller; 
+  /**
+   * Checks the initialization. 
+   */
   private boolean destinationInit = true;
   private int weeksToForecast =52;
   public int priceCategories = 7;
@@ -84,10 +103,21 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
   private int startMonth;
   private int startDay;
   public GregorianCalendar currentDate;
-  public int preSimulationTime ;
+  /**
+   * Number of years of the pre simulation time.
+   */
+  public int preSimulationTime;
+  /**
+   * Indicates if the presimulation is finished.
+   */
   public boolean preSimulation = true;
-  
+  /**
+   * logging.
+   */
   private boolean logging = true;
+  /**
+   * reference to the danubialogger.
+   */
   private static DanubiaLogger logger = DanubiaLogger.getDanubiaLogger(TouristModel.class);
   
   
@@ -100,28 +130,17 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 		startYear = simulationTime().getYear();
 		startMonth = simulationTime().getMonth();
 		startDay = simulationTime().getDay();
-		
-		try
-	    {preSimulationTime = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("preSimulationTime"));}
-	    catch (NumberFormatException nfe)
-		   {if (logging) 
-		   		{logger.warn("******NumberFormatException perSimTime!!");
-		   		preSimulationTime = 0;
-		   		}//if
-		   }//Catch
-	   
-	    if(preSimulationTime == 0){
-			preSimulation = false;
-		}
-	    
-
-	    dataBaseName = this.componentConfig().getComponentProperties().getProperty("dataBaseName");
+		System.out.println(startYear+" "+startMonth+" "+startDay);
+		preSimulationTime = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("preSimulationTime"));
+	    System.out.println(preSimulationTime);
+		dataBaseName = this.componentConfig().getComponentProperties().getProperty("dataBaseName");
 	    userName = this.componentConfig().getComponentProperties().getProperty("userName");
 	    password = this.componentConfig().getComponentProperties().getProperty("password");
 	    database = "jdbc:mysql://localhost/"+dataBaseName+"?user="+userName+"&password="+password;
 	    sourceareaTable = this.componentConfig().getComponentProperties().getProperty("sourceareaTable");
 	    demoTable = this.componentConfig().getComponentProperties().getProperty("demoTable");
 	    landkreisIDtoSourceAreaIDTable = this.componentConfig().getComponentProperties().getProperty("landkreisIDtoSourceAreaIDTable");
+	    touristTypesTable = this.componentConfig().getComponentProperties().getProperty("touristTypesTable");
 	    
 	    
 		initSourceAreasFromDataBase();
@@ -234,6 +253,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	 * This Method initializes all Tourist Agents.
 	 */
 	private void initTourists(){
+		getTouristTypes();
 		for(DA_SourceArea sa : actorMap().getEntries(DA_SourceArea.class).getEntries()){
 			int touristCount = 10000;
 			if(sa.numberOfCitizens!=0.0f){
@@ -241,9 +261,107 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 			}
 			sa.tourists = new DA_Tourist[touristCount];
 			for(int i = 0; i<touristCount; i++){
-				sa.tourists[i] = new DA_Tourist(this,sa);
+				sa.tourists[i] = new DA_Tourist(this,sa, touristTypes.get(1));
 			}
 		}
+	}
+	
+	
+	/**
+	 * This methods reads in all TouristTypes from the database.
+	 */
+	private void getTouristTypes(){
+		try {
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Connection con = DriverManager.getConnection(database);
+			Statement stmt = con.createStatement();
+			String query = "select * from "+touristTypesTable;
+			
+			ResultSet sa = stmt. executeQuery(query);
+			while(sa.next()){
+				DA_AbstractTouristType ttype = (DA_AbstractTouristType)Class.forName(sa.getString("Class")).newInstance();
+				try{
+					ttype.holidaytypes = addToVector(sa.getString("holidaytypes"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.activityTypes = addToVector(sa.getString("activityTypes"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.countries = addToVector(sa.getString("countries"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.maxTemp = Integer.parseInt(sa.getString("maxTemp"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.minTemp = Integer.parseInt(sa.getString("minTemp"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.avgTemp = Integer.parseInt(sa.getString("avgTemp"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.preferedWeeks = addToVector(sa.getString("countries"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.holidayLength = Integer.parseInt(sa.getString("holidayLength"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.category = Integer.parseInt(sa.getString("category"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.bookingMonth = Integer.parseInt(sa.getString("bookingMonth"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.bookingDay = Integer.parseInt(sa.getString("bookingDay"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				touristTypes.put(Integer.parseInt(sa.getString("ID")), ttype);
+			}	
+		} catch (Exception ex) {
+	        // Fehler behandeln
+			ex.printStackTrace();
+			System.out.println("Error");
+		}
+	}
+	
+	private Vector<Integer> addToVector(String ints){
+		String[] values = ints.split(",", -1);
+		Vector<Integer> intVector = new Vector<Integer>();
+		for(String intValue:values){
+			intVector.add(Integer.parseInt(intValue));
+		}
+		return intVector;
 	}
 	
 	/**
@@ -308,7 +426,10 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 		}
 	}
 	
-	
+	/**
+	 * This Method is called to put a Tourist in a destination.
+	 * @param tourist The traveling tourist.
+	 */
 	public void setDestinationChanged(DA_Tourist tourist){
 		for(int[] row:tourist.holidayDestination){
 			//numberOfTourists[row[0]][row[1]][row[2]]++;
@@ -353,9 +474,10 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 				destinations.get(dailyClimate.getKey()).updateMonthlyClimate(simulationTime().getYear(), simulationTime().getMonth(), controller.getLastMonthClimateData().get(dailyClimate.getKey()));
 			}
 		}
-		
-		if(preSimulation && startDay == simulationTime().getDay() && startMonth == simulationTime().getMonth() && startYear == simulationTime().getYear()+preSimulationTime){
-			preSimulation = false;
+		//System.out.println(preSimulation);
+		if(preSimulation && startDay == simulationTime().getDay() && startMonth == simulationTime().getMonth() && 
+			startYear+preSimulationTime == simulationTime().getYear()){	
+					preSimulation = false;
 		}
 		
 		try {

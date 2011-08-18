@@ -1,15 +1,38 @@
 package org.glowa.danube.components.actor.utilities;
 
 import java.util.Set;
-
+/**
+ * Aggregates daily(spatial) and monthly climatedata. 
+ * @author Dennis Joswig
+ *
+ */
 public class ClimateDataAggregator {
+	/**
+	 * Saves the daily sptialy aggregated climate data.
+	 */
 	public AggregatedClimateData dailyClimate = new AggregatedClimateData();
+	/**
+	 * saves the climatedata aggregation of the last month.
+	 */
 	public AggregatedClimateData lastMonthClimate = new AggregatedClimateData();
+	/**
+	 * saves the current month aggregation.
+	 */
 	private AggregatedClimateData currentMonth = new AggregatedClimateData();
-	public float rainyDayPreBorder = 0f;
+	/**
+	 * rainy day precipitaion limit.
+	 */
+	public float rainyDayLimit = 0f;
+	/**
+	 * Current month day counter.
+	 */
 	private int daysInMonth = 1;
 	
-	
+	/**
+	 * this method aggregates daily(spatial) and monthly climatedata. 
+	 * @param dp Proxelset of aggregation area.
+	 * @param dayOfMonth dayOf Month.
+	 */
 	public void aggregateClimateData(Set<AbstractActorModelProxel> dp, int dayOfMonth){
 		
 		if(dayOfMonth == 1){
@@ -65,7 +88,7 @@ public class ClimateDataAggregator {
 		if(currentMonth.precipitationMax < dailyClimate.precipitationMax){
 			currentMonth.precipitationMax = dailyClimate.precipitationMax;
 		}
-		if(dailyClimate.precipitationMax > rainyDayPreBorder){
+		if(dailyClimate.precipitationMax > rainyDayLimit){
 			currentMonth.precepitationDayCounter++;
 		}
 		

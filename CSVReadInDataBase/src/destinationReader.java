@@ -2,16 +2,18 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.StringTokenizer;
+
 
 
 public class destinationReader {
 	public Connection con;
 	public Statement stmt;
 	public BufferedReader readIn;
-	public String readInFile="destinations";
-	public String relationName ="destinations";
+	public String readInFile="touristtypes";
+	public String relationName ="touristtypes";
 	/**
 	 * @param args
 	 */
@@ -21,7 +23,9 @@ public class destinationReader {
 	}
 	public destinationReader(){
 		establishConnection();
-		readIn();
+		//readIn();
+		demoRelationsPerYear();
+		
 	}
 	public void readIn(){
 		try {
@@ -42,8 +46,8 @@ public class destinationReader {
 	public void writeTupel(String relation,String line){
 		try {
 			//System.out.println(line);
-			line = line.replaceAll("\\.", "");
-			line = line.replaceAll(",", ".");
+			//line = line.replaceAll("\\.", "");
+			//line = line.replaceAll(",", ".");
 			String[] columns = line.split(";", -1);
 			String query ="insert into "+relation+"\n"+"values(";
 			boolean first = true;
@@ -128,12 +132,41 @@ public class destinationReader {
 			ex.printStackTrace();
 	    }
 	}
-	
+	public void demoRelationsPerYear(){
+		String database = "jdbc:mysql://localhost/rekur?user=rekur&password=rekur";
+		try {
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Connection con = DriverManager.getConnection(database);
+			Statement stmt = con.createStatement();
+			String query = " select * from landkreise";
+			
+			ResultSet sa = stmt. executeQuery(query);
+			while(sa.next()){
+//				
+//				sa.next();
+				int lid = Integer.parseInt(sa.getString(2));
+				readIn = new BufferedReader(new FileReader("Demographie/"+lid+".csv"));
+				String line = readIn.readLine();
+				readIn.readLine();
+				generateNewDemoRelation("d"+lid+"");
+				//generateDemoRelation(readInFile, line);
+				//generateCitiRelation(readInFile, line);
+				while((line = readIn.readLine())!=null){
+					writeTupel("d"+lid,line);
+					//writeDemoTupel(readInFile, line);
+				}
+			}	
+		} catch (Exception ex) {
+	        // Fehler behandeln
+			ex.printStackTrace();
+			System.out.println("Error");
+		}
+	}
 	
 	public void generateRelation(String name, String attributeNames){
 		try {
 			attributeNames = attributeNames.replaceAll("\\.", "");
-			//stmt.executeUpdate("drop table "+name);
+			stmt.executeUpdate("drop table "+name);
 			StringTokenizer st = new StringTokenizer(attributeNames, ";");
 			String query="Create table "+name+"("+st.nextToken()+" varchar(255)";
 			while(st.hasMoreTokens()){
@@ -151,10 +184,34 @@ public class destinationReader {
 			ex.printStackTrace();
 	    }
 	}
+	
+	public void generateNewDemoRelation(String name){
+		try {
+			//stmt.executeUpdate("drop table "+name);
+			String query="Create table "+name+"(ID varchar(255)";
+			for(int i = 2008; i <=2030; i++){
+				for(int z = 0;z <2;z++){
+					if(z==0){
+						query += ",m"+i+" varchar(255)";
+					}
+					else{
+						query += ",w"+i+" varchar(255)";
+					}
+				}
+			}
+			query+=")";
+			System.out.println(query);
+			stmt.executeUpdate(query);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+	    }
+	}
+	
+	
 	public void establishConnection(){
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			con = DriverManager.getConnection("jdbc:mysql://localhost/rekur?user=root&password=bla");
+			con = DriverManager.getConnection("jdbc:mysql://localhost/rekur?user=rekur&password=rekur");
 			stmt = con.createStatement();
 		} catch (Exception ex) {
 			ex.printStackTrace();

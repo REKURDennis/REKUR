@@ -271,7 +271,7 @@ public class NetCDFReader {
 			}
 		}
 		catch(Exception e){
-			System.out.println("no relhum available");
+			//System.out.println("no relhum available");
 		}
 	}
 	
@@ -293,14 +293,14 @@ public class NetCDFReader {
 						if(temperaturHumidityIndex[x][y] == 0){
 							temperaturHumidityIndex[x][y] = (Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y])+(0.2527834*(100.0*relHum3h[x][y])+(airTemp3h[x][y]-273.15)))/
 															(1+Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y]+(0.2527834*(100.0*relHum3h[x][y])+(airTemp3h[x][y]-273.15))));
-							System.out.print(temperaturHumidityIndex[x][y]+" ");
+//							System.out.print(temperaturHumidityIndex[x][y]+" ");
 						}
 					}
-					System.out.println();
+//					System.out.println();
 				}	
 			}
 		}catch(Exception e){
-			System.out.println("no relhum or air 3h");
+			//System.out.println("no relhum or air 3h");
 		}
 	}
 	

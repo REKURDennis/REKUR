@@ -3,7 +3,8 @@ package org.glowa.danube.components.actor.touristmodel;
 import org.glowa.danube.deepactors.actors.plan.AbstractPlan;
 
 
-/**Plan for Scenario1 operation
+/**
+ * Plan for Scenario1 operation
  * @author Dennis Joswig
  *
  */

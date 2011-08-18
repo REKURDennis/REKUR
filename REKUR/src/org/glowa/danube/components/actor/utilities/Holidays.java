@@ -3,6 +3,13 @@ package org.glowa.danube.components.actor.utilities;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+
+/**
+ * This class provides the holidays for Bavaria an Schleswig Holstein. 
+ * @author Dennis Joswig
+ *
+ */
+
 /*
  * Bayern:
  * 1 Winterferien: immer Karneval 1Woche
@@ -24,18 +31,47 @@ import java.util.GregorianCalendar;
  * 
  */
 
-
 public class Holidays {
+	/**
+	 * Static variable for Bayern.
+	 */
 	public static final int BAYERN = 9;
+	/**
+	 * Static parameter for Schleswig-holstein.
+	 */
 	public static final int SCHLESWIGHOLSTEIN = 1;
 	
+	/**
+	 * Static parameter to get the Winterferien.
+	 */
 	public static final int WINTERFERIEN = 1;
+	/**
+	 * Static parameter to get the Osterferien.
+	 */
 	public static final int OSTERFERIEN = 2;
+	/**
+	 * Static parameter to get the Pfingstferien.
+	 */
 	public static final int PFINGSTEN = 3;
+	/**
+	 * Static parameter to get the Sommerferien.
+	 */
 	public static final int SOMMERFERIEN = 4;
+	/**
+	 * Static parameter to get the Herbstferien.
+	 */
 	public static final int HERBSTFERIEN = 5;
+	/**
+	 * Static parameter to get the Weihnachtsferien.
+	 */
 	public static final int WEIHNACHTSFERIEN = 6;
-	private int startyear = 2011;
+	/**
+	 * Startyear for the first Schleswig-Holstein sommerferien.
+	 */
+	public int startyear = 2000;
+	/**
+	 * Sommerferien timeperiod in Schleswig Holstein.
+	 */
 	private int summerSHDelay = 5;
 	
 	public int[] getHolidays(int type, int state, int year){
