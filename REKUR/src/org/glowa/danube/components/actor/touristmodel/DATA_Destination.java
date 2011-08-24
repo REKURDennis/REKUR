@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.components.actor.utilities.IntegerArray2D;
+import org.glowa.danube.components.actor.utilities.Journey;
 /**
  * This class instantiates objects to save Destination-Information within the TouristModel.
  * @author Dennis Joswig
@@ -35,24 +36,24 @@ public class DATA_Destination {
 	
 	/**
 	 * Holds the beCapacities per Year, Week within this Year(0-53) and price-category.
-	 * int[year][week][category]
+	 * int[weekOfYear][category]
 	 */
-	public int[][][] bedCapacities;
+	public int[][] bedCapacities;
 	
 	/**
-	 * Holds the numberOfTourists per Year, Week within this Year(0-53) and price-category.
-	 * int[year][week][category]
+	 * holds the number of free beds per year, week, category HashMap<Year, HashMap<week, HashMap<category, quantity>>>
 	 */
-	public int[][][] numberOfTourists;
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> freeBeds = new HashMap<Integer, HashMap<Integer,HashMap<Integer,Integer>>>();
+	/**
+	 * HashMap<Year<HashMap<Week, HashMap<Category, HashMap<SourceID, Number>>>();
+	 */
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> touristsPerTimeSourceAndCat = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer, Integer>>>>();
 	
-	//Todo Liste mit Touristen
 	
-	
-	public HashMap<DA_SourceArea, HashMap<Integer,Vector<DA_Tourist>>> nowBookingTourists = new HashMap<DA_SourceArea, HashMap<Integer,Vector<DA_Tourist>>>();
-	
-	public HashMap<DA_SourceArea,IntegerArray2D> CurrentNumberOfTourists = new HashMap<DA_SourceArea, IntegerArray2D>();
-	public HashMap<DA_SourceArea,IntegerArray2D> numberOfTouristsLastDate = new HashMap<DA_SourceArea, IntegerArray2D>();
-	
+	/**
+	 * saves the current booking tourist-journeys HashMap<year, HashMap<week, HashMap<category, Vector<journey>>>>.
+	 */
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, Vector<Journey>>>> bookingJourneys = new HashMap<Integer, HashMap<Integer,HashMap<Integer,Vector<Journey>>>>();
 	
 	/**
 	 * Saves the daily climate of the last 28 days.

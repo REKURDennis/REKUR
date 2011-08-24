@@ -86,6 +86,7 @@ public class ClimateProxel extends AbstractProxel{
 			cd.windSpeedMean = netCDFReader.windSpeedDailyMean[latBucket][lonBucket];
 			cd.windSpeedMax = netCDFReader.windSpeedDailyMax[latBucket][lonBucket];
 			cd.relativeHumidityMean = netCDFReader.relativeHumidityDailyMean[latBucket][lonBucket];
+			cd.temperatureHumidityIndex = netCDFReader.temperaturHumidityIndex[latBucket][lonBucket];
 		}
 		catch(Exception e){
 			

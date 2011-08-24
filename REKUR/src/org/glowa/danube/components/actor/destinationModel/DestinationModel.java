@@ -7,9 +7,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurDestinationModel;
 import org.glowa.danube.components.actor.interfaces.RekurDestinationModelToModelController;
+import org.glowa.danube.components.actor.touristmodel.DATA_Destination;
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.deepactors.actors.actor.Actor;
 import org.glowa.danube.deepactors.model.AbstractActorModel;
@@ -312,6 +314,20 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
     			for( int i=0; i<pids().length; i++ ){ 
     				proxel(i).cd.temperatureHumidityIndex = temperatureHumidityIndex.getValueByIndex(i);
 				}
+    		}
+    	});
+    	
+    	
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			if(controller.getNumberOfTourists() !=null){
+    				for(Entry<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> dests:controller.getNumberOfTourists().entrySet()){
+    					DD_Destination dest =(DD_Destination)(actorMap().getEntry(dests.getKey()));
+    					dest.touristsPerTimeSourceAndCat = dests.getValue();
+    				}	
+    			}
     		}
     	});
     }

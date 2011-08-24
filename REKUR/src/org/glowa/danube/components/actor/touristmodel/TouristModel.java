@@ -14,11 +14,9 @@ import java.util.Map.Entry;
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurTouristModel;
 import org.glowa.danube.components.actor.interfaces.RekurTouristModelToModelController;
 import org.glowa.danube.components.actor.utilities.ClimateData;
-import org.glowa.danube.components.actor.utilities.IntegerArray2D;
+import org.glowa.danube.components.actor.utilities.Journey;
 import org.glowa.danube.deepactors.actors.actor.Actor;
 import org.glowa.danube.deepactors.model.AbstractActorModel;
-//import org.glowa.danube.utilities.time.DanubiaCalendar;
-//import org.glowa.danube.utilities.visualization.LocalVisualization;
 import org.glowa.danube.tables.FloatDataTable;
 import org.glowa.danube.tables.IntegerDataTable;
 import org.glowa.danube.tables.MassPerAreaTable;
@@ -96,12 +94,32 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
   /**
    * Checks the initialization. 
    */
+  
   private boolean destinationInit = true;
-  private int weeksToForecast =52;
+  
+  /**
+   * Saves the number of price categories.
+   */
   public int priceCategories = 7;
-  private int startYear;
-  private int startMonth;
-  private int startDay;
+  /**
+   * Saves the simulation start year.
+   */
+  public int startYear;
+  /**
+   * Saves the simulation start month.
+   */
+  public int startMonth;
+  /**
+   * Saves the simulation start day.
+   */
+  public int startDay;
+  /**
+   * Saves the last week that has been written into the output database.
+   */
+  private int printedWeek = 0;
+  /**
+   * Saves the current simulationdate as GregorianCalendar-Object to get the weekOfYear.
+   */
   public GregorianCalendar currentDate;
   /**
    * Number of years of the pre simulation time.
@@ -119,8 +137,21 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
    * reference to the danubialogger.
    */
   private static DanubiaLogger logger = DanubiaLogger.getDanubiaLogger(TouristModel.class);
+  /**
+   * Saves the number of tourists to export to the DestiantionModel-Object.  HashMap<DestinationID, HashMap<year, HashMap<week, HashMap<category, HashMap<sourceareaID, quantity>>>>>
+   */
+  private HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>();
+ 
+  /**
+   * Sets if a touristHas booked;
+   * 
+   */
+  private boolean booked = false;
   
-  
+  /**
+   * Saves the distances between all SourceAreas and Destinations.
+   */
+  public int[][] distanceMatrix;
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
@@ -130,9 +161,8 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 		startYear = simulationTime().getYear();
 		startMonth = simulationTime().getMonth();
 		startDay = simulationTime().getDay();
-		System.out.println(startYear+" "+startMonth+" "+startDay);
+		updateCurrentDate();
 		preSimulationTime = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("preSimulationTime"));
-	    System.out.println(preSimulationTime);
 		dataBaseName = this.componentConfig().getComponentProperties().getProperty("dataBaseName");
 	    userName = this.componentConfig().getComponentProperties().getProperty("userName");
 	    password = this.componentConfig().getComponentProperties().getProperty("password");
@@ -176,6 +206,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 //				System.out.println(sa.getString(1)+sa.getString(2)+sa.getString(3)+sa.getString(4)+sa.getString(5));
 				DA_SourceArea currentActor =(DA_SourceArea)(actorMap().getEntry(Integer.parseInt(sa.getString("RekurID"))));
 				currentActor.name = sa.getString(2);
+				currentActor.landkreisId = Integer.parseInt(sa.getString("ID"));
 				try{
 					currentActor.size = Float.parseFloat(sa.getString(3));
 				}
@@ -208,40 +239,48 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			Connection con = DriverManager.getConnection(database);
 			Statement stmt = con.createStatement();
-			String yearString;
-			
-			yearString = (""+year).substring(2);
-
-			String query = " select * from "+landkreisIDtoSourceAreaIDTable+
-					" natural join (select * from "+demoTable+" where year = '"+yearString+"')as demo;";
-			
-			ResultSet sa = stmt. executeQuery(query);
-			int i = 1;
-			while(sa.next()&&i<=actorMap().size()){
-//				System.out.println(sa.getString(1)+sa.getString(2)+sa.getString(3)+sa.getString(4)+sa.getString(5));
-				DA_SourceArea currentActor =(DA_SourceArea)(actorMap().getEntry(Integer.parseInt(sa.getString("RekurID"))));
-				for(int z = 0;z<10;z++){
-					try{	
-						currentActor.demography[z] = Float.parseFloat(sa.getString(z+4));
+			for(Actor a:actorMap().getEntries()){
+				DA_SourceArea currentArea = (DA_SourceArea)a;
+				String query = " select m"+year+",w"+year+" from d"+currentArea.landkreisId;
+				
+				ResultSet sa = stmt. executeQuery(query);
+				int i = 0;
+				
+				while(sa.next()){
+					//System.out.println(i);
+					if(sa.getString("m"+year).equals("") || sa.getString("w"+year).equals("")){
+						System.out.println(currentArea.landkreisId+" "+i);
 					}
-					catch(Exception e){
-						currentActor.demography[z] = 0;
-						e.printStackTrace();
+					else{
+						int m = Integer.parseInt(sa.getString("m"+year));
+						int w = Integer.parseInt(sa.getString("w"+year));
+						if(i == 0){
+							currentArea.populationPerAgeAndSexDifference[i][0] = m;
+							currentArea.populationPerAgeAndSexDifference[i][1] = w;
+						}
+						if(i>1 && i < 90){	
+							currentArea.populationPerAgeAndSexDifference[i][0] = m - currentArea.populationPerAgeAndSex[i-1][0];
+							currentArea.populationPerAgeAndSexDifference[i][1] = w - currentArea.populationPerAgeAndSex[i-1][1];
+						}
+						if(i == 90){
+							currentArea.populationPerAgeAndSexDifference[i][0] = m - (currentArea.populationPerAgeAndSex[i-1][0]+currentArea.populationPerAgeAndSex[i][0]);
+							currentArea.populationPerAgeAndSexDifference[i][1] = w - (currentArea.populationPerAgeAndSex[i-1][1]+currentArea.populationPerAgeAndSex[i][1]);	
+						}
+						if(i==91){	
+							currentArea.numberOfCitizensPerAgeDiff[0] = m - currentArea.numberOfCitizensPerAge[0];
+							currentArea.numberOfCitizensPerAgeDiff[1] = w - currentArea.numberOfCitizensPerAge[1];
+							currentArea.numberOfCitizensPerAge[0]= m;
+							currentArea.numberOfCitizensPerAge[1]= w;
+						}
+						else{
+							currentArea.populationPerAgeAndSex[i][0] = m;
+							currentArea.populationPerAgeAndSex[i][1] = w;
+						}
 					}
+					i++;
 				}
 				
-				try{
-					currentActor.numberOfCitizens = Float.parseFloat(sa.getString(14));
-				}
-				catch(Exception e){
-					currentActor.numberOfCitizens = 0;
-					e.printStackTrace();
-				}
-				
-				i++;
-//				System.out.println(sa.getString("RekurID"));
-				//con.close();
-			}	
+			}
 		} catch (Exception ex) {
 	        // Fehler behandeln
 			ex.printStackTrace();
@@ -255,14 +294,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	private void initTourists(){
 		getTouristTypes();
 		for(DA_SourceArea sa : actorMap().getEntries(DA_SourceArea.class).getEntries()){
-			int touristCount = 10000;
-			if(sa.numberOfCitizens!=0.0f){
-				touristCount = (int)(sa.numberOfCitizens*100);
-			}
-			sa.tourists = new DA_Tourist[touristCount];
-			for(int i = 0; i<touristCount; i++){
-				sa.tourists[i] = new DA_Tourist(this,sa, touristTypes.get(1));
-			}
+			sa.initTourists(this);
 		}
 	}
 	
@@ -317,7 +349,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 					logger().debug(e.getMessage());
 				}
 				try{
-					ttype.preferedWeeks = addToVector(sa.getString("countries"));
+					ttype.preferedJourneyWeeks = addToVector(sa.getString("preferedWeeks"));
 				}
 				catch(Exception e){
 					logger().debug(e.getMessage());
@@ -355,6 +387,11 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 		}
 	}
 	
+	/**
+	 * Adds int values out of a string seperated by ",".
+	 * @param ints String with int-values
+	 * @return a Vector<Integer> with all values.
+	 */
 	private Vector<Integer> addToVector(String ints){
 		String[] values = ints.split(",", -1);
 		Vector<Integer> intVector = new Vector<Integer>();
@@ -365,7 +402,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	}
 	
 	/**
-	 * Writes out the sourcearea map to check the correct initialisation
+	 * Writes out the sourcearea map to check the correct initialization
 	 */
 	private void writemap(){
 		FileWriter writeOut;
@@ -431,15 +468,38 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	 * @param tourist The traveling tourist.
 	 */
 	public void setDestinationChanged(DA_Tourist tourist){
-		for(int[] row:tourist.holidayDestination){
-			//numberOfTourists[row[0]][row[1]][row[2]]++;
-			//destinations.get(row[0]).numberOfTourists[row[1]][row[2]]++;
-			if(destinations.get(row[0]).CurrentNumberOfTourists.containsKey(tourist.origin)){
-				destinations.get(row[0]).CurrentNumberOfTourists.get(tourist.origin).array[row[1]][row[2]]++;
-			}
-			else{
-				destinations.get(row[0]).CurrentNumberOfTourists.put(tourist.origin, new IntegerArray2D(weeksToForecast, priceCategories));
-				destinations.get(row[0]).CurrentNumberOfTourists.get(tourist.origin).array[row[1]][row[2]]++;
+		booked = true;
+		DATA_Destination journeyDest = destinations.get(tourist.nextJourney.destID);
+		for(Entry<Integer, Vector<Integer>> weeksOfYear: tourist.nextJourney.weeks.entrySet()){
+			for(int i : weeksOfYear.getValue()){
+				HashMap<Integer, HashMap<Integer, Vector<Journey>>> journeyPerWeekAndCat;
+				if(journeyDest.bookingJourneys.containsKey(weeksOfYear.getKey())){
+					journeyPerWeekAndCat = journeyDest.bookingJourneys.get(weeksOfYear.getKey());
+				}
+				else{
+					journeyPerWeekAndCat = new HashMap<Integer, HashMap<Integer,Vector<Journey>>>();
+				}
+				
+				HashMap<Integer, Vector<Journey>> journeyPerCat;
+				if(journeyPerWeekAndCat.containsKey(i)){
+					journeyPerCat = journeyPerWeekAndCat.get(i);
+				}
+				else{
+					journeyPerCat = new HashMap<Integer, Vector<Journey>>();
+				}
+				if(journeyPerCat.containsKey(tourist.nextJourney.category)){
+					Vector<Journey> journeys = journeyPerCat.get(tourist.nextJourney.category);
+					journeys.add(tourist.nextJourney);
+					journeyPerCat.put(tourist.nextJourney.category, journeys);
+				}
+				else{
+					Vector<Journey> journeys = new Vector<Journey>();
+					journeys.add(tourist.nextJourney);
+					journeyPerCat.put(tourist.nextJourney.category, journeys);
+				}
+				//System.out.println(tourist.nextJourney.SourceAreaID);
+				journeyPerWeekAndCat.put(i, journeyPerCat);
+				journeyDest.bookingJourneys.put(weeksOfYear.getKey(), journeyPerWeekAndCat);
 			}
 		}
 	}
@@ -456,8 +516,6 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 				if(entry.getValue()==null){
 					System.out.println(entry.getKey()+" Entry.getValue() ist null");
 				}
-				
-				
 				currentDest.holidayTypes = entry.getValue();
 				currentDest.id = (int)entry.getKey();
 				currentDest.country = controller.getCountryIDs().get(entry.getKey());
@@ -598,6 +656,17 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 				}
     		}
     	});
+    	
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			if(simulationTime().getMonth() == 1 && simulationTime().getDay() == 1){
+    				 //System.out.println(""+ day+" "+month+" "+year);
+    				 updateDemography(simulationTime().getYear());
+    			 }
+    		}
+    	});
     }
 	
 	
@@ -606,39 +675,151 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#preCompute()
 	 */
 	protected void preCompute() {
-		 int month = this.simulationTime().getMonth();
+		updateCurrentDate();
+		booked = false;
+	}
+	/**
+	 * This methods updates the current Gregorian Calendar.
+	 */
+	private void updateCurrentDate(){
+		int month = this.simulationTime().getMonth();
 		 int year = this.simulationTime().getYear();
 		 int day = this.simulationTime().getDay();
-		 if(month == 1 && day == 1){
-			 //System.out.println(""+ day+" "+month+" "+year);
-			 updateDemography(year);
-		 }
+		 
 		 currentDate = new GregorianCalendar(year, month-1, day-1);
 		 currentDate.setMinimalDaysInFirstWeek(4);
 		 currentDate.setFirstDayOfWeek(1);
-		 //System.out.println("Woche "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Jahr "+currentDate.get(GregorianCalendar.YEAR));
-		 //System.out.println(""+year+" "+month+" "+day);
-		 
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#postCompute()
 	 */
 	protected void postCompute(){
-		 // Durchfuehrung alle monatlichen Berechnungen zum 1. des Monats!
-//		 int monat = this.simulationTime().getMonth();
-//		 int jahr = this.simulationTime().getYear();
-//		 int tag = this.simulationTime().getDay();
-//		 Alle Destination durchlaufen und nach Engpässen checken, um ggf. neue Entscheidung anzustoßen.
-		boolean notOutOfCapacity = true;
-		while(notOutOfCapacity){
-			boolean reDecided = false;
-			for(Entry<Integer, DATA_Destination> destination : destinations.entrySet()){
-				if(destination.getValue().checkNumberOfTourists()){
-					reDecided = true;
+		if(booked){
+			redecideProcess();
+			journeyCounter();
+		}
+		
+	}
+	/**
+	 * This method counts the current booking journeys per year, week, category and sourcearea.
+	 */
+	private void journeyCounter(){
+		if(destinations !=null && booked){
+			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
+				for(Entry<Integer, HashMap<Integer, HashMap<Integer, Vector<Journey>>>> jPerYWC:dests.getValue().bookingJourneys.entrySet()){
+					if(!dests.getValue().touristsPerTimeSourceAndCat.containsKey(jPerYWC.getKey())){
+						HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> touristsPerCatSourceWeek = new HashMap<Integer, HashMap<Integer,HashMap<Integer,Integer>>>();
+						dests.getValue().touristsPerTimeSourceAndCat.put(jPerYWC.getKey(), touristsPerCatSourceWeek);
+					}
+					for(Entry<Integer, HashMap<Integer, Vector<Journey>>> jPerWC: jPerYWC.getValue().entrySet()){
+						if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).containsKey(jPerWC.getKey())){
+							HashMap<Integer, HashMap<Integer, Integer>> touristsPerCatSource = new HashMap<Integer, HashMap<Integer,Integer>>();
+							dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).put(jPerWC.getKey(), touristsPerCatSource);
+						}
+						
+						for(Entry<Integer, Vector<Journey>> jPerC:jPerWC.getValue().entrySet()){
+							if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).containsKey(jPerC.getKey())){
+								HashMap<Integer, Integer> touristsPerCat = new HashMap<Integer, Integer>();
+								dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).put(jPerC.getKey(), touristsPerCat);
+							}
+							for(Journey j:jPerC.getValue()){
+								if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).containsKey(j.SourceAreaID)){
+									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).put(j.SourceAreaID,1);
+									//dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).put(jPerC.getKey(), touristsPerCat);
+								}
+								else{
+									int x = dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.SourceAreaID);
+									x++;
+									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).put(j.SourceAreaID,x);
+								}
+							}
+						}
+					}
+				}
+				dests.getValue().bookingJourneys = new HashMap<Integer, HashMap<Integer,HashMap<Integer,Vector<Journey>>>>();
+			}
+		}
+	}
+	
+	/**
+	 * This methods checks the current bookings for crowded destinations and causes redicisions.
+	 */
+	private void redecideProcess(){
+		if(destinations !=null && booked){
+			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
+				if(dests.getValue().bedCapacities !=null){
+					for(Entry<Integer, HashMap<Integer, HashMap<Integer, Vector<Journey>>>> jPerYWC:dests.getValue().bookingJourneys.entrySet()){
+						for(Entry<Integer, HashMap<Integer, Vector<Journey>>> jPerWC: jPerYWC.getValue().entrySet()){
+							for(Entry<Integer, Vector<Journey>> jPerC:jPerWC.getValue().entrySet()){
+								boolean notIn = false;
+								if(dests.getValue().touristsPerTimeSourceAndCat.containsKey(jPerYWC.getKey())){
+									if(dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).containsKey(jPerWC.getKey())){
+										if(dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).containsKey(jPerC.getKey())){
+											int quantity = 0;
+											for(Entry<Integer, Integer> i:dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).entrySet()){
+												quantity += i.getValue();
+											}
+											int tooMany = (jPerC.getValue().size() + quantity) -dests.getValue().bedCapacities[jPerWC.getKey()][jPerC.getKey()];
+											
+											if(tooMany>0){
+												redecide(jPerC.getValue(), tooMany);
+												tooMany = 0;
+											}
+											
+											HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> freeBedsPerYWC = new HashMap<Integer, HashMap<Integer,HashMap<Integer,Integer>>>();
+											HashMap<Integer, HashMap<Integer, Integer>> freeBedsPerWC = new HashMap<Integer, HashMap<Integer,Integer>>();
+											HashMap<Integer, Integer> freebedsPerC = new HashMap<Integer, Integer>();
+											freebedsPerC.put(jPerC.getKey(),tooMany*-1);
+											freeBedsPerWC.put(jPerWC.getKey(), freebedsPerC);
+											freeBedsPerYWC.put(jPerYWC.getKey(), freeBedsPerWC);
+											dests.getValue().freeBeds = freeBedsPerYWC;
+										}
+										else{
+											notIn = true;
+										}
+									}
+									else{
+										notIn = true;
+									}
+								}
+								else{
+									notIn = true;
+								}
+								if(notIn){
+									int tooMany = (jPerC.getValue().size())-dests.getValue().bedCapacities[jPerWC.getKey()][jPerC.getKey()];
+									if(tooMany>0){
+										redecide(jPerC.getValue(), tooMany);
+										tooMany = 0;
+									}
+									HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> freeBedsPerYWC = new HashMap<Integer, HashMap<Integer,HashMap<Integer,Integer>>>();
+									HashMap<Integer, HashMap<Integer, Integer>> freeBedsPerWC = new HashMap<Integer, HashMap<Integer,Integer>>();
+									HashMap<Integer, Integer> freebedsPerC = new HashMap<Integer, Integer>();
+									freebedsPerC.put(jPerC.getKey(),tooMany*-1);
+									freeBedsPerWC.put(jPerWC.getKey(), freebedsPerC);
+									freeBedsPerYWC.put(jPerYWC.getKey(), freeBedsPerWC);
+									dests.getValue().freeBeds = freeBedsPerYWC;
+								}
+							}
+						}
+					}
 				}
 			}
-			notOutOfCapacity = reDecided;
+		}
+	}
+	
+	/**
+	 * Lets a given number of tourists redecide their journeys.
+	 * @param journeys Vector with all current booking jounerys.
+	 * @param tooMany Number of redecisions.
+	 */
+	private void redecide(Vector<Journey> journeys, int tooMany){
+		for(int i=0; i<tooMany ; i++){
+			int random = (int)(Math.random()*(double)journeys.size());
+			Journey j = journeys.get(random);
+			journeys.remove(random);
+			j.tourist.nextJourney = null;
+			j.tourist.makeDecision(simulationTime().getYear(), simulationTime().getMonth(), simulationTime().getDay());
 		}
 	}
 	
@@ -647,34 +828,39 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	 */
 	public void commit()
 	{
-		if(destinations !=null){
+		if(destinations !=null && printedWeek!=currentDate.get(GregorianCalendar.WEEK_OF_YEAR)){
+			printedWeek=currentDate.get(GregorianCalendar.WEEK_OF_YEAR);
 			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
-				
-				for(Entry<DA_SourceArea, IntegerArray2D> sources: dests.getValue().CurrentNumberOfTourists.entrySet()){
-					int week = 0;
-					for(int[] z :sources.getValue().array){
-						int category = 0;
-						for(int v:z){
-							if(v!=0)System.out.println("DestinationID: "+dests.getKey()+" SourceArea: "+sources.getKey().getId()+" "+sources.getKey().name+" Category: "+category+" Week: "+week+" Number: "+v);
-							category++;
+				try{
+					HashMap<Integer, HashMap<Integer, Integer>> touristsPerCatAndSourceHashMap = dests.getValue().touristsPerTimeSourceAndCat.get(currentDate.get(GregorianCalendar.YEAR)).get(currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
+					try{	
+						for(Entry<Integer, HashMap<Integer, Integer>> touristsPerCatAndSource:touristsPerCatAndSourceHashMap.entrySet()){
+							try{
+								for(Entry<Integer, Integer> touristsPerSource : touristsPerCatAndSource.getValue().entrySet()){
+									System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
+								}
+							}
+							catch(Exception e ){
+								
+							}
 						}
-						week++;
+					}catch(Exception e ){
+						
 					}
+				}catch(Exception e){
+					
 				}
-				dests.getValue().numberOfTouristsLastDate = dests.getValue().CurrentNumberOfTourists;
-				dests.getValue().CurrentNumberOfTourists = new HashMap<DA_SourceArea, IntegerArray2D>();
-			}
+			}	
+		}
+		
+		
+		if(booked && destinations !=null){
+			touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>();
+			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
+				touristPerDest.put(dests.getKey(), dests.getValue().touristsPerTimeSourceAndCat);
+			}	
 		}
 	}
-	
-	
-	/* (non-Javadoc)
-	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#store()
-	 */
-	protected void store()
-	{
-//		DanubiaCalendar writeOutTime = simulationTime();
-	}//Store
 	
 	/**
 	 * Inits the gmt: Societal scenario and Actions will be initialized.
@@ -688,13 +874,13 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	    */
 	}
 	@Override
-	public int[][][] getNumberOfTourists() {
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> getNumberOfTourists() {
 		// TODO Auto-generated method stub
 		//return numberOfTourists;
-		return null;
+		return touristPerDest;
 	}
 	  
-}//.java
+}
 
 
 

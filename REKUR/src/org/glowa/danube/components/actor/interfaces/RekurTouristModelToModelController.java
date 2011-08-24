@@ -1,5 +1,7 @@
 package org.glowa.danube.components.actor.interfaces;
 
+import java.util.HashMap;
+
 import org.glowa.danube.components.DanubiaInterface;
 /**
  * Export-Interface of the TouristModel
@@ -8,5 +10,5 @@ import org.glowa.danube.components.DanubiaInterface;
  */
 public interface RekurTouristModelToModelController extends DanubiaInterface
 {
-  public int[][][] getNumberOfTourists();
+  public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> getNumberOfTourists();
 }

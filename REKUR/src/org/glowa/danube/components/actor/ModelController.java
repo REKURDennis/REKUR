@@ -70,7 +70,7 @@ public class ModelController extends AbstractController implements ModelControll
 	
 //	Touristmodel to DestinationModel interfacemethods
 	@Override
-	public int[][][] getNumberOfTourists() {
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> getNumberOfTourists() {
 		// TODO Auto-generated method stub
 		return tourist.getNumberOfTourists();
 	}
