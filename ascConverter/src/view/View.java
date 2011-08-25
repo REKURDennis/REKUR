@@ -5,6 +5,7 @@ import java.awt.FlowLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import controller.Controller;
@@ -20,6 +21,14 @@ public class View extends JFrame{
 	public JTextField collaborators;
 	public JTextField initialPlans;
 	
+	public JPanel actorPanel;
+	public JPanel collaPanel;
+	public JPanel initPanel;
+	
+	public JLabel actorLabel;
+	public JLabel collaLabel;
+	public JLabel initLabel;
+	
 	public JLabel status;
 	
 	public Controller c;
@@ -33,9 +42,19 @@ public class View extends JFrame{
 		this.loadAscii = new JButton("ASCII laden");
 		this.saveCSV = new JButton("Ausgabedatei waehlen");
 		this.convertASCIItoCSV = new JButton("Konvertieren und speichern");
+		
+		actorPanel = new JPanel();
+		collaPanel = new JPanel();
+		initPanel = new JPanel();
+		
+		actorLabel = new JLabel("Actor-class");
+		collaLabel = new JLabel("CollaboratorIDs");
+		initLabel = new JLabel("PlanIDs");
+		
+		
 		this.actorClass = new JTextField(50);
 		actorClass.setText("org.glowa.danube.components.actor.destinationModel.deepactors.DD_Destination");
-		this.collaborators = new JTextField(50);
+		this.collaborators = new JTextField(45);
 		collaborators.setText("");
 		this.initialPlans = new JTextField(50);
 		initialPlans.setText("1001");
@@ -48,9 +67,18 @@ public class View extends JFrame{
 		saveCSV.setEnabled(false);
 		this.add(convertASCIItoCSV);
 		convertASCIItoCSV.setEnabled(false);
-		this.add(actorClass);
-		this.add(collaborators);
-		this.add(initialPlans);
+		
+		actorPanel.add(actorLabel);
+		actorPanel.add(actorClass);
+		collaPanel.add(collaLabel);
+		collaPanel.add(collaborators);
+		initPanel.add(initLabel);
+		initPanel.add(initialPlans);
+		
+		this.add(actorPanel);
+		this.add(collaPanel);
+		this.add(initPanel);
+		
 		this.add(status);
 		saveCSV.addActionListener(c);
 		loadAscii.addActionListener(c);
