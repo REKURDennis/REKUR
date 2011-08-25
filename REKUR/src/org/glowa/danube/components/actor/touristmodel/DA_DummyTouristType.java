@@ -6,13 +6,19 @@ import java.util.Vector;
 
 import org.glowa.danube.components.actor.utilities.Journey;
 
-
+/**
+ * This class is a dummy tourist type, with a fakes decision.
+ * @author Dennis Joswig
+ *
+ */
 public class DA_DummyTouristType extends DA_AbstractTouristType{
-
+	/**
+	 * Construcotr of the class.
+	 */
 	public DA_DummyTouristType() {
 		this.countries.add(6);
 	}
-	
+	@Override
 	public void makeDecision(int year, int month, int day, DA_Tourist delegate){
 		
 		if(!delegate.tm.preSimulation){

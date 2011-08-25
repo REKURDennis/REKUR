@@ -94,7 +94,6 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
   /**
    * Checks the initialization. 
    */
-  
   private boolean destinationInit = true;
   
   /**
@@ -152,6 +151,15 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
    * Saves the distances between all SourceAreas and Destinations.
    */
   public int[][] distanceMatrix;
+  /**
+   * Statement-Object for the database connection.
+   */
+  private Statement stmt = null;
+  
+  /**
+   * Holds the relation names for the tourists per destinations output relations.
+   */
+  private String touristsPerDestinationTables;
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
@@ -171,7 +179,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	    demoTable = this.componentConfig().getComponentProperties().getProperty("demoTable");
 	    landkreisIDtoSourceAreaIDTable = this.componentConfig().getComponentProperties().getProperty("landkreisIDtoSourceAreaIDTable");
 	    touristTypesTable = this.componentConfig().getComponentProperties().getProperty("touristTypesTable");
-	    
+	    touristsPerDestinationTables = this.componentConfig().getComponentProperties().getProperty("touristsPerDestinationTables");
 	    
 		initSourceAreasFromDataBase();
 		updateDemography(startYear);
@@ -830,18 +838,37 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	{
 		if(destinations !=null && printedWeek!=currentDate.get(GregorianCalendar.WEEK_OF_YEAR)){
 			printedWeek=currentDate.get(GregorianCalendar.WEEK_OF_YEAR);
+			
+			try{
+				Class.forName("com.mysql.jdbc.Driver").newInstance();
+				Connection con = DriverManager.getConnection(database);
+				Statement stmt = con.createStatement();
+				try{
+					stmt.executeUpdate("drop table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
+				}catch(Exception e){}
+				String query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(255), Category varchar(255), SourceID varchar(255), quantity int(200))";
+				stmt.executeUpdate(query);
+			}
+			catch(Exception e){}
 			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
 				try{
+					Class.forName("com.mysql.jdbc.Driver").newInstance();
+					Connection con = DriverManager.getConnection(database);
+					Statement stmt = con.createStatement();
 					HashMap<Integer, HashMap<Integer, Integer>> touristsPerCatAndSourceHashMap = dests.getValue().touristsPerTimeSourceAndCat.get(currentDate.get(GregorianCalendar.YEAR)).get(currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
 					try{	
 						for(Entry<Integer, HashMap<Integer, Integer>> touristsPerCatAndSource:touristsPerCatAndSourceHashMap.entrySet()){
 							try{
 								for(Entry<Integer, Integer> touristsPerSource : touristsPerCatAndSource.getValue().entrySet()){
-									System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
+									
+									//System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
+									String query ="insert into "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"',"+touristsPerSource.getValue()+")";
+									System.out.println(query);
+									stmt.executeUpdate(query);
 								}
 							}
 							catch(Exception e ){
-								
+								e.printStackTrace();
 							}
 						}
 					}catch(Exception e ){

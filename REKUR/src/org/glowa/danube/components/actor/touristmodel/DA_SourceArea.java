@@ -35,11 +35,6 @@ public class DA_SourceArea extends AbstractActor{
 	 * Saves the size in m^2.
 	 */
 	public float size;
-	
-	public float[] demography = new float[10];
-	
-	public int[] sex = new int[2];
-	
 	/**
 	 * Saves the number of citizens per age and sex, starting with 0 years and ends with 90 and older.
 	 */
@@ -60,7 +55,6 @@ public class DA_SourceArea extends AbstractActor{
 	 */
 	public LinkedList<LinkedList<LinkedList<DA_Tourist>>> touristsPerAge = new LinkedList<LinkedList<LinkedList<DA_Tourist>>>(); 
 	
-	public Vector<DA_Tourist> tourists;
 	/**
 	 * References the climateDataAggregator-Object to aggregate and the monthly climate.
 	 */
@@ -83,7 +77,7 @@ public class DA_SourceArea extends AbstractActor{
 		for(LinkedList<LinkedList<DA_Tourist>> aget:touristsPerAge){
 			for(LinkedList<DA_Tourist> agesAndSex:aget){
 				for(DA_Tourist t:agesAndSex){
-					t.makeDecision(this.getSimulationTime().getYear(), this.getSimulationTime().getMonth(), this.getSimulationTime().getDay());
+					t.options(this.getSimulationTime().getYear(), this.getSimulationTime().getMonth(), this.getSimulationTime().getDay());
 				}
 			}
 		}
@@ -161,21 +155,7 @@ public class DA_SourceArea extends AbstractActor{
 			e.printStackTrace();
 		}
 	}
-	
-	/**
-	 * Saves the tourists from the 3time LindekList into a vector.
-	 */
-	private void saveTouristsInArray(){
-		tourists = new Vector<DA_Tourist>();
-		for(LinkedList<LinkedList<DA_Tourist>> aget:touristsPerAge){
-			for(LinkedList<DA_Tourist> agesAndSex:aget){
-				for(DA_Tourist t:agesAndSex){
-					tourists.add(t);
-				}
-			}
-		}
-	}
-	
+		
 	/**
 	 * This method updates the monthly climatedata-hashmap.
 	 */
