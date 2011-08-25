@@ -1,3 +1,4 @@
+package model;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.sql.Connection;
@@ -6,44 +7,48 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.StringTokenizer;
 
+import view.View;
 
 
-public class destinationReader {
+
+public class Reader {
 	public Connection con;
 	public Statement stmt;
 	public BufferedReader readIn;
-	public String readInFile="touristtypes";
-	public String relationName ="touristtypes";
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		new destinationReader();
+	public String readInFile;
+	public String demoFolder;
+	public String relationName;
+	public String userName;
+	public String dbName;
+	public String password;
+	public View v;
+	public Reader(View v){
+		this.v = v;
 	}
-	public destinationReader(){
+	
+	public void readDemography(){
 		establishConnection();
 		//readIn();
 		demoRelationsPerYear();
-		
+		v.status.setText("Fertig");
 	}
+	
 	public void readIn(){
+		establishConnection();
 		try {
-			readIn = new BufferedReader(new FileReader(readInFile+".csv"));
+			readIn = new BufferedReader(new FileReader(readInFile));
 			String line = readIn.readLine();
 			generateRelation(relationName, line);
-			//generateDemoRelation(readInFile, line);
-			//generateCitiRelation(readInFile, line);
 			while((line = readIn.readLine())!=null){
-				writeTupel(relationName,line);
-				//writeDemoTupel(readInFile, line);
+				//writeTupel(relationName,line);
 			}
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 	    }
+		v.status.setText("Fertig");
 	}
-	public void writeTupel(String relation,String line){
+	private void writeTupel(String relation,String line){
 		try {
 			//System.out.println(line);
 			//line = line.replaceAll("\\.", "");
@@ -68,7 +73,7 @@ public class destinationReader {
 	    }
 	}
 	
-	public void writeDemoTupel(String relation,String line){
+	private void writeDemoTupel(String relation,String line){
 		try {
 			//System.out.println(line);
 			line = line.replaceAll("\\.", "");
@@ -95,7 +100,7 @@ public class destinationReader {
 	    }
 	}
 	
-	public void generateDemoRelation(String name, String attributeNames){
+	private void generateDemoRelation(String name, String attributeNames){
 		try {
 			attributeNames = attributeNames.replaceAll("\\.", "");
 			String query = "";
@@ -116,7 +121,7 @@ public class destinationReader {
 	    }
 	}
 	
-	public void generateCitiRelation(String name, String attributeNames){
+	private void generateCitiRelation(String name, String attributeNames){
 		try {
 			attributeNames = attributeNames.replaceAll("\\.", "");
 			String query = "";
@@ -133,28 +138,19 @@ public class destinationReader {
 	    }
 	}
 	public void demoRelationsPerYear(){
-		String database = "jdbc:mysql://localhost/rekur?user=rekur&password=rekur";
 		try {
-			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			Connection con = DriverManager.getConnection(database);
-			Statement stmt = con.createStatement();
 			String query = " select * from landkreise";
-			
 			ResultSet sa = stmt. executeQuery(query);
 			while(sa.next()){
-//				
-//				sa.next();
 				int lid = Integer.parseInt(sa.getString(2));
-				readIn = new BufferedReader(new FileReader("Demographie/"+lid+".csv"));
+				readIn = new BufferedReader(new FileReader(demoFolder+lid+".csv"));
 				String line = readIn.readLine();
 				readIn.readLine();
 				generateNewDemoRelation("d"+lid+"");
-				//generateDemoRelation(readInFile, line);
-				//generateCitiRelation(readInFile, line);
 				while((line = readIn.readLine())!=null){
 					writeTupel("d"+lid,line);
-					//writeDemoTupel(readInFile, line);
 				}
+				v.status.setText("Write Landkrais"+lid);
 			}	
 		} catch (Exception ex) {
 	        // Fehler behandeln
@@ -166,7 +162,11 @@ public class destinationReader {
 	public void generateRelation(String name, String attributeNames){
 		try {
 			attributeNames = attributeNames.replaceAll("\\.", "");
-			stmt.executeUpdate("drop table "+name);
+			try{
+				stmt.executeUpdate("drop table "+name);
+			}
+			catch(Exception e){}
+			
 			StringTokenizer st = new StringTokenizer(attributeNames, ";");
 			String query="Create table "+name+"("+st.nextToken()+" varchar(255)";
 			while(st.hasMoreTokens()){
@@ -185,10 +185,10 @@ public class destinationReader {
 	    }
 	}
 	
-	public void generateNewDemoRelation(String name){
+	private void generateNewDemoRelation(String name){
 		try {
-			//stmt.executeUpdate("drop table "+name);
-			String query="Create table "+name+"(ID varchar(255)";
+			stmt.executeUpdate("drop table "+name);
+			String query="Create table "+name+"(Age varchar(255)";
 			for(int i = 2008; i <=2030; i++){
 				for(int z = 0;z <2;z++){
 					if(z==0){
@@ -208,10 +208,11 @@ public class destinationReader {
 	}
 	
 	
-	public void establishConnection(){
+	private void establishConnection(){
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			con = DriverManager.getConnection("jdbc:mysql://localhost/rekur?user=rekur&password=rekur");
+			System.out.println(dbName+userName+password);
+			con = DriverManager.getConnection("jdbc:mysql://localhost/"+dbName+"?user="+userName+"&password="+password);
 			stmt = con.createStatement();
 		} catch (Exception ex) {
 			ex.printStackTrace();

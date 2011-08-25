@@ -1,3 +1,4 @@
+package model;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.sql.Connection;
@@ -6,19 +7,13 @@ import java.sql.Statement;
 import java.util.StringTokenizer;
 
 
-public class Reader {
+public class SourceAreaReader {
 	public Connection con;
 	public Statement stmt;
 	public BufferedReader readIn;
 	public String readInFile="sourceareaoverview";
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		new Reader();
-	}
-	public Reader(){
+	
+	public SourceAreaReader(){
 		establishConnection();
 		readIn();
 	}
