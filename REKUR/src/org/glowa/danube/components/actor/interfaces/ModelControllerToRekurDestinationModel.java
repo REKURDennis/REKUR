@@ -9,8 +9,9 @@ import org.glowa.danube.components.DanubiaInterface;
  * @see ModelControllerProvideClimate
  */
 public interface ModelControllerToRekurDestinationModel extends DanubiaInterface, ModelControllerProvideClimate{
-	/*
-	 * TouristModel to DestinationModel
+	/**
+	 * Provides the Tourists per detsiantion, Year, week, category and sourcearea. 
+	 * @return HashMap<destinationId, HashMap<year, HashMap<week, HashMap<category, HashMap<sourceareaID, Integer>>>>>
 	 */
 	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> getNumberOfTourists();
 }

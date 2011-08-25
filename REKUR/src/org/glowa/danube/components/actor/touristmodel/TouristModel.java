@@ -64,11 +64,6 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
    */
   private String sourceareaTable = "sourceareaoverview";
   /**
-   *  holds the name of the ralation containing the sourcearea demography-attributes. Given in the config-file.
-   *  Configurationfile can be found unter metadata/components/touristmodel.cfg
-   */
-  private String demoTable = "demography";
-  /**
    * holds the name of the ralation containing the sourcearea ids. Given in the config-file.
    *  Configurationfile can be found unter metadata/components/touristmodel.cfg
    */
@@ -176,7 +171,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	    password = this.componentConfig().getComponentProperties().getProperty("password");
 	    database = "jdbc:mysql://localhost/"+dataBaseName+"?user="+userName+"&password="+password;
 	    sourceareaTable = this.componentConfig().getComponentProperties().getProperty("sourceareaTable");
-	    demoTable = this.componentConfig().getComponentProperties().getProperty("demoTable");
+	    //demoTable = this.componentConfig().getComponentProperties().getProperty("demoTable");
 	    landkreisIDtoSourceAreaIDTable = this.componentConfig().getComponentProperties().getProperty("landkreisIDtoSourceAreaIDTable");
 	    touristTypesTable = this.componentConfig().getComponentProperties().getProperty("touristTypesTable");
 	    touristsPerDestinationTables = this.componentConfig().getComponentProperties().getProperty("touristsPerDestinationTables");

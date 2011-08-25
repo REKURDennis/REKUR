@@ -5,3 +5,4 @@ org.glowa.danube.components.actor.hydrologicalmodel
 org.glowa.danube.components.actor.interfaces
 org.glowa.danube.components.actor.touristmodel
 org.glowa.danube.components.actor.utilities
+org.glowa.danube.deepactors.actors.actor
