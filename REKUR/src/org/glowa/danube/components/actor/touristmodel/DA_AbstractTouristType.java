@@ -21,22 +21,11 @@ public class DA_AbstractTouristType {
 	 * Saves a vector with all possible countries.
 	 */
 	public Vector<Integer> countries= new Vector<Integer>();
+	
 	/**
-	 * Saves the tourists maximum temperature.
+	 * Saves the climate preferences of this tourist type.
 	 */
-	public int maxTemp;
-	/**
-	 * Saves the tourists minimum temperature.
-	 */
-	public int minTemp;
-	/**
-	 * Saves the tourists avarage temperature.
-	 */
-	public int avgTemp;
-	/**
-	 * Saves the tourists maximum temperature deviation. 
-	 */
-	public int tempDeviation;
+	public TouristClimatePreferences tcp = new TouristClimatePreferences();
 	/**
 	 * Saves a vector with all possible weeks for traveling.
 	 */

@@ -1,7 +1,6 @@
 package org.glowa.danube.components.actor.touristmodel;
 
 import java.util.*;
-import java.util.Vector;
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.components.actor.utilities.ClimateDataAggregator;
 import org.glowa.danube.deepactors.actors.actor.AbstractActor;

@@ -1,9 +1,8 @@
-package org.glowa.danube.components.actor.utilities;
+package org.glowa.danube.components.actor.touristmodel;
 
 import java.util.HashMap;
 import java.util.Vector;
 
-import org.glowa.danube.components.actor.touristmodel.DA_Tourist;
 /**
  * This class is a storage for journeys
  * @author Dennis Joswig

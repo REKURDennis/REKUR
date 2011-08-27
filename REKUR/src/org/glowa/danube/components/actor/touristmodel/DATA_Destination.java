@@ -5,7 +5,6 @@ import java.util.Vector;
 
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.components.actor.utilities.IntegerArray2D;
-import org.glowa.danube.components.actor.utilities.Journey;
 /**
  * This class instantiates objects to save Destination-Information within the TouristModel.
  * @author Dennis Joswig
@@ -48,7 +47,7 @@ public class DATA_Destination {
 	 * HashMap<Year<HashMap<Week, HashMap<Category, HashMap<SourceID, Number>>>();
 	 */
 	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> touristsPerTimeSourceAndCat = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer, Integer>>>>();
-	
+	//public int[][][][] touristsPerSource; 
 	
 	/**
 	 * saves the current booking tourist-journeys HashMap<year, HashMap<week, HashMap<category, Vector<journey>>>>.
@@ -76,12 +75,6 @@ public class DATA_Destination {
 		else return false;
 		
 	}
-	
-	public boolean checkNumberOfTourists(){
-		
-		return false;
-	}
-	
 	/**
 	 * Adds the climatedata to the 28 day history.
 	 * @param cd climatedata to add.

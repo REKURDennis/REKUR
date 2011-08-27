@@ -14,7 +14,6 @@ import java.util.Map.Entry;
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurTouristModel;
 import org.glowa.danube.components.actor.interfaces.RekurTouristModelToModelController;
 import org.glowa.danube.components.actor.utilities.ClimateData;
-import org.glowa.danube.components.actor.utilities.Journey;
 import org.glowa.danube.deepactors.actors.actor.Actor;
 import org.glowa.danube.deepactors.model.AbstractActorModel;
 import org.glowa.danube.tables.FloatDataTable;
@@ -334,19 +333,19 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 					logger().debug(e.getMessage());
 				}
 				try{
-					ttype.maxTemp = Integer.parseInt(sa.getString("maxTemp"));
+					ttype.tcp.airTemperatureMax = Integer.parseInt(sa.getString("maxTemp"));
 				}
 				catch(Exception e){
 					logger().debug(e.getMessage());
 				}
 				try{
-					ttype.minTemp = Integer.parseInt(sa.getString("minTemp"));
+					ttype.tcp.airTemperatureMin = Integer.parseInt(sa.getString("minTemp"));
 				}
 				catch(Exception e){
 					logger().debug(e.getMessage());
 				}
 				try{
-					ttype.avgTemp = Integer.parseInt(sa.getString("avgTemp"));
+					ttype.tcp.airTemperatureMean = Integer.parseInt(sa.getString("avgTemp"));
 				}
 				catch(Exception e){
 					logger().debug(e.getMessage());

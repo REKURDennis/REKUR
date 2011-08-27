@@ -17,4 +17,8 @@ public class AggregatedClimateData extends ClimateData{
 	 * Monthly mean temperature humidity index.
 	 */
 	public int temperatureHumidityIndexMonthlyMean = 0;
+	/**
+	 * Monthly mean water temperature.
+	 */
+	public int waterTemp = 0;
 }

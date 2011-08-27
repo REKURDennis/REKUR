@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Vector;
 
-import org.glowa.danube.components.actor.utilities.Journey;
 
 /**
  * This class is a dummy tourist type, with a fakes decision.

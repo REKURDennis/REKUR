@@ -1,6 +1,5 @@
 package org.glowa.danube.components.actor.touristmodel;
 
-import org.glowa.danube.components.actor.utilities.Journey;
 import org.glowa.danube.deepactors.actors.actor.LightWeightDeepActor;
 
 /**
