@@ -28,7 +28,7 @@ public class Journey {
 	/**
 	 * Saves the Id of the tourists origin.
 	 */
-	public int SourceAreaID;
+	public int sourceAreaID;
 	/**
 	 * The constructor of the class generates a new storage object.
 	 * @param weeks Weeks per Year <Year, Vector<WeekOfYear>>.
@@ -37,11 +37,11 @@ public class Journey {
 	 * @param SourceAreaID Saves the Id of the tourists origin.
 	 * @param tourist Saves the traveling tourist.
 	 */
-	public Journey(HashMap<Integer, Vector<Integer>> weeks, int destID, int category, int SourceAreaID, DA_Tourist tourist){
+	public Journey(HashMap<Integer, Vector<Integer>> weeks, int destID, int category, int sourceAreaID, DA_Tourist tourist){
 		this.weeks = weeks;
 		this.destID = destID;
 		this.category = category;
 		this.tourist = tourist;
-		this.SourceAreaID = SourceAreaID;
+		this.sourceAreaID = sourceAreaID;
 	}
 }

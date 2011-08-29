@@ -142,9 +142,9 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
   private boolean booked = false;
   
   /**
-   * Saves the distances between all SourceAreas and Destinations.
+   * Saves the distances between all SourceAreas and Destinations HashMap<SourceId, HashMap<DestID, HashMap<Vehicle, Distance>>>.
    */
-  public int[][] distanceMatrix;
+  public HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> distanceMatrix;
   /**
    * Statement-Object for the database connection.
    */
@@ -185,6 +185,13 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 		} catch (Exception ex) {
 			this.logger().warn(ex);
 		}
+	}
+	
+	/**
+	 * This Method inits the distance matrix from the database.
+	 */
+	private void initDistanceMatrix(){
+		
 	}
 	
 	/**
@@ -726,14 +733,14 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 								dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).put(jPerC.getKey(), touristsPerCat);
 							}
 							for(Journey j:jPerC.getValue()){
-								if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).containsKey(j.SourceAreaID)){
-									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).put(j.SourceAreaID,1);
+								if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).containsKey(j.sourceAreaID)){
+									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).put(j.sourceAreaID,1);
 									//dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).put(jPerC.getKey(), touristsPerCat);
 								}
 								else{
-									int x = dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.SourceAreaID);
+									int x = dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.sourceAreaID);
 									x++;
-									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).put(j.SourceAreaID,x);
+									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).put(j.sourceAreaID,x);
 								}
 							}
 						}

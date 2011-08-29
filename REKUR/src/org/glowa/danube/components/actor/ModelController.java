@@ -155,4 +155,16 @@ public class ModelController extends AbstractController implements ModelControll
 		// TODO Auto-generated method stub
 		return destination.getCountryIDs();
 	}
+
+	@Override
+	public HashMap<Integer, int[][][]> getBedCapacities() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public HashMap<Integer, int[][][]> getCostsPerCategory() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

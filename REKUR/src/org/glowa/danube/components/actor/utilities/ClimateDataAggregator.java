@@ -33,9 +33,9 @@ public class ClimateDataAggregator {
 	 * @param dp Proxelset of aggregation area.
 	 * @param dayOfMonth dayOf Month.
 	 */
-	public void aggregateClimateData(Set<AbstractActorModelProxel> dp, int dayOfMonth){
+	public void aggregateClimateData(Set<AbstractActorModelProxel> dp, int day){
 		
-		if(dayOfMonth == 1){
+		if(day == 1){
 			currentMonth.airTemperatureMean /= daysInMonth;
 			currentMonth.precipitationSum /= daysInMonth;
 			currentMonth.sunshineDurationSum /= daysInMonth;

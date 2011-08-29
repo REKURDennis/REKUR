@@ -60,18 +60,18 @@ public class DA_AbstractTouristType {
 	
 	/**
 	 * Checks the capacity of the possibleDests and gives back an vector with all destinations with enough capacities.
-	 * @param possibleDests Destinations to check.
+	 * @param dests Destinations to check.
 	 * @param tourist tourist to callback.
 	 * @param weeksPerYear journey-weeks.
 	 * @param category journey category.
 	 * @return
 	 */
-	public Vector<DATA_Destination> checkCapacity(Vector<DATA_Destination> possibleDests, DA_Tourist tourist, HashMap<Integer, Vector<Integer>> weeksPerYear,int category){
+	public Vector<DATA_Destination> checkCapacity(Vector<DATA_Destination> dests, DA_Tourist tourist, HashMap<Integer, Vector<Integer>> weeksPerYear,int category){
 		Vector<DATA_Destination> destsWithCapa = new Vector<DATA_Destination>();
 		Vector<DATA_Destination> blacklist = new Vector<DATA_Destination>();
 		for(Entry<Integer, Vector<Integer>> years: weeksPerYear.entrySet()){
 			for(Integer week:years.getValue()){
-				for(DATA_Destination d : possibleDests){
+				for(DATA_Destination d : dests){
 					if((d.bedCapacities==null) ||d.freeBeds.get(years.getKey()).get(week).get(category)>0){
 						if(!(destsWithCapa.contains(d)) && !(blacklist.contains(d))){
 							destsWithCapa.add(d);

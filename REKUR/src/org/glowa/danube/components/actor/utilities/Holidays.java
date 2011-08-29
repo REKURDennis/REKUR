@@ -68,12 +68,19 @@ public class Holidays {
 	/**
 	 * Startyear for the first Schleswig-Holstein sommerferien.
 	 */
-	public int startyear = 2000;
+	private int startyear = 2000;
 	/**
 	 * Sommerferien timeperiod in Schleswig Holstein.
 	 */
 	private int summerSHDelay = 5;
 	
+	/**
+	 * THis Method returns an array with the holidayweeks of the holidaytype and state according to the given year.
+	 * @param type holidaytype, use the static integers to chose type.
+	 * @param state the state, use the static integer to chose the state.
+	 * @param year Year of the holidays.
+	 * @return an array with the holidayweeks of the holidaytype and state according to the given year.
+	 */
 	public int[] getHolidays(int type, int state, int year){
 		if(type == WINTERFERIEN){
 			return getWinterferien(state, year);
@@ -95,6 +102,12 @@ public class Holidays {
 		}
 		return null;
 	}
+	/**
+	 * This method provides the weeks for the winterferien of an state and year.
+	 * @param state state of provided holidays
+	 * @param year year of holidays
+	 * @return an array with the holidayweeks of the state according to the given year.
+	 */
 	private int[] getWinterferien(int state, int year){
 		if(state == BAYERN){
 			int[] wf = new int[1];
@@ -107,6 +120,12 @@ public class Holidays {
 		}
 		return null;
 	}
+	/**
+	 * This method provides the weeks for the osterferien of an state and year.
+	 * @param state state of provided holidays
+	 * @param year year of holidays
+	 * @return an array with the holidayweeks of the state according to the given year.
+	 */
 	private int[] getOsterferien(int state, int year){
 		if(state == BAYERN){
 			int[] of = new int[2];
@@ -129,6 +148,12 @@ public class Holidays {
 		}
 		return null;
 	}
+	/**
+	 * This method provides the weeks for the pfingstferien of an state and year.
+	 * @param state state of provided holidays
+	 * @param year year of holidays
+	 * @return an array with the holidayweeks of the state according to the given year.
+	 */
 	private int[] getPfingstferien(int state, int year){
 		if(state == BAYERN){
 			int[] pf = new int[2];
@@ -142,6 +167,12 @@ public class Holidays {
 		}
 		return null;
 	}
+	/**
+	 * This method provides the weeks for the sommerferien of an state and year.
+	 * @param state state of provided holidays
+	 * @param year year of holidays
+	 * @return an array with the holidayweeks of the state according to the given year.
+	 */
 	private int[] getSommerferien(int state, int year){
 		if(state == BAYERN){
 			int[] sf = new int[6];
@@ -167,6 +198,12 @@ public class Holidays {
 		}
 		return null;
 	}
+	/**
+	 * This method provides the weeks for the herbstferien of an state and year.
+	 * @param state state of provided holidays
+	 * @param year year of holidays
+	 * @return an array with the holidayweeks of the state according to the given year.
+	 */
 	private int[] getHerbstferien(int state, int year){
 		if(state == BAYERN){
 			int[] hf = new int[1];
@@ -186,6 +223,12 @@ public class Holidays {
 		}
 		return null;
 	}
+	/**
+	 * This method provides the weeks for the weihnachtsferien of an state and year.
+	 * @param state state of provided holidays
+	 * @param year year of holidays
+	 * @return an array with the holidayweeks of the state according to the given year.
+	 */
 	private int[] getWeihnachtsferien(int state, int year){
 		if(state == BAYERN || state == SCHLESWIGHOLSTEIN){
 			int[] wf = new int[2];
@@ -202,7 +245,11 @@ public class Holidays {
 		return null;
 	}
 	
-	
+	/**
+	 * This methods returns the date of easter of the year.
+	 * @param year year of request.
+	 * @return an object with the easter date.
+	 */
 	private GregorianCalendar findEaster(int year) {
 	    if (year <= 1582) {
 	      throw new IllegalArgumentException(
@@ -226,6 +273,11 @@ public class Holidays {
 	    else
 	      return new GregorianCalendar(year, 3 - 1, n); /* March */
 	}
+	/**
+	 * This methods returns the date of karneval of the year.
+	 * @param year year of request.
+	 * @return an object with the karneval date.
+	 */
 	private GregorianCalendar getKarneval(int year){
 		GregorianCalendar c = findEaster(year);
 		int n = c.get(Calendar.DAY_OF_YEAR);
@@ -234,6 +286,11 @@ public class Holidays {
 		c.set(Calendar.DAY_OF_YEAR, n - 48);
 		return c;
 	}
+	/**
+	 * This methods returns the date of pfingsten of the year.
+	 * @param year year of request.
+	 * @return an object with the pfingst date.
+	 */
 	private GregorianCalendar getPfingsten(int year){
 		GregorianCalendar c = findEaster(year);
 		int n = c.get(Calendar.DAY_OF_YEAR);

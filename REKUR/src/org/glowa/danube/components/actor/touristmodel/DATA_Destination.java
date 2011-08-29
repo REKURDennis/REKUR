@@ -66,12 +66,12 @@ public class DATA_Destination {
 	
 	/**
 	 * This method checks if the Destination contains the holydaytype with the number i.
-	 * @param i Holidaytype number.
+	 * @param type Holidaytype number.
 	 * @return <code>true</code> if contains this type <code>false</code> if not.
 	 */
-	public boolean containsHolidayType(int i){
+	public boolean containsHolidayType(int type){
 		
-		if(holidayTypes[i])return true;
+		if(holidayTypes[type])return true;
 		else return false;
 		
 	}

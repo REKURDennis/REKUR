@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurDestinationModel;
 import org.glowa.danube.components.actor.interfaces.RekurDestinationModelToModelController;
-import org.glowa.danube.components.actor.touristmodel.DATA_Destination;
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.deepactors.actors.actor.Actor;
 import org.glowa.danube.deepactors.model.AbstractActorModel;
@@ -408,6 +407,18 @@ public class DestinationModel extends AbstractActorModel<DestinationProxel> impl
 	public HashMap<Integer, ClimateData> getLastMonthClimateData() {
 		// TODO Auto-generated method stub
 		return lastMonthClimateData;
+	}
+
+	@Override
+	public HashMap<Integer, int[][][]> getBedCapacities() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public HashMap<Integer, int[][][]> getCostsPerCategory() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	  
 }

@@ -49,12 +49,12 @@ public class DA_Tourist implements LightWeightDeepActor{
 	 * @param touristType Reference to the touristType.
 	 * @param age current age.
 	 * @param sex sex of the tourist.
-	 * @param lifephase the tourist lifephase.
+	 * @param lp the tourist lifephase.
 	 */
-	public DA_Tourist(TouristModel tm,DA_SourceArea origin, DA_AbstractTouristType touristType, int age, int sex, int lifephase){
+	public DA_Tourist(TouristModel tm,DA_SourceArea origin, DA_AbstractTouristType tType, int age, int sex, int lp){
 		this.tm = tm;
 		this.origin = origin;
-		currentTouristType = touristType;
+		currentTouristType = tType;
 	}
 	/**
 	 * Method for redecision process.

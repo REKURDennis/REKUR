@@ -31,4 +31,14 @@ public interface ModelControllerToRekurTouristModel extends DanubiaInterface, Mo
      * @return HashMap with the destinations-ids as key and their last month climate data.
      */
 	public HashMap<Integer, ClimateData> getLastMonthClimateData();
+	/**
+     *  Method to get the bed capacity of each destination.
+     * @return HashMap with the destinations-ids as key and bed capacities.
+     */
+	public HashMap<Integer, int[][][]> getBedCapacities();
+	/**
+     *  Method to get the costs per category data of each destination.
+     * @return HashMap with the destinations-ids as key and their costs per category.
+     */
+	public HashMap<Integer, int[][][]> getCostsPerCategory();
 }
