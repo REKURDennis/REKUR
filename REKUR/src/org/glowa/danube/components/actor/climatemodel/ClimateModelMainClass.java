@@ -22,7 +22,7 @@ import org.glowa.danube.utilities.time.DanubiaCalendar;
  * 
  * 
  */
-public class ClimateModel extends AbstractModel<ClimateProxel> implements RekurClimateModelToModelController
+public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implements RekurClimateModelToModelController
 
 {
 	/**

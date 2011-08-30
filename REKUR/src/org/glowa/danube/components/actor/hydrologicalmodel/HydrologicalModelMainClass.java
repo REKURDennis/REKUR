@@ -15,7 +15,7 @@ import org.glowa.danube.utilities.time.DanubiaCalendar;
  * @version 30. Juni 2010
  * 
  */
-public class HydrologicalModel extends AbstractModel<HydrologicalProxel> implements RekurHydrologicalModelToModelController
+public class HydrologicalModelMainClass extends AbstractModel<HydrologicalProxel> implements RekurHydrologicalModelToModelController
 
 {
 	// PIDs for computation

@@ -67,12 +67,12 @@ public class DA_SourceArea extends AbstractActor{
 	/**
 	 * References the TouristModel main Object.
 	 */
-	public TouristModel tm;
+	public TouristModelMainClass tm;
 	
 	@Override
 	protected void options() {
 		super.options();
-		
+		updateTouristsAge();
 		for(LinkedList<LinkedList<DA_Tourist>> aget:touristsPerAge){
 			for(LinkedList<DA_Tourist> agesAndSex:aget){
 				for(DA_Tourist t:agesAndSex){
@@ -81,7 +81,7 @@ public class DA_SourceArea extends AbstractActor{
 			}
 		}
 		
-		updateTouristsAge();
+		
 		
 //		for(DA_Tourist t:tourists){
 //			t.makeDecision(this.getSimulationTime().getYear(), this.getSimulationTime().getMonth(), this.getSimulationTime().getDay());
@@ -184,15 +184,13 @@ public class DA_SourceArea extends AbstractActor{
 	 * This methods inits the tourists.
 	 * @param tm TuristModel to refer to the tourists.
 	 */
-	public void initTourists(TouristModel tm){
+	public void initTourists(TouristModelMainClass tm){
 		this.tm = tm;
 		int age = 0;
 		for(int[] popPerAge: populationPerAgeAndSex){
-			
 			touristsPerAge.addLast(new LinkedList<LinkedList<DA_Tourist>>());
 			int sex = 0;
 			for(int i:popPerAge){
-				//tourists = new DA_Tourist[i/10];
 				touristsPerAge.get(age).addLast(new LinkedList<DA_Tourist>());
 				for(int number = 0; number<i/10; number++){
 					touristsPerAge.get(age).get(sex).addLast(new DA_Tourist(tm,this, tm.touristTypes.get(1), age, number, 0));

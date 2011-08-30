@@ -34,7 +34,7 @@ import org.glowa.danube.utilities.internal.DanubiaLogger;
 
 
 
-public class TouristModel extends AbstractActorModel<TouristProxel> implements RekurTouristModelToModelController
+public class TouristModelMainClass extends AbstractActorModel<TouristProxel> implements RekurTouristModelToModelController
 {
   static final long serialVersionUID = 1;
   /**
@@ -129,7 +129,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
   /**
    * reference to the danubialogger.
    */
-  private static DanubiaLogger logger = DanubiaLogger.getDanubiaLogger(TouristModel.class);
+  private static DanubiaLogger logger = DanubiaLogger.getDanubiaLogger(TouristModelMainClass.class);
   /**
    * Saves the number of tourists to export to the DestiantionModel-Object.  HashMap<DestinationID, HashMap<year, HashMap<week, HashMap<category, HashMap<sourceareaID, quantity>>>>>
    */
@@ -301,7 +301,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	 * This Method initializes all Tourist Agents.
 	 */
 	private void initTourists(){
-		getTouristTypes();
+		initTouristTypes();
 		for(DA_SourceArea sa : actorMap().getEntries(DA_SourceArea.class).getEntries()){
 			sa.initTourists(this);
 		}
@@ -311,7 +311,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	/**
 	 * This methods reads in all TouristTypes from the database.
 	 */
-	private void getTouristTypes(){
+	private void initTouristTypes(){
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			Connection con = DriverManager.getConnection(database);
@@ -893,7 +893,7 @@ public class TouristModel extends AbstractActorModel<TouristProxel> implements R
 	/**
 	 * Inits the gmt: Societal scenario and Actions will be initialized.
 	 */
-	protected void initGMT()
+	private void initGMT()
 	{
 		// Gesellschaftliche Megatrends
 		/*int gmt;

@@ -15,7 +15,7 @@ public class DA_Tourist implements LightWeightDeepActor{
 	/**
 	 * Saves the touristModel-Object.
 	 */
-	public TouristModel tm;
+	public TouristModelMainClass tm;
 	/**
 	 * Saves the origin SourceArea of the tourist.
 	 */
@@ -51,7 +51,7 @@ public class DA_Tourist implements LightWeightDeepActor{
 	 * @param sex sex of the tourist.
 	 * @param lp the tourist lifephase.
 	 */
-	public DA_Tourist(TouristModel tm,DA_SourceArea origin, DA_AbstractTouristType tType, int age, int sex, int lp){
+	public DA_Tourist(TouristModelMainClass tm,DA_SourceArea origin, DA_AbstractTouristType tType, int age, int sex, int lp){
 		this.tm = tm;
 		this.origin = origin;
 		currentTouristType = tType;

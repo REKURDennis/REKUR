@@ -26,7 +26,7 @@ import org.glowa.danube.utilities.execution.ProvideTask;
  * @author Dennis Joswig
  */
 
-public class DestinationModel extends AbstractActorModel<DestinationProxel> implements RekurDestinationModelToModelController
+public class DestinationModelMainClass extends AbstractActorModel<DestinationProxel> implements RekurDestinationModelToModelController
 {
 	/**
 	 * Saves the name for the destinationsrelation.
