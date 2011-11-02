@@ -72,7 +72,7 @@ public class DA_SourceArea extends AbstractActor{
 	@Override
 	protected void options() {
 		super.options();
-		updateTouristsAge();
+		updateDemographyInSA();
 		for(LinkedList<LinkedList<DA_Tourist>> aget:touristsPerAge){
 			for(LinkedList<DA_Tourist> agesAndSex:aget){
 				for(DA_Tourist t:agesAndSex){
@@ -91,12 +91,16 @@ public class DA_SourceArea extends AbstractActor{
 		if(simulationTime().getDay() == 1){
 			updateMonthlyClimate();
 		}
+		if(tm.compute){
+			System.out.println("TouristCompute");
+			tm.compute = false; 
+		}
 	}
 	
 	/**
 	 * This methods updates the age of the tourists.
 	 */
-	private void updateTouristsAge(){
+	private void updateDemographyInSA(){
 		try{
 			if(simulationTime().getDay() == 1 && simulationTime().getMonth() == 1 && simulationTime().getYear()>tm.startYear){
 				int rownumber = 0;

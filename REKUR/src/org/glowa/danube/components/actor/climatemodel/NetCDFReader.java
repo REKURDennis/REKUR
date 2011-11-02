@@ -291,8 +291,8 @@ public class NetCDFReader {
 				for(int x = 0; x<relHum3h.length; x++){
 					for(int y = 0; y<relHum3h[0].length; y++){
 						if(temperaturHumidityIndex[x][y] == 0){
-							temperaturHumidityIndex[x][y] =(int) (((Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y])+(0.2527834*(100.0*relHum3h[x][y])+(airTemp3h[x][y]-273.15)))/
-															(1+Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y]+(0.2527834*(100.0*relHum3h[x][y])+(airTemp3h[x][y]-273.15)))))*100.0);
+							temperaturHumidityIndex[x][y] =(int) (((Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y])+(0.2527834*(100.0*relHum3h[x][y])*(airTemp3h[x][y]-273.15)))/
+															(1+Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y]+(0.2527834*(100.0*relHum3h[x][y])*(airTemp3h[x][y]-273.15)))))*100.0);
 //							System.out.print(temperaturHumidityIndex[x][y]+" ");
 						}
 					}

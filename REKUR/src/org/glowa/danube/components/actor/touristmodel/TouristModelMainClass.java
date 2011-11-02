@@ -154,6 +154,13 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
    * Holds the relation names for the tourists per destinations output relations.
    */
   private String touristsPerDestinationTables;
+  
+  /**
+   * Saves if the redecide process needs to be executed.
+   */
+  private boolean redecide = true;
+  public boolean compute = true;
+  
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
@@ -517,6 +524,8 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#getData()
 	 */
 	public void getData() {
+		System.out.println("TouristGetData");
+		compute = true;
 		if(destinationInit){
 			int i = 0;
 			for(Entry<Integer, boolean[]> entry:controller.getHolidayTypes().entrySet()){
@@ -705,7 +714,10 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	 */
 	protected void postCompute(){
 		if(booked){
-			redecideProcess();
+			while(redecide){
+				redecide = false;
+				redecideProcess();
+			}
 			journeyCounter();
 		}
 		
@@ -824,6 +836,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	 */
 	private void redecide(Vector<Journey> journeys, int tooMany){
 		for(int i=0; i<tooMany ; i++){
+			redecide = true;
 			int random = (int)(Math.random()*(double)journeys.size());
 			Journey j = journeys.get(random);
 			journeys.remove(random);
@@ -837,6 +850,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	 */
 	public void commit()
 	{
+		System.out.println("TouristProvide");
 		if(destinations !=null && printedWeek!=currentDate.get(GregorianCalendar.WEEK_OF_YEAR)){
 			printedWeek=currentDate.get(GregorianCalendar.WEEK_OF_YEAR);
 			

@@ -138,6 +138,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 		/*
 		 * Neue Klimadaten einlesen
 		*/
+		System.out.println("ClimateGetData");
 		netCDFReader.readAirTemperatureDailyMean(currentday);
 		netCDFReader.readAirTemperatureDailyMax(currentday);
 		netCDFReader.readAirTemperatureDailyMin(currentday);
@@ -147,6 +148,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 		netCDFReader.readWindSpeedDailyMax(currentday);
 		netCDFReader.readRelativeHumidityDailyMean(currentday);
 		netCDFReader.calcTempHumidityIndex(currentday);
+		
 	}
 
 	/* (non-Javadoc)
@@ -154,6 +156,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 	 */
 	@Override
 	public void compute(DanubiaCalendar actTime) {
+		System.out.println("ClimateCompute");
 		//Data-Objekt zur Uebergabe an Proxel mit netCDFReader-Objekt verknüpfen, da dort die KlimaArrays vorliegen.
 		Object data = netCDFReader;
 		//Proxel anweisen Klimadaten zu laden.
@@ -165,6 +168,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 	 */
 	@Override
 	public void provide(DanubiaCalendar t) {
+		System.out.println("ClimateProvide");
 		currentday++;
 		provideEngineDaily.provide();
 	}

@@ -6,7 +6,7 @@ import java.util.Vector;
 
 
 /**
- * This class is a dummy tourist type, with a fakes decision.
+ * This class is a dummy tourist type, with a faked decision.
  * @author Dennis Joswig
  *
  */
