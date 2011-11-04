@@ -3,6 +3,7 @@ package org.glowa.danube.components.actor.climatemodel;
 
 
 import java.io.File;
+import java.io.FileWriter;
 
 import org.glowa.danube.components.actor.interfaces.RekurClimateModelToModelController;
 import org.glowa.danube.simulation.model.AbstractModel;
@@ -138,7 +139,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 		/*
 		 * Neue Klimadaten einlesen
 		*/
-		System.out.println("ClimateGetData");
+		System.out.println("ClimateGetData"+actTime.getDay()+actTime.getMonth()+actTime.getYear());
 		netCDFReader.readAirTemperatureDailyMean(currentday);
 		netCDFReader.readAirTemperatureDailyMax(currentday);
 		netCDFReader.readAirTemperatureDailyMin(currentday);
@@ -156,7 +157,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 	 */
 	@Override
 	public void compute(DanubiaCalendar actTime) {
-		System.out.println("ClimateCompute");
+		System.out.println("ClimateCompute"+actTime.getDay()+actTime.getMonth()+actTime.getYear());
 		//Data-Objekt zur Uebergabe an Proxel mit netCDFReader-Objekt verknüpfen, da dort die KlimaArrays vorliegen.
 		Object data = netCDFReader;
 		//Proxel anweisen Klimadaten zu laden.
@@ -168,9 +169,14 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 	 */
 	@Override
 	public void provide(DanubiaCalendar t) {
-		System.out.println("ClimateProvide");
+		System.out.println("ClimateProvide"+t.getDay()+t.getMonth()+t.getYear());
+		if(currentday==0){
+			getData(t);
+			compute(t);
+		}
 		currentday++;
 		provideEngineDaily.provide();
+		writeClimateData(t);
 	}
 	
 	
@@ -278,8 +284,28 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     	});
     }
 	
-	
-
+    private void writeClimateData(DanubiaCalendar actTime){
+    	FileWriter writeOut;
+		String outputName = "ClimateData"+File.separator+actTime.getDay()+actTime.getMonth()+actTime.getYear()+".csv"; 
+		try{
+			writeOut = new FileWriter(outputName, false);
+			writeOut.write("");
+			writeOut.flush();
+			writeOut = new FileWriter(outputName, true);
+			
+			writeOut.write("Pid;East;North;lonBucket;latBucket;lon;lat;MeanTemp;MaxTemp;MinTemp;precepSum;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI\n");
+			
+			for(int i : pids()){
+				ClimateProxel cp = proxel(i);
+				writeOut.write(cp.pid()+";"+dotToComma(cp.easting())+";"+dotToComma(cp.northing())+";"+cp.lonBucket+";"+cp.latBucket+";"+dotToComma(netCDFReader.lon[cp.lonBucket])+";"+dotToComma(netCDFReader.lat[cp.latBucket])+
+						";"+dotToComma(cp.cd.airTemperatureMean)+";"+dotToComma(cp.cd.airTemperatureMax)+";"+dotToComma(cp.cd.airTemperatureMin)+";"+dotToComma(cp.cd.precipitationSum)+";"+dotToComma(cp.cd.sunshineDurationSum)+";"+dotToComma(cp.cd.windSpeedMean)+";"+dotToComma(cp.cd.windSpeedMax)+";"+dotToComma(cp.cd.relativeHumidityMean)+";"+dotToComma(cp.cd.temperatureHumidityIndex)+"\n");
+			}
+			
+			writeOut.flush();
+			writeOut.close();
+		}catch(Exception e){System.out.println(e);}
+    }
+    
 	@Override
 	public TemperatureTable getAirTemperatureDailyMean() {
 		// TODO Auto-generated method stub
@@ -333,4 +359,31 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 		// TODO Auto-generated method stub
 		return temperatureHumidityDailyIndex;
 	}
+	
+	/**
+	 * 
+	 * Changes a dot to comma in a float value
+	 * @param f Number
+	 * @return String with comma
+	 */
+	public String dotToComma(float f){
+		String back = new String();
+		back = ""+f;
+		back = back.replace(".", ",");
+		return back; 
+	}
+
+	/**
+	 * 
+	 *  Changes a dot to comma in a double value
+	 * @param d Number
+	 * @return String with comma
+	 */
+	public String dotToComma(double d){
+		String back = new String();
+		back = ""+d;
+		back = back.replace(".", ",");
+		return back; 
+	}
+	
 }

@@ -1,5 +1,7 @@
 package org.glowa.danube.components.actor.climatemodel;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -194,6 +196,7 @@ public class NetCDFReader {
 	public void readAirTemperatureDailyMean(int day){
 		String filename = climateFolderPath+airTemperatureDailyMeanFileName;
 		airTemperatureDailyMean = readClimateData(day, filename, airTemperatureDailyMeanValueName);
+		if(day%10==0)writeOut(airTemperatureDailyMean, day);
 	}
 	
 	/**
@@ -361,6 +364,36 @@ public class NetCDFReader {
 		    }
 		}
 		return null;
+	}
+	/**
+	 * Writes out the climate data for test purpose.
+	 * @param array Climatedata to write out.
+	 * @param day current day.
+	 */
+	private void writeOut(float[][] array, int day){
+		FileWriter writeOut;
+		String outputName = climateFolderPath+File.separator+day+".csv"; 
+		try{
+			writeOut = new FileWriter(outputName, false);
+			writeOut.write("");
+			writeOut.flush();
+			writeOut = new FileWriter(outputName, true);
+			for(double lo:lon){
+				writeOut.write(";"+lo);
+			}
+			int i = 0;
+			for(float[] array1d : array){
+				writeOut.write("\n"+lat[i]);
+				i++;
+				for(float value : array1d){
+					writeOut.write(" "+value);
+				}
+				
+			}
+			writeOut.flush();
+			writeOut.close();
+		}catch(Exception e){System.out.println(e);}
+		
 	}
 	
 }

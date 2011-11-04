@@ -19,11 +19,11 @@ public class ClimateProxel extends AbstractProxel{
 	/**
 	 * the appropriate longitude-bucket of the climatedata-files.
 	 */
-	private int lonBucket;
+	public int lonBucket;
 	/**
 	 * the appropriate latitude-bucket of the climatedata-files.
 	 */
-	private int latBucket;
+	public int latBucket;
 	/**
 	 * Saves the NetCDFReader-Object reference.
 	 */
@@ -89,7 +89,7 @@ public class ClimateProxel extends AbstractProxel{
 			cd.temperatureHumidityIndex = netCDFReader.temperaturHumidityIndex[latBucket][lonBucket];
 		}
 		catch(Exception e){
-			
+//			e.printStackTrace();
 		}
 	}
 }
