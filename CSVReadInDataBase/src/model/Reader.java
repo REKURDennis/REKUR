@@ -40,7 +40,7 @@ public class Reader {
 			String line = readIn.readLine();
 			generateRelation(relationName, line);
 			while((line = readIn.readLine())!=null){
-				//writeTupel(relationName,line);
+				writeTupel(relationName,line);
 			}
 			
 		} catch (Exception ex) {
