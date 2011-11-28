@@ -1,6 +1,7 @@
  package org.glowa.danube.components.actor.destinationModel;
 
 
+import java.io.File;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,6 +13,7 @@ import java.util.Map.Entry;
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurDestinationModel;
 import org.glowa.danube.components.actor.interfaces.RekurDestinationModelToModelController;
 import org.glowa.danube.components.actor.utilities.ClimateData;
+import org.glowa.danube.components.actor.utilities.RekurUtil;
 import org.glowa.danube.deepactors.actors.actor.Actor;
 import org.glowa.danube.deepactors.model.AbstractActorModel;
 import org.glowa.danube.tables.FloatDataTable;
@@ -20,6 +22,7 @@ import org.glowa.danube.tables.MassPerAreaTable;
 import org.glowa.danube.tables.TemperatureTable;
 import org.glowa.danube.utilities.execution.GetDataEngine;
 import org.glowa.danube.utilities.execution.ProvideTask;
+import org.glowa.danube.utilities.time.DanubiaCalendar;
 
 /**
  * The class <tt>DestinationModel</tt> is the mainclass of the subcomponent DestinationModel of component actor .
@@ -71,10 +74,11 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	/**
 	 * Specifies the number of holidaytypes.
 	 */
-	private final int holidayTypeNumber = 10;
+	private final int holidayTypeNumber = 9;
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
+	private int test;
 	protected void init() {
 		System.out.println("destinationInit");
 		
@@ -99,6 +103,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 */
 	
 	private void initDestinationsFromDataBase(){
+		
 		try {
             // Der Aufruf von newInstance() ist ein Workaround
 	        // fŸr einige misslungene Java-Implementierungen
@@ -114,22 +119,27 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			while(sa.next()&&i<=actorMap().size()){
 //				System.out.println(sa.getString(1)+sa.getString(2)+sa.getString(3)+sa.getString(4));
 				DD_Destination currentActor =(DD_Destination)(actorMap().getEntry(Integer.parseInt(sa.getString("RekurID"))));
-				currentActor.holidayTypes = new boolean[holidayTypeNumber];
-				currentActor.country = Integer.parseInt(sa.getString("LandID"));
-				for(int z = 0;z<holidayTypeNumber;z++){
-					String entry = sa.getString(z+5);
-					if(entry.equals("0")){
-						currentActor.holidayTypes[z] = false;
+//				System.out.println(Integer.parseInt(sa.getString("RekurID")));
+				if(currentActor!=null){
+					test = Integer.parseInt(sa.getString("RekurID"));
+					currentActor.holidayTypes = new boolean[holidayTypeNumber];
+					currentActor.country = Integer.parseInt(sa.getString("LandID"));
+					for(int z = 0;z<holidayTypeNumber;z++){
+						String entry = sa.getString(z+5);
+						if(entry.equals("0")){
+							currentActor.holidayTypes[z] = false;
+						}
+						if(entry.equals("1")){
+							currentActor.holidayTypes[z] = true;
+						}
 					}
-					if(entry.equals("1")){
-						currentActor.holidayTypes[z] = true;
-					}
+					i++;
 				}
-				i++;
 //				System.out.println(currentActor.getId());
 			}	
 		} catch (Exception ex) {
             // Fehler behandeln
+			System.out.println("Error in" + test);
 			ex.printStackTrace();
 		}
 	}
@@ -221,8 +231,12 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			TemperatureTable airTemperatureDailyMean = controller.getAirTemperatureDailyMean();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			
+    			for(int i:pids()){ 
 					proxel(i).cd.airTemperatureMean = airTemperatureDailyMean.getValueByIndex(i);
+					if(proxel(i).isInside()){
+//						System.out.println(airTemperatureDailyMean.getValueByIndex(i));
+					}
 				}
     		}
     	});
@@ -232,7 +246,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			TemperatureTable airTemperatureDailyMax= controller.getAirTemperatureDailyMax();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){ 
 					proxel(i).cd.airTemperatureMax = airTemperatureDailyMax.getValueByIndex(i);
 				}
     		}
@@ -243,7 +257,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			TemperatureTable airTemperatureDailyMin = controller.getAirTemperatureDailyMin();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){ 
 					proxel(i).cd.airTemperatureMin = airTemperatureDailyMin.getValueByIndex(i);
 				}
     		}
@@ -254,7 +268,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			MassPerAreaTable precipitationDailySum = controller.getPrecipitationDailySum();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
     				proxel(i).cd.precipitationSum = precipitationDailySum.getValueByIndex(i);
 				}
     		}
@@ -265,7 +279,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			FloatDataTable sunshineDurationDailySum = controller.getSunshineDurationDailySum();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){ 
     				proxel(i).cd.sunshineDurationSum = sunshineDurationDailySum.getValueByIndex(i);
 				}
     		}
@@ -276,7 +290,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			FloatDataTable windSpeedDailyMean = controller.getWindSpeedDailyMean();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
 					proxel(i).cd.windSpeedMean = windSpeedDailyMean.getValueByIndex(i);
 				}
     		}
@@ -287,7 +301,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			FloatDataTable windSpeedDailyMax = controller.getWindSpeedDailyMax();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){ 
 					proxel(i).cd.windSpeedMax = windSpeedDailyMax.getValueByIndex(i);
 				}
     		}
@@ -298,7 +312,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			FloatDataTable relativeHuminityDailyMean = controller.getRelativeHumidityDailyMean();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){ 
     				proxel(i).cd.relativeHumidityMean = relativeHuminityDailyMean.getValueByIndex(i);
 				}
     		}
@@ -310,7 +324,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			IntegerDataTable temperatureHumidityIndex = controller.getTempHumidityIndex();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){ 
     				proxel(i).cd.temperatureHumidityIndex = temperatureHumidityIndex.getValueByIndex(i);
 				}
     		}
@@ -345,8 +359,39 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#postCompute()
 	 */
 	protected void postCompute(){
+//		writeClimateData(simulationTime());
 	}
 	
+	private void writeClimateData(DanubiaCalendar actTime){
+    	FileWriter writeOut;
+		String outputName = "ClimateData"+File.separator+"DestinationData"+actTime.getDay()+actTime.getMonth()+actTime.getYear()+".csv"; 
+		try{
+			writeOut = new FileWriter(outputName, false);
+			writeOut.write("");
+			writeOut.flush();
+			writeOut = new FileWriter(outputName, true);
+			
+			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax,sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp\n");
+			for(Actor a : actorMap().getEntries()){
+				DD_Destination d = (DD_Destination)a;
+				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMax)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMin)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationSum)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationMax)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.sunshineDurationSum)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMean)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMax)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.relativeHumidityMean)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.temperatureHumidityIndex)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.watertemp)+
+						"\n");	
+			}
+			
+			writeOut.flush();
+			writeOut.close();
+		}catch(Exception e){System.out.println(e);}
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#commit()

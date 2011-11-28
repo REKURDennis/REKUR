@@ -1,10 +1,9 @@
 package org.glowa.danube.components.actor.destinationModel;
 
 import java.util.HashMap;
+import java.util.Set;
 
-import org.glowa.danube.components.actor.touristmodel.DA_SourceArea;
 import org.glowa.danube.components.actor.utilities.ClimateDataAggregator;
-import org.glowa.danube.components.actor.utilities.IntegerArray2D;
 import org.glowa.danube.deepactors.actors.actor.AbstractActor;
 
 /**
@@ -51,6 +50,12 @@ public class DD_Destination extends AbstractActor{
 	public ClimateDataAggregator ca= new ClimateDataAggregator();
 	@Override
 	protected void options(){
+		
+//		for(DestinationProxel dp: (Set<DestinationProxel>) getProxel()){
+//			System.out.println(this.id()+" "+dp.isInside()+" "+dp.cd.airTemperatureMean);
+//			
+//		}
 		ca.aggregateClimateData(getProxel(), getSimulationTime().getDay());
+		
 	}
 }

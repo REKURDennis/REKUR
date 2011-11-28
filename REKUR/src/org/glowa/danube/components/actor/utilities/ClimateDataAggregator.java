@@ -8,7 +8,7 @@ import java.util.Set;
  */
 public class ClimateDataAggregator {
 	/**
-	 * Saves the daily sptialy aggregated climate data.
+	 * Saves the daily spatially aggregated climate data.
 	 */
 	public AggregatedClimateData dailyClimate = new AggregatedClimateData();
 	/**
@@ -20,7 +20,7 @@ public class ClimateDataAggregator {
 	 */
 	private AggregatedClimateData currentMonth = new AggregatedClimateData();
 	/**
-	 * rainy day precipitaion limit.
+	 * rainy day precipitation limit.
 	 */
 	public float rainyDayLimit = 0f;
 	/**
@@ -47,8 +47,11 @@ public class ClimateDataAggregator {
 			currentMonth = new AggregatedClimateData();
 			daysInMonth = 1;	
 		}
+		dailyClimate = new AggregatedClimateData();
 		for(AbstractActorModelProxel currentProxel:dp){
 			dailyClimate.airTemperatureMean += currentProxel.cd.airTemperatureMean;
+			
+			//System.out.println(currentProxel.cd.airTemperatureMean);
 			if(dailyClimate.airTemperatureMax < currentProxel.cd.airTemperatureMax){
 				dailyClimate.airTemperatureMax = currentProxel.cd.airTemperatureMax;
 			}

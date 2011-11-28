@@ -139,7 +139,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 		/*
 		 * Neue Klimadaten einlesen
 		*/
-		System.out.println("ClimateGetData"+actTime.getDay()+actTime.getMonth()+actTime.getYear());
+//		System.out.println("ClimateGetData"+actTime.getDay()+actTime.getMonth()+actTime.getYear());
 		netCDFReader.readAirTemperatureDailyMean(currentday);
 		netCDFReader.readAirTemperatureDailyMax(currentday);
 		netCDFReader.readAirTemperatureDailyMin(currentday);
@@ -157,7 +157,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 	 */
 	@Override
 	public void compute(DanubiaCalendar actTime) {
-		System.out.println("ClimateCompute"+actTime.getDay()+actTime.getMonth()+actTime.getYear());
+//		System.out.println("ClimateCompute"+actTime.getDay()+actTime.getMonth()+actTime.getYear());
 		//Data-Objekt zur Uebergabe an Proxel mit netCDFReader-Objekt verknüpfen, da dort die KlimaArrays vorliegen.
 		Object data = netCDFReader;
 		//Proxel anweisen Klimadaten zu laden.
@@ -169,14 +169,14 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 	 */
 	@Override
 	public void provide(DanubiaCalendar t) {
-		System.out.println("ClimateProvide"+t.getDay()+t.getMonth()+t.getYear());
+//		System.out.println("ClimateProvide"+t.getDay()+t.getMonth()+t.getYear());
 		if(currentday==0){
 			getData(t);
 			compute(t);
 		}
 		currentday++;
 		provideEngineDaily.provide();
-		writeClimateData(t);
+//		writeClimateData(t);
 	}
 	
 	
@@ -191,8 +191,9 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     		public void run()
     		{
     			
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for( int i:pids()){ 
 					airTemperatureDailyMean.setValue(i, proxel(i).cd.airTemperatureMean);
+//					System.out.println("CM "+airTemperatureDailyMean.getValueByIndex(i)+" "+proxel(i).isInside());
 				}
     		}
     	});
@@ -201,7 +202,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     	{
     		public void run()
     		{
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){ 
 					airTemperatureDailyMax.setValue(i, proxel(i).cd.airTemperatureMax);
 				}
     		}
@@ -211,7 +212,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     	{
     		public void run()
     		{
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
 					airTemperatureDailyMin.setValue(i, proxel(i).cd.airTemperatureMin);
 				}
     		}
@@ -221,7 +222,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     	{
     		public void run()
     		{
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
     				precipitationDailySum.setValue(i, proxel(i).cd.precipitationSum);
 				}
     		}
@@ -231,7 +232,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     	{
     		public void run()
     		{
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
     				sunshineDurationDailySum.setValue(i, proxel(i).cd.sunshineDurationSum);
 				}
     		}
@@ -242,7 +243,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     		public void run()
     		{
     			
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
 					windSpeedDailyMean.setValue(i, proxel(i).cd.windSpeedMean);
 				}
     		}
@@ -253,7 +254,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     		public void run()
     		{
     			
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
 					windSpeedDailyMax.setValue(i, proxel(i).cd.windSpeedMax);
 				}
     		}
@@ -264,7 +265,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     		public void run()
     		{
     			
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
     				relativeHumidityDailyMean.setValue(i, proxel(i).cd.relativeHumidityMean);
 				}
     		}
@@ -276,7 +277,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     	{
     		public void run()
     		{
-    			
+    					
     			for( int i=0; i<pids().length; i++ ){ 
     				temperatureHumidityDailyIndex.setValue(i, proxel(i).cd.temperatureHumidityIndex);
 				}
@@ -285,6 +286,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     }
 	
     private void writeClimateData(DanubiaCalendar actTime){
+    	
     	FileWriter writeOut;
 		String outputName = "ClimateData"+File.separator+actTime.getDay()+actTime.getMonth()+actTime.getYear()+".csv"; 
 		try{
