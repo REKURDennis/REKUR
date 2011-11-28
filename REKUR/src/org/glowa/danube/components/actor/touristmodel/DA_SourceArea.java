@@ -197,7 +197,8 @@ public class DA_SourceArea extends AbstractActor{
 			for(int i:popPerAge){
 				touristsPerAge.get(age).addLast(new LinkedList<DA_Tourist>());
 				for(int number = 0; number<i/10; number++){
-					touristsPerAge.get(age).get(sex).addLast(new DA_Tourist(tm,this, tm.touristTypes.get(1), age, number, 0));
+					int random = (int)(Math.random()*(double)tm.touristTypes.size()+1.0);
+					touristsPerAge.get(age).get(sex).addLast(new DA_Tourist(tm,this, tm.touristTypes.get(random), age, number, 0));
 				}
 				sex++;
 			}
