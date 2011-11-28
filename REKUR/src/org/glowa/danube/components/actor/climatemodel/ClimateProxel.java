@@ -16,6 +16,9 @@ public class ClimateProxel extends AbstractProxel{
 	 */
 	public ClimateData cd = new ClimateData();
 	
+	public float THItemp;
+	public float THIhum;
+	
 	/**
 	 * the appropriate longitude-bucket of the climatedata-files.
 	 */
@@ -87,6 +90,10 @@ public class ClimateProxel extends AbstractProxel{
 			cd.windSpeedMax = netCDFReader.windSpeedDailyMax[latBucket][lonBucket];
 			cd.relativeHumidityMean = netCDFReader.relativeHumidityDailyMean[latBucket][lonBucket];
 			cd.temperatureHumidityIndex = netCDFReader.temperaturHumidityIndex[latBucket][lonBucket];
+			
+			THItemp = netCDFReader.THITemp[latBucket][lonBucket];
+			THIhum = netCDFReader.THIHum[latBucket][lonBucket];
+			
 		}
 		catch(Exception e){
 //			e.printStackTrace();

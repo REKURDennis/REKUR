@@ -176,7 +176,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 		}
 		currentday++;
 		provideEngineDaily.provide();
-//		writeClimateData(t);
+		writeClimateData(t);
 	}
 	
 	
@@ -295,12 +295,12 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 			writeOut.flush();
 			writeOut = new FileWriter(outputName, true);
 			
-			writeOut.write("Pid;East;North;lonBucket;latBucket;lon;lat;MeanTemp;MaxTemp;MinTemp;precepSum;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI\n");
+			writeOut.write("Pid;East;North;lonBucket;latBucket;lon;lat;MeanTemp;MaxTemp;MinTemp;precepSum;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;THItemp;THIhum\n");
 			
 			for(int i : pids()){
 				ClimateProxel cp = proxel(i);
 				writeOut.write(cp.pid()+";"+dotToComma(cp.easting())+";"+dotToComma(cp.northing())+";"+cp.lonBucket+";"+cp.latBucket+";"+dotToComma(netCDFReader.lon[cp.lonBucket])+";"+dotToComma(netCDFReader.lat[cp.latBucket])+
-						";"+dotToComma(cp.cd.airTemperatureMean)+";"+dotToComma(cp.cd.airTemperatureMax)+";"+dotToComma(cp.cd.airTemperatureMin)+";"+dotToComma(cp.cd.precipitationSum)+";"+dotToComma(cp.cd.sunshineDurationSum)+";"+dotToComma(cp.cd.windSpeedMean)+";"+dotToComma(cp.cd.windSpeedMax)+";"+dotToComma(cp.cd.relativeHumidityMean)+";"+dotToComma(cp.cd.temperatureHumidityIndex)+"\n");
+						";"+dotToComma(cp.cd.airTemperatureMean)+";"+dotToComma(cp.cd.airTemperatureMax)+";"+dotToComma(cp.cd.airTemperatureMin)+";"+dotToComma(cp.cd.precipitationSum)+";"+dotToComma(cp.cd.sunshineDurationSum)+";"+dotToComma(cp.cd.windSpeedMean)+";"+dotToComma(cp.cd.windSpeedMax)+";"+dotToComma(cp.cd.relativeHumidityMean)+";"+dotToComma(cp.cd.temperatureHumidityIndex)+";"+dotToComma(cp.THItemp)+";"+dotToComma(cp.THIhum)+"\n");
 			}
 			
 			writeOut.flush();

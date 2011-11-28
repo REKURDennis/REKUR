@@ -54,6 +54,9 @@ public class NetCDFReader {
 	 * Saves the integertable with temperature humidity of the current simulationday.
 	 */
 	public int[][] temperaturHumidityIndex;
+	
+	public float[][] THITemp;
+	public float[][] THIHum;
 	/**
 	 * Saves the climateFolderPath;
 	 */
@@ -266,7 +269,7 @@ public class NetCDFReader {
 				for(int x = 0; x<relativeHuminity3hMean.length; x++){
 					for(int y = 0; y<relativeHuminity3hMean[0].length; y++){
 						relativeHumidityDailyMean[x][y] += relativeHuminity3hMean[x][y];
-						if(i == 8){
+						if(i == 7){
 							relativeHumidityDailyMean[x][y] /=8;
 						}
 					}
@@ -287,16 +290,25 @@ public class NetCDFReader {
 			String relHumFilePath = climateFolderPath+relativeHumidity3hFileName;
 			String airTemp3hFilePath = climateFolderPath+airTemperature3hFileName;
 			float[][] initsize = readClimateData((day), relHumFilePath, relativeHumidity3hValueName);
+			THIHum = new float[initsize.length][initsize[0].length];
+			THITemp = new float[initsize.length][initsize[0].length];
 			temperaturHumidityIndex = new int[initsize.length][initsize[0].length];
 			for(int i = 0; i<8;i++){
 				float[][] relHum3h = readClimateData((day*8+i), relHumFilePath, relativeHumidity3hValueName);
 				float[][] airTemp3h =  readClimateData((day*8+i), airTemp3hFilePath, airTemperature3hValueName);
 				for(int x = 0; x<relHum3h.length; x++){
 					for(int y = 0; y<relHum3h[0].length; y++){
-						if(temperaturHumidityIndex[x][y] == 0){
-							temperaturHumidityIndex[x][y] =(int) (((Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y])+(0.2527834*(100.0*relHum3h[x][y])*(airTemp3h[x][y]-273.15)))/
-															(1+Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y]+(0.2527834*(100.0*relHum3h[x][y])*(airTemp3h[x][y]-273.15)))))*100.0);
-//							System.out.print(temperaturHumidityIndex[x][y]+" ");
+						int thi = (int)(((Math.exp(((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y])+(0.2527834*(100.0*relHum3h[x][y])*(airTemp3h[x][y]-273.15))))/
+								(1+Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y]+(0.2527834*(100.0*relHum3h[x][y])*(airTemp3h[x][y]-273.15)))))*100.0);
+						if(temperaturHumidityIndex[x][y] < thi){
+							temperaturHumidityIndex[x][y] = thi;
+							THIHum[x][y] = relHum3h[x][y];
+							THITemp[x][y] = airTemp3h[x][y];
+//							temperaturHumidityIndex[x][y] =(int)(((Math.exp(((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y])+(0.2527834*(100.0*relHum3h[x][y])*(airTemp3h[x][y]-273.15))))/
+//															(1+Math.exp((-849.424)+13.5372*(double)(airTemp3h[x][y]-273.15)+2.386084*100.0*relHum3h[x][y]+(0.2527834*(100.0*relHum3h[x][y])*(airTemp3h[x][y]-273.15)))))*100.0);
+////							System.out.print(temperaturHumidityIndex[x][y]+" ");
+							
+							
 						}
 					}
 //					System.out.println();
