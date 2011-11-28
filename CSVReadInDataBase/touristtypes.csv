@@ -1,0 +1,13 @@
+ID;Class;holidaytypes;activityType;countries;maxTemp;minTemp;avgTemp;preferedWeeks;holiydayLength;category;bookingMonth;bookingDay
+1;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;1;;6;;;;20,21;;1;1;10
+2;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;2;;7;;;;11,11;;2;2;11
+3;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;3;;8;;;;27,28;;3;3;12
+4;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;4;;1;;;;33,34;;4;4;13
+5;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;4;;2;;;;34,34;;5;5;14
+6;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;3;;3;;;;35,34;;6;6;15
+7;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;1;;4;;;;36,34;;7;7;16
+8;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;1;;5;;;;37,34;;8;8;17
+9;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;2;;6;;;;38,34;;9;9;18
+10;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;3;;7;;;;39,34;;10;10;19
+11;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;4;;8;;;;40,34;;11;11;20
+12;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;4;;9;;;;41,34;;12;12;21
