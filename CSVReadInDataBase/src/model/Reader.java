@@ -189,7 +189,10 @@ public class Reader {
 	
 	private void generateNewDemoRelation(String name){
 		try {
-			stmt.executeUpdate("drop table "+name);
+			try{
+				stmt.executeUpdate("drop table "+name);
+			}
+			catch(Exception e){}
 			String query="Create table "+name+"(Age varchar(255)";
 			for(int i = 2008; i <=2030; i++){
 				for(int z = 0;z <2;z++){
