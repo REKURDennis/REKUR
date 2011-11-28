@@ -1,5 +1,6 @@
 package model;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,6 +15,7 @@ import view.View;
 public class Reader {
 	public Connection con;
 	public Statement stmt;
+	public Statement stmt1;
 	public BufferedReader readIn;
 	public String readInFile;
 	public String demoFolder;
@@ -140,17 +142,17 @@ public class Reader {
 	public void demoRelationsPerYear(){
 		try {
 			String query = " select * from landkreise";
-			ResultSet sa = stmt. executeQuery(query);
+			ResultSet sa = stmt1.executeQuery(query);
 			while(sa.next()){
 				int lid = Integer.parseInt(sa.getString(2));
-				readIn = new BufferedReader(new FileReader(demoFolder+lid+".csv"));
+				readIn = new BufferedReader(new FileReader(demoFolder+File.separator+lid+".csv"));
 				String line = readIn.readLine();
 				readIn.readLine();
 				generateNewDemoRelation("d"+lid+"");
 				while((line = readIn.readLine())!=null){
 					writeTupel("d"+lid,line);
 				}
-				v.status.setText("Write Landkrais"+lid);
+				v.status.setText("Write Landkreis"+lid);
 			}	
 		} catch (Exception ex) {
 	        // Fehler behandeln
@@ -214,6 +216,7 @@ public class Reader {
 			System.out.println(dbName+userName+password);
 			con = DriverManager.getConnection("jdbc:mysql://localhost/"+dbName+"?user="+userName+"&password="+password);
 			stmt = con.createStatement();
+			stmt1 = con.createStatement();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 	    }
