@@ -196,7 +196,7 @@ public class NetCDFReader {
 	public void readAirTemperatureDailyMean(int day){
 		String filename = climateFolderPath+airTemperatureDailyMeanFileName;
 		airTemperatureDailyMean = readClimateData(day, filename, airTemperatureDailyMeanValueName);
-		if(day%10==0)writeOut(airTemperatureDailyMean, day);
+//		if(day%10==0)writeOut(airTemperatureDailyMean, day);
 	}
 	
 	/**

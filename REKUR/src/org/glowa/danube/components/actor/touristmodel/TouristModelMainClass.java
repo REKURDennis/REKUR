@@ -265,7 +265,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				while(sa.next()){
 					//System.out.println(i);
 					if(sa.getString("m"+year).equals("") || sa.getString("w"+year).equals("")){
-						System.out.println(currentArea.landkreisId+" "+i);
+//						System.out.println(currentArea.landkreisId+" "+i);
 					}
 					else{
 						int m = Integer.parseInt(sa.getString("m"+year));
@@ -580,7 +580,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     		public void run()
     		{
     			TemperatureTable airTemperatureDailyMean = controller.getAirTemperatureDailyMean();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){ 
 					proxel(i).cd.airTemperatureMean = airTemperatureDailyMean.getValueByIndex(i);
 				}
     		}
@@ -591,7 +591,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     		public void run()
     		{
     			TemperatureTable airTemperatureDailyMax= controller.getAirTemperatureDailyMax();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){ 
 					proxel(i).cd.airTemperatureMax = airTemperatureDailyMax.getValueByIndex(i);
 				}
     		}
@@ -602,7 +602,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     		public void run()
     		{
     			TemperatureTable airTemperatureDailyMin = controller.getAirTemperatureDailyMin();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
 					proxel(i).cd.airTemperatureMin = airTemperatureDailyMin.getValueByIndex(i);
 				}
     		}
@@ -613,7 +613,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     		public void run()
     		{
     			MassPerAreaTable precipitationDailySum = controller.getPrecipitationDailySum();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
     				proxel(i).cd.precipitationSum = precipitationDailySum.getValueByIndex(i);
 				}
     		}
@@ -624,7 +624,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     		public void run()
     		{
     			FloatDataTable sunshineDurationDailySum = controller.getSunshineDurationDailySum();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
     				proxel(i).cd.sunshineDurationSum = sunshineDurationDailySum.getValueByIndex(i);
 				}
     		}
@@ -635,7 +635,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     		public void run()
     		{
     			FloatDataTable windSpeedDailyMean = controller.getWindSpeedDailyMean();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
 					proxel(i).cd.windSpeedMean = windSpeedDailyMean.getValueByIndex(i);
 				}
     		}
@@ -646,7 +646,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     		public void run()
     		{
     			FloatDataTable windSpeedDailyMax = controller.getWindSpeedDailyMax();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
 					proxel(i).cd.windSpeedMax = windSpeedDailyMax.getValueByIndex(i);
 				}
     		}
@@ -657,7 +657,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     		public void run()
     		{
     			FloatDataTable relativeHuminityDailyMean = controller.getRelativeHumidityDailyMean();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
     				proxel(i).cd.relativeHumidityMean = relativeHuminityDailyMean.getValueByIndex(i);
 				}
     		}
@@ -669,7 +669,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     		public void run()
     		{
     			IntegerDataTable temperatureHumidityIndex = controller.getTempHumidityIndex();
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
     				proxel(i).cd.temperatureHumidityIndex = temperatureHumidityIndex.getValueByIndex(i);
 				}
     		}

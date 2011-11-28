@@ -1,3 +1,0 @@
-#Persistent Simulation Run States
-#Fri Nov 04 15:46:31 CET 2011
-RekurStandard=ERROR
