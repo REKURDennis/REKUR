@@ -359,7 +359,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#postCompute()
 	 */
 	protected void postCompute(){
-//		writeClimateData(simulationTime());
+		writeClimateData(simulationTime());
 	}
 	
 	private void writeClimateData(DanubiaCalendar actTime){
@@ -371,7 +371,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			writeOut.flush();
 			writeOut = new FileWriter(outputName, true);
 			
-			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax,sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp\n");
+			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp\n");
 			for(Actor a : actorMap().getEntries()){
 				DD_Destination d = (DD_Destination)a;
 				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
