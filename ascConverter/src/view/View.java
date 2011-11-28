@@ -53,7 +53,7 @@ public class View extends JFrame{
 		
 		
 		this.actorClass = new JTextField(50);
-		actorClass.setText("org.glowa.danube.components.actor.destinationModel.deepactors.DD_Destination");
+		actorClass.setText("org.glowa.danube.components.actor.destinationModel.DD_Destination");
 		this.collaborators = new JTextField(45);
 		collaborators.setText("");
 		this.initialPlans = new JTextField(50);
