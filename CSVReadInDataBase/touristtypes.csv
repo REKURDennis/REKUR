@@ -9,5 +9,5 @@ ID;Class;holidaytypes;activityType;countries;maxTemp;minTemp;avgTemp;preferedWee
 8;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;1;;5;;;;37,34;;8;8;17
 9;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;2;;6;;;;38,34;;9;9;18
 10;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;3;;7;;;;39,34;;10;10;19
-11;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;4;;8;;;;40,34;;11;11;21
+11;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;4;;8;;;;40,34;;11;11;20
 12;org.glowa.danube.components.actor.touristmodel.DA_DummyTouristType;4;;9;;;;41,34;;12;12;21
