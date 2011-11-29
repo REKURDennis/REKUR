@@ -27,7 +27,7 @@ import org.glowa.danube.utilities.internal.DanubiaLogger;
 /**
  * The class <tt>TouristModel</tt> is the mainclass of the subcomponent Tourist Model of component deepactor .
  * 
- * Configurationfile can be found unter metadata/components/touristmodel.cfg
+ * Configurationfile can be found unter metadata/components/touristmodel.cfg.
  * 
  * @author Dennis Joswig
  */
@@ -264,6 +264,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				
 				ResultSet sa = stmt. executeQuery(query);
 				int i = 0;
+				
 				
 				while(sa.next()){
 					//System.out.println(i);
