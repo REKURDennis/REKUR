@@ -32,6 +32,10 @@ import org.glowa.danube.utilities.time.DanubiaCalendar;
 public class DestinationModelMainClass extends AbstractActorModel<DestinationProxel> implements RekurDestinationModelToModelController
 {
 	/**
+	 * Saves the scenario used in this run.
+	 */
+	public int destinationscenario;
+	/**
 	 * Saves the name for the destinationsrelation.
 	 */
 	private String destinationsTable;
