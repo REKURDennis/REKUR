@@ -81,20 +81,14 @@ public class DA_SourceArea extends AbstractActor{
 			}
 		}
 		
-		
-		
-//		for(DA_Tourist t:tourists){
-//			t.makeDecision(this.getSimulationTime().getYear(), this.getSimulationTime().getMonth(), this.getSimulationTime().getDay());
-//		}
-		
 		ca.aggregateClimateData(getProxel(), getSimulationTime().getDay());
 		if(simulationTime().getDay() == 1){
 			updateMonthlyClimate();
 		}
-		if(tm.compute){
-			System.out.println("TouristCompute");
-			tm.compute = false; 
-		}
+//		if(tm.compute){
+//			System.out.println("TouristCompute");
+//			tm.compute = false; 
+//		}
 	}
 	
 	/**

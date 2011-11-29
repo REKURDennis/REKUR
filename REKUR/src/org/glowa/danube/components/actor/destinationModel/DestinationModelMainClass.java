@@ -363,10 +363,13 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#postCompute()
 	 */
 	protected void postCompute(){
-		writeClimateData(simulationTime());
+		writeDailyClimateData(simulationTime());
+		if(simulationTime().getDay()==2){
+			writeMonthlyClimateData(simulationTime());
+		}
 	}
 	
-	private void writeClimateData(DanubiaCalendar actTime){
+	private void writeDailyClimateData(DanubiaCalendar actTime){
     	FileWriter writeOut;
 		String outputName = "ClimateData"+File.separator+"DestinationData"+actTime.getDay()+actTime.getMonth()+actTime.getYear()+".csv"; 
 		try{
@@ -396,6 +399,38 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			writeOut.close();
 		}catch(Exception e){System.out.println(e);}
     }
+	
+	private void writeMonthlyClimateData(DanubiaCalendar actTime){
+    	FileWriter writeOut;
+		String outputName = "ClimateData"+File.separator+"DestinationMonthlyData"+(actTime.getMonth()-1)+actTime.getYear()+".csv"; 
+		try{
+			writeOut = new FileWriter(outputName, false);
+			writeOut.write("");
+			writeOut.flush();
+			writeOut = new FileWriter(outputName, true);
+			
+			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp\n");
+			for(Actor a : actorMap().getEntries()){
+				DD_Destination d = (DD_Destination)a;
+				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMax)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMin)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationSum)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationMax)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.sunshineDurationSum)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMean)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMax)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.relativeHumidityMean)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.temperatureHumidityIndex)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.watertemp)+
+						"\n");
+			}
+			
+			writeOut.flush();
+			writeOut.close();
+		}catch(Exception e){System.out.println(e);}
+    }
+	
 	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#commit()
