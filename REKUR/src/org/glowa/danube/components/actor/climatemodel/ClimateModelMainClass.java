@@ -73,7 +73,10 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 	 */
 	private int currentday = 0;
 	
-	
+	/**
+	 * Specifies if the simulation is run in debug mode.
+	 */
+	public boolean debug = true;
 	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.simulation.component.AbstractComponent#init()
@@ -118,7 +121,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 		netCDFReader.windSpeedDailyMaxValueName = this.componentConfig().getComponentProperties().getProperty("windSpeedDailyMaxValueName");
 		netCDFReader.relativeHumidity3hValueName = this.componentConfig().getComponentProperties().getProperty("relativeHumidity3hValueName");
 		netCDFReader.airTemperature3hValueName = this.componentConfig().getComponentProperties().getProperty("airTemperature3hValueName");
-		
+		if(this.componentConfig().getComponentProperties().getProperty("debug").equals("false"))debug = false;
 //		netCDFReader.initFile(climateFolderPath+meanTempFileName);
 		netCDFReader.initCoordinateSystem();
 		
@@ -176,7 +179,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 		}
 		currentday++;
 		provideEngineDaily.provide();
-		writeClimateData(t);
+		if(debug)writeClimateData(t);
 	}
 	
 	

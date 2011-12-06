@@ -57,7 +57,7 @@ public class DA_SourceArea extends AbstractActor{
 	/**
 	 * References the climateDataAggregator-Object to aggregate and the monthly climate.
 	 */
-	private ClimateDataAggregator ca = new ClimateDataAggregator(); 
+	public ClimateDataAggregator ca = new ClimateDataAggregator(); 
 	
 	/**
 	 * Saves the monthly climatedata of the last five years.

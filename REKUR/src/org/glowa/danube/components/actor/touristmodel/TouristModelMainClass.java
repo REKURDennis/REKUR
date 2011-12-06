@@ -1,6 +1,7 @@
 package org.glowa.danube.components.actor.touristmodel;
 
 
+import java.io.File;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,9 +12,11 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.Map.Entry;
 
+import org.glowa.danube.components.actor.destinationModel.DD_Destination;
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurTouristModel;
 import org.glowa.danube.components.actor.interfaces.RekurTouristModelToModelController;
 import org.glowa.danube.components.actor.utilities.ClimateData;
+import org.glowa.danube.components.actor.utilities.RekurUtil;
 import org.glowa.danube.deepactors.actors.actor.Actor;
 import org.glowa.danube.deepactors.model.AbstractActorModel;
 import org.glowa.danube.tables.FloatDataTable;
@@ -23,6 +26,7 @@ import org.glowa.danube.tables.TemperatureTable;
 import org.glowa.danube.utilities.execution.GetDataEngine;
 import org.glowa.danube.utilities.execution.ProvideTask;
 import org.glowa.danube.utilities.internal.DanubiaLogger;
+import org.glowa.danube.utilities.time.DanubiaCalendar;
 
 /**
  * The class <tt>TouristModel</tt> is the mainclass of the subcomponent Tourist Model of component deepactor .
@@ -162,8 +166,13 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
    	* Saves if the redecide process needs to be executed.
    	*/
   	private boolean redecide = true;
-  	public boolean compute = true;
-  
+//  	public boolean compute = true;
+  	
+  	/**
+	 * Specifies if the simulation is run in debug mode.
+	 */
+	public boolean debug = true;
+  	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
@@ -184,11 +193,11 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	    landkreisIDtoSourceAreaIDTable = this.componentConfig().getComponentProperties().getProperty("landkreisIDtoSourceAreaIDTable");
 	    touristTypesTable = this.componentConfig().getComponentProperties().getProperty("touristTypesTable");
 	    touristsPerDestinationTables = this.componentConfig().getComponentProperties().getProperty("touristsPerDestinationTables");
-	    
+	    if(this.componentConfig().getComponentProperties().getProperty("debug").equals("false"))debug = false;
 		initSourceAreasFromDataBase();
 		updateDemography(startYear);
 		initTourists();
-		writemap();
+		if(debug)writemap();
 		
 		try {
 			controller = (ModelControllerToRekurTouristModel) getImport("org.glowa.danube.components.actor.interfaces.ModelControllerToRekurTouristModel");
@@ -529,7 +538,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	 */
 	public void getData() {
 //		System.out.println("TouristGetData");
-		compute = true;
+//		compute = true;
 		if(destinationInit){
 			int i = 0;
 			for(Entry<Integer, boolean[]> entry:controller.getHolidayTypes().entrySet()){
@@ -724,8 +733,77 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 //			}
 			journeyCounter();
 		}
-		
+		if(debug)writeDailyClimateData(simulationTime());
+		if(simulationTime().getDay()==2){
+			if(debug)writeMonthlyClimateData(simulationTime());
+		}
 	}
+	
+	
+	private void writeDailyClimateData(DanubiaCalendar actTime){
+    	FileWriter writeOut;
+		String outputName = "ClimateData"+File.separator+"SourceAreaData"+actTime.getDay()+actTime.getMonth()+actTime.getYear()+".csv"; 
+		try{
+			writeOut = new FileWriter(outputName, false);
+			writeOut.write("");
+			writeOut.flush();
+			writeOut = new FileWriter(outputName, true);
+			
+			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp\n");
+			for(Actor a : actorMap().getEntries()){
+				DA_SourceArea d = (DA_SourceArea)a;
+				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMax)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMin)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationSum)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationMax)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.sunshineDurationSum)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMean)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMax)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.relativeHumidityMean)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.temperatureHumidityIndex)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.watertemp)+
+						"\n");	
+			}
+			
+			writeOut.flush();
+			writeOut.close();
+		}catch(Exception e){System.out.println(e);}
+    }
+	
+	private void writeMonthlyClimateData(DanubiaCalendar actTime){
+    	FileWriter writeOut;
+		String outputName = "ClimateData"+File.separator+"SourceAreaMonthlyData"+(actTime.getMonth()-1)+actTime.getYear()+".csv"; 
+		try{
+			writeOut = new FileWriter(outputName, false);
+			writeOut.write("");
+			writeOut.flush();
+			writeOut = new FileWriter(outputName, true);
+			
+			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp\n");
+			for(Actor a : actorMap().getEntries()){
+				DA_SourceArea d = (DA_SourceArea)a;
+				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMax)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMin)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationSum)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationMax)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.sunshineDurationSum)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMean)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMax)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.relativeHumidityMean)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.temperatureHumidityIndex)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.watertemp)+
+						"\n");
+			}
+			
+			writeOut.flush();
+			writeOut.close();
+		}catch(Exception e){System.out.println(e);}
+    }
+	
+	
+	
 	/**
 	 * This method counts the current booking journeys per year, week, category and sourcearea.
 	 */

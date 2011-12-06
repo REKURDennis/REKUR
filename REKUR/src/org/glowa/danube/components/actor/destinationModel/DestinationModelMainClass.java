@@ -79,10 +79,19 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 * Specifies the number of holidaytypes.
 	 */
 	private final int holidayTypeNumber = 9;
+	/**
+	 * Variable to print out the failing actor number.
+	 */
+	private int test;
+	
+	/**
+	 * Specifies if the simulation is run in debug mode.
+	 */
+	public boolean debug = true;
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
-	private int test;
+	
 	protected void init() {
 		System.out.println("destinationInit");
 		
@@ -90,6 +99,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	    userName = this.componentConfig().getComponentProperties().getProperty("userName");
 	    password = this.componentConfig().getComponentProperties().getProperty("password");
 	    destinationsTable = this.componentConfig().getComponentProperties().getProperty("destinationrelation");
+	    if(this.componentConfig().getComponentProperties().getProperty("debug").equals("false"))debug = false;
 	    database = "jdbc:mysql://localhost/"+dataBaseName+"?user="+userName+"&password="+password;
 		
 		
@@ -99,7 +109,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			holidayTypes.put(entry.getId(), dest.holidayTypes);
 			countryIDs.put(entry.getId(), dest.country);
 		}
-		writemap();
+		if(debug)writemap();
 	}
 	
 	/**
@@ -363,9 +373,9 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#postCompute()
 	 */
 	protected void postCompute(){
-		writeDailyClimateData(simulationTime());
+		if(debug)writeDailyClimateData(simulationTime());
 		if(simulationTime().getDay()==2){
-			writeMonthlyClimateData(simulationTime());
+			if(debug)writeMonthlyClimateData(simulationTime());
 		}
 	}
 	
@@ -390,7 +400,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 						";"+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMean)+
 						";"+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMax)+
 						";"+RekurUtil.dotToComma(d.ca.dailyClimate.relativeHumidityMean)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.temperatureHumidityIndex)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.temperatureHumidityIndexMonthlyMean)+
 						";"+RekurUtil.dotToComma(d.ca.dailyClimate.watertemp)+
 						"\n");	
 			}
