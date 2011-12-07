@@ -33,6 +33,10 @@ import java.util.GregorianCalendar;
 
 public class Holidays {
 	/**
+	 * Specifies the holiday scenario.
+	 */
+	public static int scenario = 0;
+	/**
 	 * Static variable for Bayern.
 	 */
 	public static final int BAYERN = 9;
@@ -102,6 +106,8 @@ public class Holidays {
 		}
 		return null;
 	}
+	
+	
 	/**
 	 * This method provides the weeks for the winterferien of an state and year.
 	 * @param state state of provided holidays
@@ -174,7 +180,7 @@ public class Holidays {
 	 * @return an array with the holidayweeks of the state according to the given year.
 	 */
 	private int[] getSommerferien(int state, int year){
-		if(state == BAYERN){
+		if((state == BAYERN  && scenario == 0) || (state == SCHLESWIGHOLSTEIN && scenario == 1)){
 			int[] sf = new int[6];
 			GregorianCalendar augustend = new GregorianCalendar(year, 7, 2);
 			augustend.setMinimalDaysInFirstWeek(4);
@@ -185,7 +191,20 @@ public class Holidays {
 			}
 			return sf;
 		}
-		if(state == SCHLESWIGHOLSTEIN){
+		
+		if(state == BAYERN && scenario == 2){
+			int[] sf = new int[6];
+			GregorianCalendar augustend = new GregorianCalendar(year, 6, 2);
+			augustend.setMinimalDaysInFirstWeek(4);
+			augustend.setFirstDayOfWeek(1);
+			sf[0] = augustend.get(GregorianCalendar.WEEK_OF_YEAR);
+			for(int i = 1; i < sf.length;i++){
+				sf[i] = sf[0]+i;
+			}
+			return sf;
+		}
+		
+		if(state == SCHLESWIGHOLSTEIN && scenario == 0){
 			int[] sf = new int[6];
 			GregorianCalendar augustend = new GregorianCalendar(year, 7, 4);
 			augustend.setMinimalDaysInFirstWeek(4);
@@ -198,6 +217,8 @@ public class Holidays {
 		}
 		return null;
 	}
+	
+	
 	/**
 	 * This method provides the weeks for the herbstferien of an state and year.
 	 * @param state state of provided holidays

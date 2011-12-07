@@ -16,6 +16,7 @@ import org.glowa.danube.components.actor.destinationModel.DD_Destination;
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurTouristModel;
 import org.glowa.danube.components.actor.interfaces.RekurTouristModelToModelController;
 import org.glowa.danube.components.actor.utilities.ClimateData;
+import org.glowa.danube.components.actor.utilities.Holidays;
 import org.glowa.danube.components.actor.utilities.RekurUtil;
 import org.glowa.danube.deepactors.actors.actor.Actor;
 import org.glowa.danube.deepactors.model.AbstractActorModel;
@@ -193,6 +194,8 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	    landkreisIDtoSourceAreaIDTable = this.componentConfig().getComponentProperties().getProperty("landkreisIDtoSourceAreaIDTable");
 	    touristTypesTable = this.componentConfig().getComponentProperties().getProperty("touristTypesTable");
 	    touristsPerDestinationTables = this.componentConfig().getComponentProperties().getProperty("touristsPerDestinationTables");
+	    touristscenario = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("touristscenario"));
+	    Holidays.scenario = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("holidayscenario"));
 	    if(this.componentConfig().getComponentProperties().getProperty("debug").equals("false"))debug = false;
 		initSourceAreasFromDataBase();
 		updateDemography(startYear);
