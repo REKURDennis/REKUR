@@ -180,7 +180,7 @@ public class Holidays {
 	 * @return an array with the holidayweeks of the state according to the given year.
 	 */
 	private int[] getSommerferien(int state, int year){
-		if((state == BAYERN  && scenario == 0) || (state == SCHLESWIGHOLSTEIN && scenario == 1)){
+		if((state == BAYERN  && scenario == 0 || scenario == 1) || (state == SCHLESWIGHOLSTEIN && scenario == 1)){
 			int[] sf = new int[6];
 			GregorianCalendar augustend = new GregorianCalendar(year, 7, 2);
 			augustend.setMinimalDaysInFirstWeek(4);
@@ -204,7 +204,7 @@ public class Holidays {
 			return sf;
 		}
 		
-		if(state == SCHLESWIGHOLSTEIN && scenario == 0){
+		if(state == SCHLESWIGHOLSTEIN && scenario == 0|| scenario == 2){
 			int[] sf = new int[6];
 			GregorianCalendar augustend = new GregorianCalendar(year, 7, 4);
 			augustend.setMinimalDaysInFirstWeek(4);
