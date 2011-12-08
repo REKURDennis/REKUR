@@ -281,7 +281,9 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * Method to check the distance matrix.
+	 */
 	private void checkDistances(){
 		for(Actor entry :actorMap().getEntries()){
 			DA_SourceArea sa = (DA_SourceArea)entry;
