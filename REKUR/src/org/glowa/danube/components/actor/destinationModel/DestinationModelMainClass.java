@@ -479,10 +479,10 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 				lastMonthClimateData.put(d.getId(), d.ca.lastMonthClimate);
 			}
 		}
-//		try{
-////			checkNumberOfTourists();
-//		}
-//		catch(Exception e){}
+		try{
+			if(currentDate.get(GregorianCalendar.WEEK_OF_YEAR)>2)checkNumberOfTourists();
+		}
+		catch(Exception e){}
 	}
 	
 	/**
@@ -516,7 +516,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 								for(Entry<Integer, Integer> touristsPerSource : touristsPerCatAndSource.getValue().entrySet()){
 									
 									//System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
-									String query ="insert into checkDestTable"+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.id+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"',"+touristsPerSource.getValue()+")";
+									String query ="insert into checkDestTable"+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getId()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"',"+touristsPerSource.getValue()+")";
 									System.out.println(query);
 									stmt.executeUpdate(query);
 								}
