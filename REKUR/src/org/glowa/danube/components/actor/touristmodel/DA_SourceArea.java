@@ -68,6 +68,10 @@ public class DA_SourceArea extends AbstractActor{
 	 * References the TouristModel main Object.
 	 */
 	public TouristModelMainClass tm;
+	/**
+	 * Saves the distance to each destination. <DestID, Distance in Minutes>
+	 */
+	public HashMap<Integer, Integer> distance = new HashMap<Integer, Integer>();
 	
 	@Override
 	protected void options() {

@@ -83,7 +83,12 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	 */
 	private String touristTypesTable = "touristTypes";
 	/**
-	 * HashMap with destination-Ids and thir DATA-Objects.
+	 * holds the name of the relation containing the distances. Given in the config-file.
+	 *  Configuration file can be found under metadata/components/touristmodel.cfg
+	 */
+	private String distance = "distance";
+	/**
+	 * HashMap with destination-Ids and their DATA-Objects.
 	 */
 	public HashMap<Integer,DATA_Destination> destinations = new HashMap<Integer, DATA_Destination>();
 	/**
@@ -194,6 +199,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	    landkreisIDtoSourceAreaIDTable = this.componentConfig().getComponentProperties().getProperty("landkreisIDtoSourceAreaIDTable");
 	    touristTypesTable = this.componentConfig().getComponentProperties().getProperty("touristTypesTable");
 	    touristsPerDestinationTables = this.componentConfig().getComponentProperties().getProperty("touristsPerDestinationTables");
+	    distance = this.componentConfig().getComponentProperties().getProperty("distance");
 	    touristscenario = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("touristscenario"));
 	    Holidays.scenario = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("holidayscenario"));
 	    if(this.componentConfig().getComponentProperties().getProperty("debug").equals("false"))debug = false;
@@ -207,13 +213,6 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 		} catch (Exception ex) {
 			this.logger().warn(ex);
 		}
-	}
-	
-	/**
-	 * This Method inits the distance matrix from the database.
-	 */
-	private void initDistanceMatrix(){
-		
 	}
 	
 	/**
@@ -254,12 +253,44 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				}
 				i++;
 				//System.out.println(sa.getString("RekurID"));
-			}	
+				initDistances(currentActor);
+			}
+//			checkDistances();
 		} catch (Exception ex) {
             // Fehler behandeln
 			ex.printStackTrace();
 		}
 	}
+	/**
+	 * Reads in the distances to each destination in Minutes.
+	 * @param currentActor the sourcearea.
+	 */
+	private void initDistances(DA_SourceArea currentActor){
+		try{
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Connection con = DriverManager.getConnection(database);
+			Statement stmt = con.createStatement();
+			
+			String query = " select destination_rownumber,distanceinminutes from "+distance+" where kreis_id ="+currentActor.landkreisId+";";
+			ResultSet sa = stmt. executeQuery(query);
+			while(sa.next()){
+				currentActor.distance.put(Integer.parseInt(sa.getString("DESTINATION_ROWNUMBER")), (int)(Float.parseFloat(sa.getString("distanceinminutes"))));
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	private void checkDistances(){
+		for(Actor entry :actorMap().getEntries()){
+			DA_SourceArea sa = (DA_SourceArea)entry;
+			for(Entry<Integer, Integer> dist:sa.distance.entrySet()){
+				System.out.println(sa.landkreisId+" "+dist.getKey()+" "+dist.getValue());
+			}
+		}
+	}
+	
 	/**
 	 * Updates the Demography for this year
 	 * @param year current simulation year
