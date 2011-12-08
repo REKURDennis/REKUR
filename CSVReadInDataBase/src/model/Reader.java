@@ -53,8 +53,10 @@ public class Reader {
 	private void writeTupel(String relation,String line){
 		try {
 			//System.out.println(line);
-//			line = line.replaceAll("\\.", "");
-//			line = line.replaceAll(",", ".");
+			if(relationName.equals("sourceareaoverview")){
+				line = line.replaceAll("\\.", "");
+				line = line.replaceAll(",", ".");
+			}
 			String[] columns = line.split(";", -1);
 			String query ="insert into "+relation+"\n"+"values(";
 			boolean first = true;
