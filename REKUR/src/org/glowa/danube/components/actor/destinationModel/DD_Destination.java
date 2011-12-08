@@ -1,8 +1,6 @@
 package org.glowa.danube.components.actor.destinationModel;
 
 import java.util.HashMap;
-import java.util.Set;
-
 import org.glowa.danube.components.actor.utilities.ClimateDataAggregator;
 import org.glowa.danube.deepactors.actors.actor.AbstractActor;
 

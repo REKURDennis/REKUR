@@ -7,11 +7,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurDestinationModel;
 import org.glowa.danube.components.actor.interfaces.RekurDestinationModelToModelController;
+import org.glowa.danube.components.actor.touristmodel.DATA_Destination;
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.components.actor.utilities.RekurUtil;
 import org.glowa.danube.deepactors.actors.actor.Actor;
@@ -88,10 +90,17 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 * Specifies if the simulation is run in debug mode.
 	 */
 	public boolean debug = true;
+	/**
+   	* Saves the current simulationdate as GregorianCalendar-Object to get the weekOfYear.
+   	*/
+  	public GregorianCalendar currentDate;
+  	/**
+   	* Saves the last week that has been written into the output database.
+   	*/
+  	private int printedWeek = 0;
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
-	
 	protected void init() {
 		System.out.println("destinationInit");
 		
@@ -365,9 +374,23 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#preCompute()
 	 */
 	protected void preCompute() {
-		
-		
+		updateCurrentDate();
 	}
+	
+	
+	/**
+	 * This methods updates the current Gregorian Calendar.
+	 */
+	private void updateCurrentDate(){
+		int month = this.simulationTime().getMonth();
+		 int year = this.simulationTime().getYear();
+		 int day = this.simulationTime().getDay();
+		 
+		 currentDate = new GregorianCalendar(year, month-1, day-1);
+		 currentDate.setMinimalDaysInFirstWeek(4);
+		 currentDate.setFirstDayOfWeek(1);
+	}
+	
 	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#postCompute()
@@ -455,6 +478,60 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			if(simulationTime().getDay()==1){
 				lastMonthClimateData.put(d.getId(), d.ca.lastMonthClimate);
 			}
+		}
+//		try{
+////			checkNumberOfTourists();
+//		}
+//		catch(Exception e){}
+	}
+	
+	/**
+	 * Writes out the number of tourists per current week for debugging purpose.
+	 */
+	private void checkNumberOfTourists(){
+		if(printedWeek!=currentDate.get(GregorianCalendar.WEEK_OF_YEAR)){
+			printedWeek=currentDate.get(GregorianCalendar.WEEK_OF_YEAR);
+			
+			try{
+				Class.forName("com.mysql.jdbc.Driver").newInstance();
+				Connection con = DriverManager.getConnection(database);
+				Statement stmt = con.createStatement();
+				try{
+					stmt.executeUpdate("drop table checkDestTable"+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
+				}catch(Exception e){}
+				String query="Create table checkDestTable"+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(255), Category varchar(255), SourceID varchar(255), quantity int(200))";
+				stmt.executeUpdate(query);
+			}
+			catch(Exception e){}
+			for(Actor entry :actorMap().getEntries()){
+				DD_Destination dests = (DD_Destination)entry;
+				try{
+					Class.forName("com.mysql.jdbc.Driver").newInstance();
+					Connection con = DriverManager.getConnection(database);
+					Statement stmt = con.createStatement();
+					HashMap<Integer, HashMap<Integer, Integer>> touristsPerCatAndSourceHashMap = dests.touristsPerTimeSourceAndCat.get(currentDate.get(GregorianCalendar.YEAR)).get(currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
+					try{	
+						for(Entry<Integer, HashMap<Integer, Integer>> touristsPerCatAndSource:touristsPerCatAndSourceHashMap.entrySet()){
+							try{
+								for(Entry<Integer, Integer> touristsPerSource : touristsPerCatAndSource.getValue().entrySet()){
+									
+									//System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
+									String query ="insert into checkDestTable"+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.id+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"',"+touristsPerSource.getValue()+")";
+									System.out.println(query);
+									stmt.executeUpdate(query);
+								}
+							}
+							catch(Exception e ){
+								e.printStackTrace();
+							}
+						}
+					}catch(Exception e ){
+						
+					}
+				}catch(Exception e){
+					
+				}
+			}	
 		}
 	}
 	

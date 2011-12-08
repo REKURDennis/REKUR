@@ -153,11 +153,6 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
    	* 
    	*/
   	private boolean booked = false;
-  
-  	/**
-   	* Saves the distances between all SourceAreas and Destinations HashMap<SourceId, HashMap<DestID, HashMap<Vehicle, Distance>>>.
-   	*/
-  	public HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> distanceMatrix;
   	/**
    	* Statement-Object for the database connection.
    	*/
@@ -775,7 +770,10 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 		}
 	}
 	
-	
+	/**
+	 * Method to write our the daily climate data for debugging.
+	 * @param actTime
+	 */
 	private void writeDailyClimateData(DanubiaCalendar actTime){
     	FileWriter writeOut;
 		String outputName = "ClimateData"+File.separator+"SourceAreaData"+actTime.getDay()+actTime.getMonth()+actTime.getYear()+".csv"; 
@@ -807,6 +805,10 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 		}catch(Exception e){System.out.println(e);}
     }
 	
+	/**
+	 * Method to write our the monthly climate data for debugging.
+	 * @param actTime
+	 */
 	private void writeMonthlyClimateData(DanubiaCalendar actTime){
     	FileWriter writeOut;
 		String outputName = "ClimateData"+File.separator+"SourceAreaMonthlyData"+(actTime.getMonth()-1)+actTime.getYear()+".csv"; 
@@ -1037,8 +1039,3 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	}
 	  
 }
-
-
-
-
-
