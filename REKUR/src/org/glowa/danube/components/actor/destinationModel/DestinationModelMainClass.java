@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurDestinationModel;
 import org.glowa.danube.components.actor.interfaces.RekurDestinationModelToModelController;
-import org.glowa.danube.components.actor.touristmodel.DATA_Destination;
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.components.actor.utilities.RekurUtil;
 import org.glowa.danube.deepactors.actors.actor.Actor;
