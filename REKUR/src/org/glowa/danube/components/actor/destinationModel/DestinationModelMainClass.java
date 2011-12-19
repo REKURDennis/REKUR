@@ -590,6 +590,12 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public int getDestinationModelscenario() {
+		// TODO Auto-generated method stub
+		return destinationscenario;
+	}
 	  
 }
 

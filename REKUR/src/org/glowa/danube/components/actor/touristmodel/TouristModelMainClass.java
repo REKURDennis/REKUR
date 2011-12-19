@@ -1037,5 +1037,17 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 		//return numberOfTourists;
 		return touristPerDest;
 	}
+
+	@Override
+	public int getTouristModelScenario() {
+		// TODO Auto-generated method stub
+		return touristscenario;
+	}
+
+	@Override
+	public int getHolidayScenario() {
+		// TODO Auto-generated method stub
+		return Holidays.scenario;
+	}
 	  
 }

@@ -16,4 +16,5 @@ echo $PATH
 echo $JAVA_HOME
 
 echo "startServer"
+cd /Users/geographie/git/REKUR/REKUR/
 ant startServer

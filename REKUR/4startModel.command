@@ -19,5 +19,6 @@ echo "Comlile...."
 ant -f build_build.xml
 
 echo "startModel..."
+cd /Users/geographie/git/REKUR/REKUR/
 ant startClient -Ddanubiaclient.id=node01
 

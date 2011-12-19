@@ -16,4 +16,5 @@ echo $PATH
 echo $JAVA_HOME
 
 echo "startMonitor..."
+cd /Users/geographie/git/REKUR/REKUR/
 ant startMonitor

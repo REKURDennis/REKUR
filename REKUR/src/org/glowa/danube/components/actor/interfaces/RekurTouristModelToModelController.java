@@ -15,4 +15,12 @@ public interface RekurTouristModelToModelController extends DanubiaInterface
 	 * @return HashMap<destinationId, HashMap<year, HashMap<week, HashMap<category, HashMap<sourceareaID, Integer>>>>>
 	 */
 	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> getNumberOfTourists();
+	/**
+	 * Gets the touristModelScenario.
+	 */
+	public int getTouristModelScenario();
+	/**
+	 * Gets the holidayScenario.
+	 */
+	public int getHolidayScenario();
 }

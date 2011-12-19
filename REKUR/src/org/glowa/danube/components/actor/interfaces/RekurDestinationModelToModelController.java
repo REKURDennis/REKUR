@@ -41,4 +41,8 @@ public interface RekurDestinationModelToModelController extends DanubiaInterface
      * @return HashMap with the destinations-ids as key and their costs per category.
      */
 	public HashMap<Integer, int[][][]> getCostsPerCategory();
+	/**
+	 * Method to get the destinationModelscenario.
+	 */
+	public int getDestinationModelscenario();
 }

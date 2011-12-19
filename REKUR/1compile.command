@@ -16,4 +16,4 @@ echo $PATH
 echo $JAVA_HOME
 
 echo "Compile..."
-ant -f build_build.xml
+ant -f /Users/geographie/git/REKUR/REKUR/build_build.xml
