@@ -51,6 +51,10 @@ public class NetCDFReader {
 	 */
 	public float[][] relativeHumidityDailyMean;
 	/**
+	 * Saves the floattable with the min relative humidity of the current simulationday.
+	 */
+	public float[][] relativeHumidityDailyMin;
+	/**
 	 * Saves the integertable with temperature humidity of the current simulationday.
 	 */
 	public int[][] temperaturHumidityIndex;
@@ -264,11 +268,15 @@ public class NetCDFReader {
 		try{
 			String filename = climateFolderPath+relativeHumidity3hFileName;
 			relativeHumidityDailyMean = readClimateData((day*8), filename, relativeHumidity3hValueName);
+			relativeHumidityDailyMin = readClimateData((day*8), filename, relativeHumidity3hValueName);
 			for(int i = 1; i<8;i++){
 				float[][] relativeHuminity3hMean = readClimateData((day*8)+i, filename, relativeHumidity3hValueName);
 				for(int x = 0; x<relativeHuminity3hMean.length; x++){
 					for(int y = 0; y<relativeHuminity3hMean[0].length; y++){
 						relativeHumidityDailyMean[x][y] += relativeHuminity3hMean[x][y];
+						if(relativeHumidityDailyMin[x][y] > relativeHuminity3hMean[x][y]){
+							relativeHumidityDailyMin[x][y] = relativeHuminity3hMean[x][y];
+						}
 						if(i == 7){
 							relativeHumidityDailyMean[x][y] /=8;
 						}

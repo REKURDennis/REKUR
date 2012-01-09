@@ -1,6 +1,7 @@
 package org.glowa.danube.components.actor.climatemodel;
 
-import org.glowa.danube.components.actor.utilities.ClimateData;
+import org.glowa.danube.components.actor.utilities.AggregatedClimateData;
+import org.glowa.danube.components.actor.utilities.ClimateDataAggregator;
 import org.glowa.danube.simulation.model.proxel.AbstractProxel;
 import org.glowa.danube.utilities.time.DanubiaCalendar;
 
@@ -14,9 +15,14 @@ public class ClimateProxel extends AbstractProxel{
 	/**
 	 * Saves the daily climatedata for this proxel.
 	 */
-	public ClimateData cd = new ClimateData();
-	
+	public AggregatedClimateData cd = new AggregatedClimateData();
+	/**
+	 * saves the 3h temperature;
+	 */
 	public float THItemp;
+	/**
+	 * saves the humidity for thi calculation.
+	 */
 	public float THIhum;
 	
 	/**
@@ -39,6 +45,10 @@ public class ClimateProxel extends AbstractProxel{
 	 * Unique number for serialization. 
 	 */
 	private static final long serialVersionUID = 11745238;
+	/**
+	 * ClimateData Aggregator
+	 */
+	ClimateDataAggregator ca = new ClimateDataAggregator();
 	@Override
 	public void computeProxel(DanubiaCalendar actTime, Object data) {
 		netCDFReader = (NetCDFReader)data;
@@ -48,8 +58,12 @@ public class ClimateProxel extends AbstractProxel{
 		}
 		getClimateData();
 		super.computeProxel(actTime, data);
+		ca.dailyClimate = cd;
+		ca.aggregateClimateData(null, actTime.getDay());
+		if(actTime.getDay()==1 &&!(actTime.getMonth()==1 && actTime.getYear()==2008)){
+			calcTCI();
+		}
 	}
-	
 	/**
 	 * init the longitude and latitude buckets for reading the climatedata.
 	 */
@@ -89,6 +103,7 @@ public class ClimateProxel extends AbstractProxel{
 			cd.windSpeedMean = netCDFReader.windSpeedDailyMean[latBucket][lonBucket];
 			cd.windSpeedMax = netCDFReader.windSpeedDailyMax[latBucket][lonBucket];
 			cd.relativeHumidityMean = netCDFReader.relativeHumidityDailyMean[latBucket][lonBucket];
+			cd.relativeHumidityMin = netCDFReader.relativeHumidityDailyMin[latBucket][lonBucket];
 			cd.temperatureHumidityIndex = netCDFReader.temperaturHumidityIndex[latBucket][lonBucket];
 			
 			THItemp = netCDFReader.THITemp[latBucket][lonBucket];
@@ -98,5 +113,77 @@ public class ClimateProxel extends AbstractProxel{
 		catch(Exception e){
 //			e.printStackTrace();
 		}
+	}
+	private void calcTCI(){
+		float cid = 0.0f;
+		float cia = 0.0f;
+		float r = 0.0f;
+		float s = 0.0f;
+		float w = 0.0f;
+		
+		if(ca.lastMonthClimate.airTemperatureMax-273.15<15 && ca.lastMonthClimate.windSpeedMean>8){
+			int wc = (int)((12.15+6.13*Math.sqrt(ca.lastMonthClimate.windSpeedMean*3.6)-0.32*ca.lastMonthClimate.windSpeedMean*3.6)*(33-ca.lastMonthClimate.airTemperatureMax-273.15));
+			for(float[] iterator:ClimateModelMainClass.windratings815){
+				if(iterator[0]<=wc && iterator[1]>wc){
+					w = iterator[2];
+					break;
+				}
+			}
+		}
+		else{
+			float[] windcat = new float[5];
+			for(float[] iterator:ClimateModelMainClass.windratings){
+				if(iterator[0]<=ca.lastMonthClimate.windSpeedMean*3.6 && iterator[1]>ca.lastMonthClimate.windSpeedMean*3.6){
+					windcat = iterator;
+					break;
+				}
+			}
+			if((ca.lastMonthClimate.airTemperatureMax-273.15>=15 && ca.lastMonthClimate.airTemperatureMax-273.15<24)||(ca.lastMonthClimate.airTemperatureMax-273.15<15 && ca.lastMonthClimate.windSpeedMean*3.6<=8)){
+				w = windcat[2];
+			}
+			else{
+				if(ca.lastMonthClimate.airTemperatureMax-273.15>=24 && ca.lastMonthClimate.airTemperatureMax-273.15<33){
+					w = windcat[3];
+				}
+				else{
+					if(ca.lastMonthClimate.airTemperatureMax-273.15>=33){
+						w = windcat[4];
+					}
+				}
+			}
+		}
+		
+		for(float[] iterator:ClimateModelMainClass.precipratings){
+			if(iterator[0]<=ca.lastMonthClimate.precipitationSum && iterator[1]>ca.lastMonthClimate.precipitationSum){
+				r = iterator[2];
+				break;
+			}
+		}
+		for(float[] iterator:ClimateModelMainClass.sunratings){
+			if(iterator[0]<=ca.lastMonthClimate.sunshineDurationSum/3600 && iterator[1]>ca.lastMonthClimate.sunshineDurationSum/3600){
+				r = iterator[2];
+				break;
+			}
+		}
+		cid = cidRating(ca.lastMonthClimate.relativeHumidityMin, ca.lastMonthClimate.airTemperatureMax);
+		//cid = cidRating(ca.lastMonthClimate.relativeHumidityMean, ca.lastMonthClimate.airTemperatureMax);
+		cia = cidRating(ca.lastMonthClimate.relativeHumidityMean, ca.lastMonthClimate.airTemperatureMean);
+		
+		
+		
+		cd.TCI = (int)(4.0f*cid+cia+2.0f*r+2.0f*s+w);
+	}
+	private float cidRating(float hum, float temp){
+		float cid = 0.0f;
+		
+		int roundHum = (int)((hum*10.0f)+0.5f);
+		float[] tempRow = ClimateModelMainClass.cidtemps[roundHum];
+		int i = 1;
+		//if(pid() == 76692)System.out.println(tempRow.length);
+		while(i<tempRow.length && tempRow[i]<(temp-273.15)){
+			i++;
+		}
+		cid = ClimateModelMainClass.cidratings[i-1][2];
+		return cid;
 	}
 }

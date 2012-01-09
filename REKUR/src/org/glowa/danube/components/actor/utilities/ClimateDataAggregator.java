@@ -41,44 +41,48 @@ public class ClimateDataAggregator {
 			currentMonth.sunshineDurationSum /= daysInMonth;
 			currentMonth.windSpeedMean /= daysInMonth;
 			currentMonth.relativeHumidityMean /= daysInMonth;
+			currentMonth.relativeHumidityMin /= daysInMonth;
 			currentMonth.temperatureHumidityIndexMonthlyMean /= daysInMonth;
 	
 			lastMonthClimate = currentMonth;
 			currentMonth = new AggregatedClimateData();
 			daysInMonth = 1;	
 		}
-		dailyClimate = new AggregatedClimateData();
-		for(AbstractActorModelProxel currentProxel:dp){
-			dailyClimate.airTemperatureMean += currentProxel.cd.airTemperatureMean;
+		if(dp!=null){
+			dailyClimate = new AggregatedClimateData();
+			for(AbstractActorModelProxel currentProxel:dp){
+				dailyClimate.airTemperatureMean += currentProxel.cd.airTemperatureMean;
+				
+				//System.out.println(currentProxel.cd.airTemperatureMean);
+				if(dailyClimate.airTemperatureMax < currentProxel.cd.airTemperatureMax){
+					dailyClimate.airTemperatureMax = currentProxel.cd.airTemperatureMax;
+				}
+				if(dailyClimate.airTemperatureMin > currentProxel.cd.airTemperatureMin){
+					dailyClimate.airTemperatureMin = currentProxel.cd.airTemperatureMin;
+				}
+				dailyClimate.precipitationSum += currentProxel.cd.precipitationSum;
+				if(dailyClimate.precipitationMax < currentProxel.cd.precipitationSum){
+					dailyClimate.precipitationMax = currentProxel.cd.precipitationSum;
+				}
+				dailyClimate.sunshineDurationSum += currentProxel.cd.sunshineDurationSum;
+				dailyClimate.windSpeedMean += currentProxel.cd.windSpeedMean;
+				if(dailyClimate.windSpeedMax < currentProxel.cd.windSpeedMax){
+					dailyClimate.windSpeedMax = currentProxel.cd.windSpeedMax;
+				}
+				dailyClimate.relativeHumidityMean += currentProxel.cd.relativeHumidityMean;
+				dailyClimate.relativeHumidityMin += currentProxel.cd.relativeHumidityMin;
+				if(dailyClimate.temperatureHumidityIndex < currentProxel.cd.temperatureHumidityIndex){
+					dailyClimate.temperatureHumidityIndex = currentProxel.cd.temperatureHumidityIndex;
+				}
+			}
 			
-			//System.out.println(currentProxel.cd.airTemperatureMean);
-			if(dailyClimate.airTemperatureMax < currentProxel.cd.airTemperatureMax){
-				dailyClimate.airTemperatureMax = currentProxel.cd.airTemperatureMax;
-			}
-			if(dailyClimate.airTemperatureMin > currentProxel.cd.airTemperatureMin){
-				dailyClimate.airTemperatureMin = currentProxel.cd.airTemperatureMin;
-			}
-			dailyClimate.precipitationSum += currentProxel.cd.precipitationSum;
-			if(dailyClimate.precipitationMax < currentProxel.cd.precipitationSum){
-				dailyClimate.precipitationMax = currentProxel.cd.precipitationSum;
-			}
-			dailyClimate.sunshineDurationSum += currentProxel.cd.sunshineDurationSum;
-			dailyClimate.windSpeedMean += currentProxel.cd.windSpeedMean;
-			if(dailyClimate.windSpeedMax < currentProxel.cd.windSpeedMax){
-				dailyClimate.windSpeedMax = currentProxel.cd.windSpeedMax;
-			}
-			dailyClimate.relativeHumidityMean += currentProxel.cd.relativeHumidityMean;
-			if(dailyClimate.temperatureHumidityIndex < currentProxel.cd.temperatureHumidityIndex){
-				dailyClimate.temperatureHumidityIndex = currentProxel.cd.temperatureHumidityIndex;
-			}
+			dailyClimate.airTemperatureMean /= dp.size();
+			dailyClimate.precipitationSum /= dp.size();
+			dailyClimate.sunshineDurationSum /= dp.size();
+			dailyClimate.windSpeedMean /= dp.size();
+			dailyClimate.relativeHumidityMean /= dp.size();
+			dailyClimate.relativeHumidityMin /= dp.size();
 		}
-		
-		dailyClimate.airTemperatureMean /= dp.size();
-		dailyClimate.precipitationSum /= dp.size();
-		dailyClimate.sunshineDurationSum /= dp.size();
-		dailyClimate.windSpeedMean /= dp.size();
-		dailyClimate.relativeHumidityMean /= dp.size();
-		
 		
 		currentMonth.airTemperatureMean += dailyClimate.airTemperatureMean;
 		if(currentMonth.airTemperatureMax < dailyClimate.airTemperatureMax){
@@ -102,6 +106,7 @@ public class ClimateDataAggregator {
 			currentMonth.windSpeedMax = dailyClimate.windSpeedMax;
 		}
 		currentMonth.relativeHumidityMean += dailyClimate.relativeHumidityMean;
+		currentMonth.relativeHumidityMin += dailyClimate.relativeHumidityMin;
 		currentMonth.temperatureHumidityIndexMonthlyMean += dailyClimate.temperatureHumidityIndex;
 		if(currentMonth.temperatureHumidityIndex<dailyClimate.temperatureHumidityIndex){
 			currentMonth.temperatureHumidityIndex = dailyClimate.temperatureHumidityIndex;

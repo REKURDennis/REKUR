@@ -38,10 +38,10 @@ public class ModelController extends AbstractController implements ModelControll
 	/**
 	 * Inits the Interfaceconnections
 	 */
-	public GUI gui;
+	//public GUI gui;
 	
 	public ModelController(){
-		gui = new GUI();
+		//gui = new GUI();
 	}
 	
 	protected void init() throws RuntimeException {
@@ -66,10 +66,10 @@ public class ModelController extends AbstractController implements ModelControll
 		} catch (Exception ex) {
 			this.logger().warn(ex);
 		}
-		gui.destinationScenario.setText(gui.destinationScenario.getText()+" "+destination.getDestinationModelscenario());
-		gui.touristScenario.setText(gui.touristScenario.getText()+" "+tourist.getTouristModelScenario());
-		gui.holidayScenario.setText(gui.holidayScenario.getText()+" "+tourist.getHolidayScenario());
-		
+//		gui.destinationScenario.setText(gui.destinationScenario.getText()+" "+destination.getDestinationModelscenario());
+//		gui.touristScenario.setText(gui.touristScenario.getText()+" "+tourist.getTouristModelScenario());
+//		gui.holidayScenario.setText(gui.holidayScenario.getText()+" "+tourist.getHolidayScenario());
+//		
 	}
 	
 	/**

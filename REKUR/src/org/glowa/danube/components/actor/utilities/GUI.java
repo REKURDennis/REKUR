@@ -17,7 +17,6 @@ public class GUI extends JFrame{
 	public GUI(){
 		super("REKUR");
 		this.setLayout(new FlowLayout());
-		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setSize(700,300);
 		
 		

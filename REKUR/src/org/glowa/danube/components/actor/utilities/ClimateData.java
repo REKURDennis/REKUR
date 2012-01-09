@@ -38,6 +38,10 @@ public class ClimateData {
 	 */
 	public float relativeHumidityMean = 0f;
 	/**
+	 * relative humidity in %.
+	 */
+	public float relativeHumidityMin = 0f;
+	/**
 	 * watertemp in kelvin.
 	 */
 	public float watertemp = 0f;
@@ -45,4 +49,8 @@ public class ClimateData {
 	 * temperature humidity index in %.
 	 */
 	public int temperatureHumidityIndex = 0;
+	/**
+	 * TCI in %.
+	 */
+	public int TCI = 0;
 }
