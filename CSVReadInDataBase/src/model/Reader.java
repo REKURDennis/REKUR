@@ -53,7 +53,7 @@ public class Reader {
 	private void writeTupel(String relation,String line){
 		try {
 			//System.out.println(line);
-			if(relationName.equals("sourceareaoverview")){
+			if(relationName.equals("sourceareaoverview")||relationName.equals("kaufkraft")){
 				line = line.replaceAll("\\.", "");
 				line = line.replaceAll(",", ".");
 			}
