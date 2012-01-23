@@ -66,7 +66,7 @@ public class DA_AbstractTouristType {
 	 * @param category journey category.
 	 * @return
 	 */
-	public Vector<DATA_Destination> checkCapacity(Vector<DATA_Destination> dests, DA_Tourist tourist, HashMap<Integer, Vector<Integer>> weeksPerYear,int category){
+	private Vector<DATA_Destination> checkCapacity(Vector<DATA_Destination> dests, DA_Tourist tourist, HashMap<Integer, Vector<Integer>> weeksPerYear,int category){
 		Vector<DATA_Destination> destsWithCapa = new Vector<DATA_Destination>();
 		Vector<DATA_Destination> blacklist = new Vector<DATA_Destination>();
 		for(Entry<Integer, Vector<Integer>> years: weeksPerYear.entrySet()){
@@ -89,5 +89,6 @@ public class DA_AbstractTouristType {
 			
 		return destsWithCapa;
 	}
+	
 	
 }

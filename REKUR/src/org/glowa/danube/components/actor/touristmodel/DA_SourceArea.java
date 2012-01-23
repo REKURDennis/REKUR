@@ -48,7 +48,9 @@ public class DA_SourceArea extends AbstractActor{
 	/**
 	 * Saves the buyingpower of this area.
 	 */
-	public float buyingPower;
+	public int buyingPower[];
+	
+	
 	/**
 	 * Saves a LikedList with references to all touristactors of this area per age and sex.
 	 */
@@ -123,9 +125,13 @@ public class DA_SourceArea extends AbstractActor{
 						if(cols<0){
 							for(int delete = 0; delete<((cols*-1)/10);delete++){
 								if(0 == (touristsPerAge.get(rownumber).get(colnumber).size())){
-									System.out.println(colnumber+" "+rownumber);
+									System.out.println(landkreisId+" "+colnumber+" "+rownumber);
 								}
-								touristsPerAge.get(rownumber).get(colnumber).remove((int)(Math.random()*(double)(touristsPerAge.get(rownumber).get(colnumber).size())));
+								else{
+									touristsPerAge.get(rownumber).get(colnumber).remove((int)(Math.random()*(double)(touristsPerAge.get(rownumber).get(colnumber).size())));
+								}
+								
+								
 							}
 						}
 						if(cols>0){

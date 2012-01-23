@@ -25,7 +25,7 @@ public class DA_DummyTouristType extends DA_AbstractTouristType{
 				HashMap<Integer, Vector<Integer>> weeks  = new HashMap<Integer, Vector<Integer>>();
 				weeks.put(year, preferedJourneyWeeks);
 				Vector<DATA_Destination> possibleDests = new Vector<DATA_Destination>();
-				for(Entry<Integer, DATA_Destination> dest:delegate.tm.destinations.entrySet()){
+				for(Entry<Integer, DATA_Destination> dest:delegate.tm.activedests.entrySet()){
 					if(dest.getValue().containsHolidayType(holidaytypes.get(0))){
 						if(countries.contains(dest.getValue().country)){
 							possibleDests.add(dest.getValue());
@@ -33,7 +33,7 @@ public class DA_DummyTouristType extends DA_AbstractTouristType{
 					}
 				}
 				if(possibleDests.size()>0){
-					possibleDests = checkCapacity(possibleDests, delegate, weeks ,category);
+					//possibleDests = checkCapacity(possibleDests, delegate, weeks ,category);
 					DATA_Destination finalDestination = possibleDests.elementAt((int)(Math.random()*possibleDests.size()));
 					//System.out.println(possibleDests.size());
 					

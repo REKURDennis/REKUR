@@ -164,7 +164,14 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 	 */
 	public static float[][] cidratings = new float[16][3];
 	
-	
+	/**
+	 * Last month to write out;
+	 */
+	public int wMonth;
+	/**
+	 * Last year to write out;
+	 */
+	public int wYear;
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.simulation.component.AbstractComponent#init()
 	 */
@@ -284,7 +291,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 	 */
 	private void writemap(DanubiaCalendar actTime){
 		FileWriter writeOut;
-		String outputName = "tci"+actTime.getMonth()+actTime.getYear()+".asc";
+		String outputName = "tci"+wMonth+wYear+".asc";
 		try{
 			writeOut = new FileWriter(outputName, false);
 			writeOut.write("");
@@ -384,6 +391,10 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 		currentday++;
 		provideEngineDaily.provide();
 		if(debug)writeClimateData(t);
+		if(t.getDay()==3){
+			wMonth = t.getMonth();
+			wYear = t.getYear();
+		}
 		if(t.getDay()==2 && !(t.getMonth()==1 && (t.getYear()==2008)))writemap(t);
 	}
 	

@@ -30,13 +30,13 @@ public class DD_Destination extends AbstractActor{
 	/**
 	 * saves the unique Destination-ID
 	 */
-	public int id;
+	//public int id;
 	
 	/**
-	 * Holds the beCapacities per Year, Week within this Year(0-53) and price-category.
-	 * int[year][week][category]
+	 * Holds the beCapacities.
+	 * 
 	 */
-	public int[][][] bedCapacities;
+	public int bedCapacities;
 	/**
 	 * HashMap<Year<HashMap<Week, HashMap<Category, HashMap<SourceID, Number>>>();
 	 */

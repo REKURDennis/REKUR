@@ -108,6 +108,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	    password = this.componentConfig().getComponentProperties().getProperty("password");
 	    destinationsTable = this.componentConfig().getComponentProperties().getProperty("destinationrelation");
 	    if(this.componentConfig().getComponentProperties().getProperty("debug").equals("false"))debug = false;
+	    System.out.println("destinationInit"+debug);
 	    database = "jdbc:mysql://localhost/"+dataBaseName+"?user="+userName+"&password="+password;
 		
 		
@@ -146,6 +147,8 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 					test = Integer.parseInt(sa.getString("RekurID"));
 					currentActor.holidayTypes = new boolean[holidayTypeNumber];
 					currentActor.country = Integer.parseInt(sa.getString("LandID"));
+					if(!sa.getString("Bettenkapazitaet").equals(""))currentActor.bedCapacities = Integer.parseInt(sa.getString("Bettenkapazitaet"));
+//					System.out.println(currentActor.getId()+" "+currentActor.bedCapacities);
 					for(int z = 0;z<holidayTypeNumber;z++){
 						String entry = sa.getString(z+5);
 						if(entry.equals("0")){
@@ -157,6 +160,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 					}
 					i++;
 				}
+				
 //				System.out.println(currentActor.getId());
 			}	
 		} catch (Exception ex) {
@@ -479,7 +483,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			}
 		}
 		try{
-			if(currentDate.get(GregorianCalendar.WEEK_OF_YEAR)>2)checkNumberOfTourists();
+			if(currentDate.get(GregorianCalendar.WEEK_OF_YEAR)>2  && debug)checkNumberOfTourists();
 		}
 		catch(Exception e){}
 	}

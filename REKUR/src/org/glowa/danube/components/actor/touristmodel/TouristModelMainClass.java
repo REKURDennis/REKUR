@@ -88,9 +88,20 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	 */
 	private String distance = "distance";
 	/**
+	 * holds the name of the relation containing the buyingpower. Given in the config-file.
+	 *  Configuration file can be found under metadata/components/touristmodel.cfg
+	 */
+	private String buyingpower = "kaufkraft";
+	/**
 	 * HashMap with destination-Ids and their DATA-Objects.
 	 */
-	public HashMap<Integer,DATA_Destination> destinations = new HashMap<Integer, DATA_Destination>();
+	private HashMap<Integer,DATA_Destination> destinations = new HashMap<Integer, DATA_Destination>();
+	
+	/**
+	 * HashMap with destination-Ids and their DATA-Objects of all active Destiantions.
+	 */
+	public HashMap<Integer,DATA_Destination> activedests = new HashMap<Integer, DATA_Destination>();
+	
 	/**
 	 * This HashMap contains all touristTypes.
 	 */
@@ -173,7 +184,19 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	 * Specifies if the simulation is run in debug mode.
 	 */
 	public boolean debug = true;
-  	
+	
+	/**
+	 * Specifies if the buyingpower age-categories names.
+	 */
+	public int[] buyingpowercatbuttom = {15,25,35,45,55,65,15};//{"kk15_24","kk25_34","kk35_44","kk45_54","kk55_64","kk65_130","kk15_103"};
+	/**
+	 * Specifies if the buyingpower age-categories names.
+	 */
+	public int[] buyingpowercattop = {24,34,44,54,64,130,130};
+	/**
+	 * Contains all switched off countries.
+	 */
+	public HashMap<Integer, Integer> switchOffCountries = new HashMap<Integer, Integer>();
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
@@ -195,6 +218,16 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	    touristTypesTable = this.componentConfig().getComponentProperties().getProperty("touristTypesTable");
 	    touristsPerDestinationTables = this.componentConfig().getComponentProperties().getProperty("touristsPerDestinationTables");
 	    distance = this.componentConfig().getComponentProperties().getProperty("distance");
+	    buyingpower = this.componentConfig().getComponentProperties().getProperty("kaufkraft");
+	    
+	    String[] countries = (this.componentConfig().getComponentProperties().getProperty("countryswitchoff")).split(";");
+	    for(String c:countries){
+	    	String[] cAndY = c.split(",");
+	    	switchOffCountries.put(Integer.parseInt(cAndY[0]), Integer.parseInt(cAndY[1]));
+	    	System.out.println(Integer.parseInt(cAndY[0])+ " " +switchOffCountries.get(Integer.parseInt(cAndY[0])));
+	    }
+	    
+	    
 	    touristscenario = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("touristscenario"));
 	    Holidays.scenario = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("holidayscenario"));
 	    if(this.componentConfig().getComponentProperties().getProperty("debug").equals("false"))debug = false;
@@ -210,6 +243,22 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 		}
 	}
 	
+	
+	/**
+	 * Writes all active destiantions into the Hashmap.
+	 */
+	private void checkActiveDests(){
+		HashMap<Integer,DATA_Destination> activedests = new HashMap<Integer, DATA_Destination>();
+		for(Entry<Integer, DATA_Destination> dest:activedests.entrySet()){
+			if(switchOffCountries.containsKey(dest.getValue().country)){
+				if(switchOffCountries.get(dest.getValue().country)<=simulationTime().getYear()){
+					activedests.remove(dest.getValue());
+				}
+			}
+		}
+	}
+	
+	
 	/**
 	 * Reads the additional Attributes of the sourceAreas from the database
 	 */
@@ -223,7 +272,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			Statement stmt = con.createStatement();
 			
 			String query = " select * from "+sourceareaTable+
-					" natural join "+landkreisIDtoSourceAreaIDTable+";";
+					" natural join "+landkreisIDtoSourceAreaIDTable+" natural join "+ buyingpower+";";
 			
 			ResultSet sa = stmt. executeQuery(query);
 			int i = 1;
@@ -240,10 +289,13 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 					e.printStackTrace();
 				}
 				try{
-					if(!sa.getString(4).equals("-"))currentActor.buyingPower = Float.parseFloat(sa.getString(4));
+					currentActor.buyingPower = new int [buyingpowercatbuttom.length];
+					for(int z = 0;z < buyingpowercatbuttom.length; z++){
+						currentActor.buyingPower[z] = Integer.parseInt(sa.getString("kk"+buyingpowercatbuttom[z]+"_"+buyingpowercattop[z]));
+					}
 				}	
 				catch(Exception e){
-					currentActor.buyingPower = 0.0f;
+					//currentActor.buyingPower = 0.0f;
 					e.printStackTrace();
 				}
 				i++;
@@ -251,11 +303,24 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				initDistances(currentActor);
 			}
 //			checkDistances();
+//			checkBuyingPower();
 		} catch (Exception ex) {
             // Fehler behandeln
 			ex.printStackTrace();
 		}
 	}
+	
+	private void checkBuyingPower(){
+		for(Actor entry :actorMap().getEntries()){
+			DA_SourceArea sa = (DA_SourceArea)entry;
+			int i = 0;
+			for(int bp:sa.buyingPower){
+				System.out.println(sa.landkreisId+" "+buyingpowercatbuttom[i]+"_"+buyingpowercattop[i]+" "+bp);
+				i++;
+			}
+		}
+	}
+	
 	/**
 	 * Reads in the distances to each destination in Minutes.
 	 * @param currentActor the sourcearea.
@@ -585,6 +650,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				i++;
 				//System.out.println(text);
 			}
+			activedests = destinations;
 			destinationInit = false;
 		}
 		for(Entry<Integer, ClimateData> dailyClimate: controller.getDailyClimateData().entrySet()){
@@ -726,6 +792,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     			if(simulationTime().getMonth() == 1 && simulationTime().getDay() == 1){
     				 //System.out.println(""+ day+" "+month+" "+year);
     				 updateDemography(simulationTime().getYear());
+    				 checkActiveDests();
     			 }
     		}
     	});
@@ -998,7 +1065,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 									
 									//System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
 									String query ="insert into "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"',"+touristsPerSource.getValue()+")";
-									System.out.println(query);
+									if(debug)System.out.println(query);
 									stmt.executeUpdate(query);
 								}
 							}

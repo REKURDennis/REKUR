@@ -37,6 +37,7 @@ public class ClimateDataAggregator {
 		
 		if(day == 1){
 			currentMonth.airTemperatureMean /= daysInMonth;
+			currentMonth.airTemperatureMax /= daysInMonth;
 			currentMonth.precipitationSum /= daysInMonth;
 			currentMonth.sunshineDurationSum /= daysInMonth;
 			currentMonth.windSpeedMean /= daysInMonth;
@@ -85,9 +86,10 @@ public class ClimateDataAggregator {
 		}
 		
 		currentMonth.airTemperatureMean += dailyClimate.airTemperatureMean;
-		if(currentMonth.airTemperatureMax < dailyClimate.airTemperatureMax){
-			currentMonth.airTemperatureMax = dailyClimate.airTemperatureMax;
-		}
+//		if(currentMonth.airTemperatureMax < dailyClimate.airTemperatureMax){
+//			currentMonth.airTemperatureMax = dailyClimate.airTemperatureMax;
+//		}
+		currentMonth.airTemperatureMax += dailyClimate.airTemperatureMax;
 		if(currentMonth.airTemperatureMin > dailyClimate.airTemperatureMin){
 			currentMonth.airTemperatureMin = dailyClimate.airTemperatureMin;
 		}

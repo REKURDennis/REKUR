@@ -49,6 +49,7 @@ public class ClimateProxel extends AbstractProxel{
 	 * ClimateData Aggregator
 	 */
 	ClimateDataAggregator ca = new ClimateDataAggregator();
+	
 	@Override
 	public void computeProxel(DanubiaCalendar actTime, Object data) {
 		netCDFReader = (NetCDFReader)data;
@@ -60,9 +61,9 @@ public class ClimateProxel extends AbstractProxel{
 		super.computeProxel(actTime, data);
 		ca.dailyClimate = cd;
 		ca.aggregateClimateData(null, actTime.getDay());
-		if(actTime.getDay()==1 &&!(actTime.getMonth()==1 && actTime.getYear()==2008)){
-			calcTCI();
-		}
+//		if(actTime.getDay()==1 &&!(actTime.getMonth()==1 && actTime.getYear()==2008)){
+//			calcTCI(actTime);
+//		}
 	}
 	/**
 	 * init the longitude and latitude buckets for reading the climatedata.
@@ -114,7 +115,7 @@ public class ClimateProxel extends AbstractProxel{
 //			e.printStackTrace();
 		}
 	}
-	private void calcTCI(){
+	private void calcTCI(DanubiaCalendar actTime){
 		float cid = 0.0f;
 		float cia = 0.0f;
 		float r = 0.0f;
@@ -161,17 +162,16 @@ public class ClimateProxel extends AbstractProxel{
 		}
 		for(float[] iterator:ClimateModelMainClass.sunratings){
 			if(iterator[0]<=ca.lastMonthClimate.sunshineDurationSum/3600 && iterator[1]>ca.lastMonthClimate.sunshineDurationSum/3600){
-				r = iterator[2];
+				s = iterator[2];
 				break;
 			}
 		}
 		cid = cidRating(ca.lastMonthClimate.relativeHumidityMin, ca.lastMonthClimate.airTemperatureMax);
 		//cid = cidRating(ca.lastMonthClimate.relativeHumidityMean, ca.lastMonthClimate.airTemperatureMax);
 		cia = cidRating(ca.lastMonthClimate.relativeHumidityMean, ca.lastMonthClimate.airTemperatureMean);
-		
-		
-		
-		cd.TCI = (int)(4.0f*cid+cia+2.0f*r+2.0f*s+w);
+		cd.TCI = 2*((int)(4.0f*cid+cia+2.0f*r+2.0f*s+w));
+		//cd.TCI = (int)s;
+		//cd.TCI = (int)(ca.lastMonthClimate.airTemperatureMax);
 	}
 	private float cidRating(float hum, float temp){
 		float cid = 0.0f;
@@ -180,7 +180,7 @@ public class ClimateProxel extends AbstractProxel{
 		float[] tempRow = ClimateModelMainClass.cidtemps[roundHum];
 		int i = 1;
 		//if(pid() == 76692)System.out.println(tempRow.length);
-		while(i<tempRow.length && tempRow[i]<(temp-273.15)){
+		while(i<tempRow.length && tempRow[i]<((int)(temp-273.15f))){
 			i++;
 		}
 		cid = ClimateModelMainClass.cidratings[i-1][2];
