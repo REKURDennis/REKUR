@@ -61,9 +61,9 @@ public class ClimateProxel extends AbstractProxel{
 		super.computeProxel(actTime, data);
 		ca.dailyClimate = cd;
 		ca.aggregateClimateData(null, actTime.getDay());
-//		if(actTime.getDay()==1 &&!(actTime.getMonth()==1 && actTime.getYear()==2008)){
-//			calcTCI(actTime);
-//		}
+		if(actTime.getDay()==1 &&!(actTime.getMonth()==1 && actTime.getYear()==2008)){
+			calcTCI(actTime);
+		}
 	}
 	/**
 	 * init the longitude and latitude buckets for reading the climatedata.
@@ -170,6 +170,7 @@ public class ClimateProxel extends AbstractProxel{
 		//cid = cidRating(ca.lastMonthClimate.relativeHumidityMean, ca.lastMonthClimate.airTemperatureMax);
 		cia = cidRating(ca.lastMonthClimate.relativeHumidityMean, ca.lastMonthClimate.airTemperatureMean);
 		cd.TCI = 2*((int)(4.0f*cid+cia+2.0f*r+2.0f*s+w));
+		//System.out.println(cid+" "+cia+" "+cd.TCI);
 		//cd.TCI = (int)s;
 		//cd.TCI = (int)(ca.lastMonthClimate.airTemperatureMax);
 	}

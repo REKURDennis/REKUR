@@ -55,6 +55,8 @@ public class DA_Tourist implements LightWeightDeepActor{
 		this.tm = tm;
 		this.origin = origin;
 		currentTouristType = tType;
+		this.age = age;
+		this.sex = sex;
 	}
 	/**
 	 * Method for redecision process.

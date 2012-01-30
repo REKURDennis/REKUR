@@ -362,7 +362,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			if(controller.getNumberOfTourists() !=null){
-    				for(Entry<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> dests:controller.getNumberOfTourists().entrySet()){
+    				for(Entry<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>>>>> dests:controller.getNumberOfTourists().entrySet()){
     					DD_Destination dest =(DD_Destination)(actorMap().getEntry(dests.getKey()));
     					dest.touristsPerTimeSourceAndCat = dests.getValue();
     				}	
@@ -492,7 +492,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 * Writes out the number of tourists per current week for debugging purpose.
 	 */
 	private void checkNumberOfTourists(){
-		if(printedWeek!=currentDate.get(GregorianCalendar.WEEK_OF_YEAR)){
+		/*if(printedWeek!=currentDate.get(GregorianCalendar.WEEK_OF_YEAR)){
 			printedWeek=currentDate.get(GregorianCalendar.WEEK_OF_YEAR);
 			
 			try{
@@ -535,7 +535,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 					
 				}
 			}	
-		}
+		}*/
 	}
 	
 	/* (non-Javadoc)

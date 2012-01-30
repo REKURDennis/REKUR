@@ -10,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import org.glowa.danube.components.actor.interfaces.RekurClimateModelToModelController;
-import org.glowa.danube.deepactors.actors.actor.Actor;
 import org.glowa.danube.simulation.model.AbstractModel;
 import org.glowa.danube.tables.FloatDataTable;
 import org.glowa.danube.tables.IntegerDataTable;

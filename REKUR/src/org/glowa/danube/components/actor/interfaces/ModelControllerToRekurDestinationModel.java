@@ -13,5 +13,5 @@ public interface ModelControllerToRekurDestinationModel extends DanubiaInterface
 	 * Provides the Tourists per detsiantion, Year, week, category and sourcearea. 
 	 * @return HashMap<destinationId, HashMap<year, HashMap<week, HashMap<category, HashMap<sourceareaID, Integer>>>>>
 	 */
-	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> getNumberOfTourists();
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>>>>> getNumberOfTourists();
 }

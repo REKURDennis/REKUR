@@ -40,7 +40,7 @@ public class DD_Destination extends AbstractActor{
 	/**
 	 * HashMap<Year<HashMap<Week, HashMap<Category, HashMap<SourceID, Number>>>();
 	 */
-	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> touristsPerTimeSourceAndCat = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer, Integer>>>>();
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>>>> touristsPerTimeSourceAndCat = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>>>();
 	
 	/**
 	 * Object for climatedata aggregation.

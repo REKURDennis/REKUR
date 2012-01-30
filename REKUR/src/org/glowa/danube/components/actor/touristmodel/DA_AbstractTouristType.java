@@ -10,6 +10,10 @@ import java.util.Vector;
  */
 public class DA_AbstractTouristType {
 	/**
+	 * Saves the tourist type id.
+	 */
+	public int ID;
+	/**
 	 * Saves a vector with all possible holiday types.
 	 */
 	public Vector<Integer> holidaytypes= new Vector<Integer>();

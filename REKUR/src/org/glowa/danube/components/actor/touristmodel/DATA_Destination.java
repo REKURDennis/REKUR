@@ -44,9 +44,9 @@ public class DATA_Destination {
 	 */
 	public HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> freeBeds = new HashMap<Integer, HashMap<Integer,HashMap<Integer,Integer>>>();
 	/**
-	 * HashMap<Year<HashMap<Week, HashMap<Category, HashMap<SourceID, Number>>>();
+	 * HashMap<Year<HashMap<Week, HashMap<Category, HashMap<SourceID, HashMap<Type,HashMap<age, HashMap<sex, Number>>>>>();
 	 */
-	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> touristsPerTimeSourceAndCat = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer, Integer>>>>();
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>>>> touristsPerTimeSourceAndCat = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>>>();
 	//public int[][][][] touristsPerSource; 
 	
 	/**
