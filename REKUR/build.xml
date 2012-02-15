@@ -12,7 +12,7 @@
 	<property name="metadata.dir" value="metadata"/>
 	<property name="danubiaserver.hostname" value="localhost"/>
 	<property name="webcontentfile" value="webserver/webapps/danubiaweb/WEB-INF/content-conf.xml"/>
-	<property name="maxheapsize" value="3000M"/>
+	<property name="maxheapsize" value="9000M"/>
 	<property name="scenario.id" value="default"/>
 
 	<target name="startServer" description="Start DANUBIA Server" >

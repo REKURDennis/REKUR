@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import org.glowa.danube.components.actor.utilities.ClimateData;
-import org.glowa.danube.components.actor.utilities.IntegerArray2D;
 /**
  * This class instantiates objects to save Destination-Information within the TouristModel.
  * @author Dennis Joswig

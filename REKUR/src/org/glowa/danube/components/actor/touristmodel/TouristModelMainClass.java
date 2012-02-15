@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.Map.Entry;
 
-import org.glowa.danube.components.actor.destinationModel.DD_Destination;
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurTouristModel;
 import org.glowa.danube.components.actor.interfaces.RekurTouristModelToModelController;
 import org.glowa.danube.components.actor.utilities.ClimateData;
@@ -154,11 +153,18 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
    	* reference to the danubialogger.
    	*/
   	private static DanubiaLogger logger = DanubiaLogger.getDanubiaLogger(TouristModelMainClass.class);
+//  	/**
+//   	* Saves the number of tourists to export to the DestiantionModel-Object.  HashMap<DestinationID, HashMap<year, HashMap<week, HashMap<category, HashMap<sourceareaID, quantity>>>>>
+//   	*/
+//  	private HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>();
+  	
+  	
   	/**
-   	* Saves the number of tourists to export to the DestiantionModel-Object.  HashMap<DestinationID, HashMap<year, HashMap<week, HashMap<category, HashMap<sourceareaID, quantity>>>>>
+   	* Saves the number of tourists to export to the DestiantionModel-Object.  HashMap<DestinationID, HashMap<year, HashMap<week, HashMap<category, HashMap<sourceareaID, HashMap<Type, HashMap<age, HashMap<sex,quantity>>>>>>>>
    	*/
-  	private HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>();
- 
+  	private HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>>>>> touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>>>>();
+  	
+  	
   	/**
    	* Sets if a touristHas booked;
    	* 
@@ -197,6 +203,8 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	 * Contains all switched off countries.
 	 */
 	public HashMap<Integer, Integer> switchOffCountries = new HashMap<Integer, Integer>();
+	Connection con = null;
+	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
@@ -377,19 +385,19 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 //						System.out.println(currentArea.landkreisId+" "+i);
 					}
 					else{
-						int m = Integer.parseInt(sa.getString("m"+year));
-						int w = Integer.parseInt(sa.getString("w"+year));
+						int m = (Integer.parseInt(sa.getString("m"+year)))/10;
+						int w = (Integer.parseInt(sa.getString("w"+year)))/10;
 						if(i == 0){
 							currentArea.populationPerAgeAndSexDifference[i][0] = m;
 							currentArea.populationPerAgeAndSexDifference[i][1] = w;
 						}
-						if(i>1 && i < 90){	
-							currentArea.populationPerAgeAndSexDifference[i][0] = m - currentArea.populationPerAgeAndSex[i-1][0];
-							currentArea.populationPerAgeAndSexDifference[i][1] = w - currentArea.populationPerAgeAndSex[i-1][1];
+						if(i>0 && i < 90){	
+							currentArea.populationPerAgeAndSexDifference[i][0] = m - currentArea.lastYearpop[i-1][0];
+							currentArea.populationPerAgeAndSexDifference[i][1] = w - currentArea.lastYearpop[i-1][1];
 						}
 						if(i == 90){
-							currentArea.populationPerAgeAndSexDifference[i][0] = m - (currentArea.populationPerAgeAndSex[i-1][0]+currentArea.populationPerAgeAndSex[i][0]);
-							currentArea.populationPerAgeAndSexDifference[i][1] = w - (currentArea.populationPerAgeAndSex[i-1][1]+currentArea.populationPerAgeAndSex[i][1]);	
+							currentArea.populationPerAgeAndSexDifference[i][0] = m - (currentArea.lastYearpop[i-1][0]+currentArea.lastYearpop[i][0]);
+							currentArea.populationPerAgeAndSexDifference[i][1] = w - (currentArea.lastYearpop[i-1][1]+currentArea.lastYearpop[i][1]);	
 						}
 						if(i==91){	
 							currentArea.numberOfCitizensPerAgeDiff[0] = m - currentArea.numberOfCitizensPerAge[0];
@@ -499,6 +507,12 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				}
 				try{
 					ttype.bookingDay = Integer.parseInt(sa.getString("bookingDay"));
+				}
+				catch(Exception e){
+					logger().debug(e.getMessage());
+				}
+				try{
+					ttype.ID = Integer.parseInt(sa.getString("ID"));
 				}
 				catch(Exception e){
 					logger().debug(e.getMessage());
@@ -917,29 +931,41 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
 				for(Entry<Integer, HashMap<Integer, HashMap<Integer, Vector<Journey>>>> jPerYWC:dests.getValue().bookingJourneys.entrySet()){
 					if(!dests.getValue().touristsPerTimeSourceAndCat.containsKey(jPerYWC.getKey())){
-						HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> touristsPerCatSourceWeek = new HashMap<Integer, HashMap<Integer,HashMap<Integer,Integer>>>();
+						HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>>> touristsPerCatSourceWeek = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>>();
 						dests.getValue().touristsPerTimeSourceAndCat.put(jPerYWC.getKey(), touristsPerCatSourceWeek);
 					}
 					for(Entry<Integer, HashMap<Integer, Vector<Journey>>> jPerWC: jPerYWC.getValue().entrySet()){
 						if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).containsKey(jPerWC.getKey())){
-							HashMap<Integer, HashMap<Integer, Integer>> touristsPerCatSource = new HashMap<Integer, HashMap<Integer,Integer>>();
+							HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> touristsPerCatSource = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>();
 							dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).put(jPerWC.getKey(), touristsPerCatSource);
 						}
 						
 						for(Entry<Integer, Vector<Journey>> jPerC:jPerWC.getValue().entrySet()){
 							if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).containsKey(jPerC.getKey())){
-								HashMap<Integer, Integer> touristsPerCat = new HashMap<Integer, Integer>();
+								HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>> touristsPerCat = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>();
 								dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).put(jPerC.getKey(), touristsPerCat);
 							}
 							for(Journey j:jPerC.getValue()){
-								if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).containsKey(j.sourceAreaID)){
-									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).put(j.sourceAreaID,1);
+								if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).containsKey(j.sourceAreaID)){	
+									HashMap<Integer, HashMap<Integer, HashMap<Integer,Integer>>> touristsPerSource = new HashMap<Integer, HashMap<Integer,HashMap<Integer,Integer>>>();
+									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).put(j.sourceAreaID,touristsPerSource);
+								}
+								if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.sourceAreaID).containsKey(j.tourist.currentTouristType.ID)){
+									HashMap<Integer, HashMap<Integer,Integer>> touristsPerType = new HashMap<Integer, HashMap<Integer,Integer>>();
+									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.sourceAreaID).put(j.tourist.currentTouristType.ID, touristsPerType);
+								}
+								if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.sourceAreaID).get(j.tourist.currentTouristType.ID).containsKey(j.tourist.age)){
+									HashMap<Integer,Integer> touristsPerAge = new HashMap<Integer,Integer>();
+									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.sourceAreaID).get(j.tourist.currentTouristType.ID).put(j.tourist.age, touristsPerAge);
+								}
+								if(!dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.sourceAreaID).get(j.tourist.currentTouristType.ID).get(j.tourist.age).containsKey(j.tourist.sex)){
+									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.sourceAreaID).get(j.tourist.currentTouristType.ID).get(j.tourist.age).put(j.tourist.sex, 1);
 									//dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).put(jPerC.getKey(), touristsPerCat);
 								}
 								else{
-									int x = dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.sourceAreaID);
+									int x = dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.sourceAreaID).get(j.tourist.currentTouristType.ID).get(j.tourist.age).get(j.tourist.sex);
 									x++;
-									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).put(j.sourceAreaID,x);
+									dests.getValue().touristsPerTimeSourceAndCat.get(jPerYWC.getKey()).get(jPerWC.getKey()).get(jPerC.getKey()).get(j.sourceAreaID).get(j.tourist.currentTouristType.ID).get(j.tourist.age).put(j.tourist.sex, x);
 								}
 							}
 						}
@@ -953,6 +979,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	/**
 	 * This methods checks the current bookings for crowded destinations and causes redicisions.
 	 */
+	/*
 	private void redecideProcess(){
 		if(destinations !=null && booked){
 			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
@@ -1015,7 +1042,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			}
 		}
 	}
-	
+	*/
 	/**
 	 * Lets a given number of tourists redecide their journeys.
 	 * @param journeys Vector with all current booking jounerys.
@@ -1038,35 +1065,80 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	public void commit()
 	{
 //		System.out.println("TouristProvide");
+		
 		if(destinations !=null && printedWeek!=currentDate.get(GregorianCalendar.WEEK_OF_YEAR)){
 			printedWeek=currentDate.get(GregorianCalendar.WEEK_OF_YEAR);
-			
+			String query = "";
 			try{
-				Class.forName("com.mysql.jdbc.Driver").newInstance();
-				Connection con = DriverManager.getConnection(database);
-				Statement stmt = con.createStatement();
+				if(stmt !=null)stmt.close();
+				
+				if(con == null){
+					Class.forName("com.mysql.jdbc.Driver").newInstance();
+				}
+				if(con!=null)con.close();
+				con = DriverManager.getConnection(database);
+				stmt = con.createStatement();
+					
+				//}
 				try{
 					stmt.executeUpdate("drop table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
-				}catch(Exception e){}
-				String query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(255), Category varchar(255), SourceID varchar(255), quantity int(200))";
+				}catch(Exception e){
+					//System.out.println("drop fehler"+ touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
+					//e.printStackTrace();
+				}
+				//String query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(255), Category varchar(255), SourceID varchar(255), TouristType varchar(255), age varchar(255), sex varchar(255), quantity int(200))";
+				query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";
+				
 				stmt.executeUpdate(query);
 			}
-			catch(Exception e){}
+			catch(Exception e){
+				System.out.println("create fehler "+query);
+			}
 			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
 				try{
-					Class.forName("com.mysql.jdbc.Driver").newInstance();
+					/*Class.forName("com.mysql.jdbc.Driver").newInstance();
 					Connection con = DriverManager.getConnection(database);
-					Statement stmt = con.createStatement();
-					HashMap<Integer, HashMap<Integer, Integer>> touristsPerCatAndSourceHashMap = dests.getValue().touristsPerTimeSourceAndCat.get(currentDate.get(GregorianCalendar.YEAR)).get(currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
+					Statement stmt = con.createStatement();*/
+					HashMap<Integer, HashMap<Integer,HashMap<Integer, HashMap<Integer, HashMap<Integer,  Integer>>>>> touristsPerCatAndSourceHashMap = dests.getValue().touristsPerTimeSourceAndCat.get(currentDate.get(GregorianCalendar.YEAR)).get(currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
 					try{	
-						for(Entry<Integer, HashMap<Integer, Integer>> touristsPerCatAndSource:touristsPerCatAndSourceHashMap.entrySet()){
+						for(Entry<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> touristsPerCatAndSource:touristsPerCatAndSourceHashMap.entrySet()){
 							try{
-								for(Entry<Integer, Integer> touristsPerSource : touristsPerCatAndSource.getValue().entrySet()){
-									
-									//System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
-									String query ="insert into "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"',"+touristsPerSource.getValue()+")";
-									if(debug)System.out.println(query);
-									stmt.executeUpdate(query);
+								for(Entry<Integer,HashMap<Integer, HashMap<Integer, HashMap<Integer,  Integer>>>> touristsPerSource : touristsPerCatAndSource.getValue().entrySet()){
+									try{
+										for(Entry<Integer,HashMap<Integer, HashMap<Integer,  Integer>>> touristsPerType : touristsPerSource.getValue().entrySet()){
+											try{
+												//Alter in Klassen durchlaufen
+												for(Entry<Integer,HashMap<Integer,  Integer>> touristsPerAge : touristsPerType.getValue().entrySet()){
+													
+														//Geschlechter zusammenfassen, wenn keine echte Unterscheidung vorhanden ist.
+													query = "";
+													for(Entry<Integer, Integer> touristsPerSex : touristsPerAge.getValue().entrySet()){
+														try{
+															//System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
+															//String query ="insert into "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"','"+touristsPerType.getKey()+"','"+touristsPerAge.getKey()+"','"+touristsPerSex.getKey()+"',"+touristsPerSex.getValue()+")";
+															query ="insert into "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getKey()+"',"+touristsPerCatAndSource.getKey()+",'"+touristsPerSource.getKey()+"',"+touristsPerType.getKey()+","+touristsPerAge.getKey()+","+touristsPerSex.getKey()+","+touristsPerSex.getValue()+")";
+															
+															if(debug)System.out.println(query);
+															stmt.executeUpdate(query);
+															query = null;
+														}
+														catch(Exception e ){
+															System.out.println(query);
+															e.printStackTrace();
+														}
+													}
+													
+												}
+											}
+											catch(Exception e ){
+												e.printStackTrace();
+											}
+										}
+									}
+									catch(Exception e ){
+										e.printStackTrace();
+									}
+								
 								}
 							}
 							catch(Exception e ){
@@ -1076,6 +1148,10 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 					}catch(Exception e ){
 						
 					}
+					
+					
+					//con.close();#
+					
 				}catch(Exception e){
 					
 				}
@@ -1084,7 +1160,8 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 		
 		
 		if(booked && destinations !=null){
-			touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>();
+//			touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>();
+			touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>>>>();
 			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
 				touristPerDest.put(dests.getKey(), dests.getValue().touristsPerTimeSourceAndCat);
 			}	
@@ -1099,7 +1176,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 		
 	}
 	@Override
-	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> getNumberOfTourists() {
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>>>>> getNumberOfTourists() {
 		// TODO Auto-generated method stub
 		//return numberOfTourists;
 		return touristPerDest;

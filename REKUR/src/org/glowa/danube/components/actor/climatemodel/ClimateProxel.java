@@ -61,9 +61,9 @@ public class ClimateProxel extends AbstractProxel{
 		super.computeProxel(actTime, data);
 		ca.dailyClimate = cd;
 		ca.aggregateClimateData(null, actTime.getDay());
-		if(actTime.getDay()==1 &&!(actTime.getMonth()==1 && actTime.getYear()==2008)){
+		/*if(actTime.getDay()==1 &&!(actTime.getMonth()==1 && actTime.getYear()==2008)){
 			calcTCI(actTime);
-		}
+		}*/
 	}
 	/**
 	 * init the longitude and latitude buckets for reading the climatedata.

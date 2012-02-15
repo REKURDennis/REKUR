@@ -394,7 +394,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 			wMonth = t.getMonth();
 			wYear = t.getYear();
 		}
-		if(t.getDay()==2 && !(t.getMonth()==1 && (t.getYear()==2008)))writemap(t);
+		//if(t.getDay()==2 && !(t.getMonth()==1 && (t.getYear()==2008)))writemap(t);
 	}
 	
 	
