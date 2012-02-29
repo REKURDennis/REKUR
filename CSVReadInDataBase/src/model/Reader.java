@@ -19,18 +19,18 @@ public class Reader {
 	public BufferedReader readIn;
 	public String readInFile;
 	public String demoFolder;
-	public String relationName;
+	public String relationName ="";
 	public String userName;
 	public String dbName;
 	public String password;
 	public View v;
+	
 	public Reader(View v){
 		this.v = v;
 	}
 	
 	public void readDemography(){
 		establishConnection();
-		//readIn();
 		demoRelationsPerYear();
 		v.status.setText("Fertig");
 	}
@@ -50,6 +50,7 @@ public class Reader {
 	    }
 		v.status.setText("Fertig");
 	}
+	
 	private void writeTupel(String relation,String line){
 		try {
 			//System.out.println(line);
@@ -76,72 +77,7 @@ public class Reader {
 			ex.printStackTrace();
 	    }
 	}
-	
-	private void writeDemoTupel(String relation,String line){
-		try {
-			//System.out.println(line);
-			line = line.replaceAll("\\.", "");
-			line = line.replaceAll(",", ".");
-			String[] columns = line.split(";", -1);
-			String id = columns[0];
-			
-			String queryDemo ="insert into demography\n"+"values('"+id+"','09'";
-			//String queryCiti ="insert into citizen\n"+"values('"+id+"','09'";
-			int year = 10;
-			for(int i = 1;i<columns.length;i++){
-				queryDemo+=",'"+columns[i]+"'";
-				if(i%11==0){
-					queryDemo+=")";
-					System.out.println(queryDemo);
-					stmt.executeUpdate(queryDemo);
-					queryDemo ="insert into demography\n"+"values('"+id+"','"+year+"'";
-					year++;
-				}
-			}
-		} 
-		catch (Exception ex) {
-			ex.printStackTrace();
-	    }
-	}
-	
-	private void generateDemoRelation(String name, String attributeNames){
-		try {
-			attributeNames = attributeNames.replaceAll("\\.", "");
-			String query = "";
-			stmt.executeUpdate("drop table demography");
-			
-			String[] attributes = attributeNames.split(";", -1);
-			
-			query="Create table demography("+attributes[0]+" varchar(255), year varchar(255)";
-			for(int i =1; i<11;i++){
-				attributes[i] = attributes[i].replaceAll(" ", "");
-				query+=","+attributes[i]+" varchar(255)";
-			}
-			query+=",summary varchar(255))";
-			System.out.println(query);
-			stmt.executeUpdate(query);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-	    }
-	}
-	
-	private void generateCitiRelation(String name, String attributeNames){
-		try {
-			attributeNames = attributeNames.replaceAll("\\.", "");
-			String query = "";
-			//stmt.executeUpdate("drop table citizen");			
-			query="Create table citizen(id varchar(255), Jahr09 varchar(255)";
-			for(int i =10; i<30;i++){
-				query+=",Jahr"+i+" varchar(255)";
-			}
-			query+=")";
-			System.out.println(query);
-			stmt.executeUpdate(query);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-	    }
-	}
-	public void demoRelationsPerYear(){
+	private void demoRelationsPerYear(){
 		try {
 			String query = " select * from landkreise";
 			ResultSet sa = stmt1.executeQuery(query);
@@ -163,7 +99,7 @@ public class Reader {
 		}
 	}
 	
-	public void generateRelation(String name, String attributeNames){
+	private void generateRelation(String name, String attributeNames){
 		try {
 			attributeNames = attributeNames.replaceAll("\\.", "");
 			try{
@@ -225,5 +161,29 @@ public class Reader {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 	    }
+    }
+	
+	public void deleteRun(){
+		establishConnection();
+		int year =2008;
+		try{
+			for(int y = year; y<=2030;y++){
+				for(int i = 1;i<54;i++){
+					try{
+						stmt.executeUpdate("drop table touristsPerDests"+y+""+i);
+					}
+					catch(Exception e){
+						e.printStackTrace();
+					}
+					try{
+						stmt.executeUpdate("drop table checkDestTable"+y+""+i);
+					}
+					catch(Exception e){
+						e.printStackTrace();
+					}
+				}
+			}	
+		}
+		catch(Exception ex){}
 	}
 }

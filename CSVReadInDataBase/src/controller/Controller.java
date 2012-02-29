@@ -16,6 +16,7 @@ public class Controller extends Thread implements ActionListener{
 	private JFileChooser fc;
 	private Reader reader;
 	private boolean readIn = true;
+	private boolean readOrDelete = false;
 	
 	public Controller (View v){
 		this.v = v;
@@ -39,6 +40,10 @@ public class Controller extends Thread implements ActionListener{
 			v.relField.setEnabled(false);
 		}
 		if(e.getSource() == v.readIn){
+			readOrDelete = true;
+			this.start();
+		}
+		if(e.getSource() == v.deleteRelations){
 			this.start();
 		}
 	}
@@ -90,12 +95,18 @@ public class Controller extends Thread implements ActionListener{
 		reader.dbName = v.dbField.getText();
 		reader.userName = v.userField.getText();
 		reader.password = v.pwField.getText();
-		if(readIn){
-			reader.relationName = v.relField.getText();
-			reader.readIn();
+		if(readOrDelete){
+			if(readIn){
+				reader.relationName = v.relField.getText();
+				reader.readIn();
+			}
+			else{
+				reader.readDemography();
+			}
+			readOrDelete = false;
 		}
 		else{
-			reader.readDemography();
+			reader.deleteRun();
 		}
 	}
 	

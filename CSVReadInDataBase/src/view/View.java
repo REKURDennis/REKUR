@@ -14,6 +14,8 @@ import controller.Controller;
 public class View extends JFrame{
 	private static final long serialVersionUID = 1L;
 	
+	public JButton deleteRelations;
+	
 	public JButton choseFile;
 	public JButton choseFolder;
 	public JLabel status;
@@ -42,6 +44,8 @@ public class View extends JFrame{
 		this.setLayout(new FlowLayout());
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		this.setSize(200,300);
+		
+		deleteRelations = new JButton("Simulationsrelationen Lšschen");
 		
 		choseFile = new JButton("Chose CSV-File");
 		choseFolder = new JButton("Chose Demography-Folder");
@@ -73,7 +77,7 @@ public class View extends JFrame{
 		pwPanel.add(pwLabel);
 		pwPanel.add(pwField);
 		
-		
+		this.add(deleteRelations);
 		this.add(choseFile);
 		this.add(choseFolder);
 		this.add(status);
@@ -83,6 +87,7 @@ public class View extends JFrame{
 		this.add(userPanel);
 		this.add(pwPanel);
 		
+		deleteRelations.addActionListener(c);
 		choseFile.addActionListener(c);
 		choseFolder.addActionListener(c);
 		readIn.addActionListener(c);
