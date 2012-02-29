@@ -53,7 +53,11 @@ public class DD_Destination extends AbstractActor{
 //			System.out.println(this.id()+" "+dp.isInside()+" "+dp.cd.airTemperatureMean);
 //			
 //		}
+		
+		
 		ca.aggregateClimateData(getProxel(), getSimulationTime().getDay());
+		
+		//Ausgabe der TŠglichen Klimadaten
 		
 	}
 }

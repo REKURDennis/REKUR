@@ -799,6 +799,18 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
     		}
     	});
     	
+//    	TemperatureHumidityIndex
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			IntegerDataTable tourismClimateIndex = controller.getTourismClimateIndex();
+    			for(int i:pids()){ 
+    				proxel(i).cd.TCI = tourismClimateIndex.getValueByIndex(i);
+				}
+    		}
+    	});
+    	
     	getDaylyDataEngine.add(new ProvideTask()
     	{
     		public void run()
@@ -845,9 +857,11 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 //			}
 			journeyCounter();
 		}
-		if(debug)writeDailyClimateData(simulationTime());
+		//if(debug)writeDailyClimateData(simulationTime());
+		writeDailyClimateData(simulationTime());
 		if(simulationTime().getDay()==2){
-			if(debug)writeMonthlyClimateData(simulationTime());
+			//if(debug)writeMonthlyClimateData(simulationTime());
+			writeMonthlyClimateData(simulationTime());
 		}
 	}
 	
@@ -864,7 +878,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			writeOut.flush();
 			writeOut = new FileWriter(outputName, true);
 			
-			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp\n");
+			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp;TCI\n");
 			for(Actor a : actorMap().getEntries()){
 				DA_SourceArea d = (DA_SourceArea)a;
 				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
@@ -878,6 +892,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 						";"+RekurUtil.dotToComma(d.ca.dailyClimate.relativeHumidityMean)+
 						";"+RekurUtil.dotToComma(d.ca.dailyClimate.temperatureHumidityIndex)+
 						";"+RekurUtil.dotToComma(d.ca.dailyClimate.watertemp)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.TCI)+
 						"\n");	
 			}
 			
@@ -899,7 +914,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			writeOut.flush();
 			writeOut = new FileWriter(outputName, true);
 			
-			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp\n");
+			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp;TCI\n");
 			for(Actor a : actorMap().getEntries()){
 				DA_SourceArea d = (DA_SourceArea)a;
 				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
@@ -913,6 +928,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.relativeHumidityMean)+
 						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.temperatureHumidityIndex)+
 						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.watertemp)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.TCI)+
 						"\n");
 			}
 			

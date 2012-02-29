@@ -33,6 +33,8 @@ public class DA_Tourist implements LightWeightDeepActor{
 	 */
 	public int lifephase;
 	
+	
+	
 	/**
 	 * References the current touristTpye.
 	 */

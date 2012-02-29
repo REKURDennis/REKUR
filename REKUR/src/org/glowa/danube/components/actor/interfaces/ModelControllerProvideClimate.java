@@ -56,4 +56,9 @@ public interface ModelControllerProvideClimate {
 	 * @return A IntegerDataTable with the REKUR-resolution.
 	 */
 	public IntegerDataTable getTempHumidityIndex();
+	/**
+	 * Method to get the daily temperature climate index.
+	 * @return A IntegerDataTable with the REKUR-resolution.
+	 */
+	public IntegerDataTable getTourismClimateIndex();
 }

@@ -36,6 +36,7 @@ public class ClimateDataAggregator {
 	public void aggregateClimateData(Set<AbstractActorModelProxel> dp, int day){
 		
 		if(day == 1){
+			//System.out.println(dailyClimate.TCI);
 			currentMonth.airTemperatureMean /= daysInMonth;
 			currentMonth.airTemperatureMax /= daysInMonth;
 			currentMonth.precipitationSum /= daysInMonth;
@@ -44,7 +45,6 @@ public class ClimateDataAggregator {
 			currentMonth.relativeHumidityMean /= daysInMonth;
 			currentMonth.relativeHumidityMin /= daysInMonth;
 			currentMonth.temperatureHumidityIndexMonthlyMean /= daysInMonth;
-	
 			lastMonthClimate = currentMonth;
 			currentMonth = new AggregatedClimateData();
 			daysInMonth = 1;	
@@ -52,6 +52,7 @@ public class ClimateDataAggregator {
 		if(dp!=null){
 			dailyClimate = new AggregatedClimateData();
 			for(AbstractActorModelProxel currentProxel:dp){
+				//dailyClimate.TCI =currentProxel.cd.TCI;
 				dailyClimate.airTemperatureMean += currentProxel.cd.airTemperatureMean;
 				
 				//System.out.println(currentProxel.cd.airTemperatureMean);
@@ -75,8 +76,10 @@ public class ClimateDataAggregator {
 				if(dailyClimate.temperatureHumidityIndex < currentProxel.cd.temperatureHumidityIndex){
 					dailyClimate.temperatureHumidityIndex = currentProxel.cd.temperatureHumidityIndex;
 				}
+				dailyClimate.TCI += currentProxel.cd.TCI;
 			}
-			
+			//dailyClimate.TCI /= dp.size();
+			dailyClimate.TCI /= dp.size();
 			dailyClimate.airTemperatureMean /= dp.size();
 			dailyClimate.precipitationSum /= dp.size();
 			dailyClimate.sunshineDurationSum /= dp.size();
@@ -84,7 +87,7 @@ public class ClimateDataAggregator {
 			dailyClimate.relativeHumidityMean /= dp.size();
 			dailyClimate.relativeHumidityMin /= dp.size();
 		}
-		
+		currentMonth.TCI = dailyClimate.TCI;
 		currentMonth.airTemperatureMean += dailyClimate.airTemperatureMean;
 //		if(currentMonth.airTemperatureMax < dailyClimate.airTemperatureMax){
 //			currentMonth.airTemperatureMax = dailyClimate.airTemperatureMax;

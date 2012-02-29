@@ -496,8 +496,19 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
     		public void run()
     		{
     					
-    			for( int i=0; i<pids().length; i++ ){ 
+    			for(int i:pids()){
     				temperatureHumidityDailyIndex.setValue(i, proxel(i).cd.temperatureHumidityIndex);
+				}
+    		}
+    	});
+//    	TourismClimateIndex
+    	provideEngineDaily.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    					
+    			for(int i:pids()){
+    				tci.setValue(i, proxel(i).cd.TCI);
 				}
     		}
     	});
@@ -606,6 +617,13 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 		back = ""+d;
 		back = back.replace(".", ",");
 		return back; 
+	}
+
+
+	@Override
+	public IntegerDataTable getTourismClimateIndex() {
+		// TODO Auto-generated method stub
+		return tci;
 	}
 	
 }

@@ -177,4 +177,10 @@ public class ModelController extends AbstractController implements ModelControll
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public IntegerDataTable getTourismClimateIndex() {
+		// TODO Auto-generated method stub
+		return climate.getTourismClimateIndex();
+	}
 }

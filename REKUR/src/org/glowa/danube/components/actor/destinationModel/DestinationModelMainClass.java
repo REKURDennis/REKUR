@@ -171,6 +171,57 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	}
 	
 	/**
+	 * Writes out the tci map to check the correct initialization
+	 */
+	private void writeTCI(DanubiaCalendar actTime){
+		FileWriter writeOut;
+		String outputName = "tci"+actTime.getMonth()+actTime.getYear()+".asc";
+		try{
+			writeOut = new FileWriter(outputName, false);
+			writeOut.write("");
+			writeOut.flush();
+			writeOut = new FileWriter(outputName, true);
+			
+			
+			writeOut.write("ncols 	590\n" +
+					"nrows 		258\n" +
+					"xllcorner     -2868800\n" +
+					"yllcorner     200792\n" +
+					"cellsize      10000\n" +
+					"NODATA_value  -9999\n");
+			try{
+				for(int i=1;i<(590*258);i++){
+					
+					boolean inside = proxel(i).isInside();
+					if(inside){
+						writeOut.write(" "+proxel(i).cd.TCI);
+					}
+					else{
+						writeOut.write(" "+"-9999");
+					}
+					if(i%590==0){
+						writeOut.write("\n");
+					}
+				}
+				writeOut.write("\n");
+				
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}	
+			
+			writeOut.flush();
+			writeOut.close();
+			
+			
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	
+	/**
 	 * writes out the destinationmap.
 	 */
 	private void writemap(){
@@ -356,6 +407,22 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		}
     	});
     	
+//    	TemperatureHumidityIndex
+    	getDaylyDataEngine.add(new ProvideTask()
+    	{
+    		public void run()
+    		{
+    			if(simulationTime().getDay() == 3){
+    				IntegerDataTable tourismClimateIndex = controller.getTourismClimateIndex();
+    				for(int i:pids()){ 
+    					proxel(i).cd.TCI = tourismClimateIndex.getValueByIndex(i);
+    					
+    				}
+    				//writeTCI(simulationTime());
+    			}
+    		}
+    	});
+    	
     	
     	getDaylyDataEngine.add(new ProvideTask()
     	{
@@ -399,9 +466,11 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#postCompute()
 	 */
 	protected void postCompute(){
-		if(debug)writeDailyClimateData(simulationTime());
+		//if(debug)writeDailyClimateData(simulationTime());
+		writeDailyClimateData(simulationTime());
 		if(simulationTime().getDay()==2){
-			if(debug)writeMonthlyClimateData(simulationTime());
+			//if(debug)writeMonthlyClimateData(simulationTime());
+			writeMonthlyClimateData(simulationTime());
 		}
 	}
 	
@@ -414,7 +483,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			writeOut.flush();
 			writeOut = new FileWriter(outputName, true);
 			
-			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp\n");
+			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp;TCI\n");
 			for(Actor a : actorMap().getEntries()){
 				DD_Destination d = (DD_Destination)a;
 				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
@@ -428,6 +497,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 						";"+RekurUtil.dotToComma(d.ca.dailyClimate.relativeHumidityMean)+
 						";"+RekurUtil.dotToComma(d.ca.dailyClimate.temperatureHumidityIndexMonthlyMean)+
 						";"+RekurUtil.dotToComma(d.ca.dailyClimate.watertemp)+
+						";"+RekurUtil.dotToComma(d.ca.dailyClimate.TCI)+
 						"\n");	
 			}
 			
@@ -445,7 +515,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			writeOut.flush();
 			writeOut = new FileWriter(outputName, true);
 			
-			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp\n");
+			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp;TCI\n");
 			for(Actor a : actorMap().getEntries()){
 				DD_Destination d = (DD_Destination)a;
 				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
@@ -459,6 +529,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.relativeHumidityMean)+
 						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.temperatureHumidityIndex)+
 						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.watertemp)+
+						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.TCI)+
 						"\n");
 			}
 			
