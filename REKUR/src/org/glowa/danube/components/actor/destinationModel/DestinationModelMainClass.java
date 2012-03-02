@@ -475,68 +475,150 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	}
 	
 	private void writeDailyClimateData(DanubiaCalendar actTime){
-    	FileWriter writeOut;
-		String outputName = "ClimateData"+File.separator+"DestinationData"+actTime.getDay()+actTime.getMonth()+actTime.getYear()+".csv"; 
 		try{
-			writeOut = new FileWriter(outputName, false);
-			writeOut.write("");
-			writeOut.flush();
-			writeOut = new FileWriter(outputName, true);
-			
-			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp;TCI\n");
-			for(Actor a : actorMap().getEntries()){
-				DD_Destination d = (DD_Destination)a;
-				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMax)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMin)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationSum)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationMax)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.sunshineDurationSum)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMean)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMax)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.relativeHumidityMean)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.temperatureHumidityIndexMonthlyMean)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.watertemp)+
-						";"+RekurUtil.dotToComma(d.ca.dailyClimate.TCI)+
-						"\n");	
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Connection con = DriverManager.getConnection(database);
+			Statement stmt = con.createStatement();
+			try{
+				  stmt.executeUpdate("DROP TABLE "+"DestinationDailyClimateData");
 			}
-			
-			writeOut.flush();
-			writeOut.close();
-		}catch(Exception e){System.out.println(e);}
-    }
+			catch(Exception e){}
+				try {
+					String table = "CREATE TABLE DestinationDailyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp VARCHAR(254), "+ "MaxTemp VARCHAR(254), "+ "MinTemp VARCHAR(254), "+ "precipSum VARCHAR(254), "+ "precipMax VARCHAR(254), "+ "sunDuranceSum VARCHAR(254), "+ "windSpeedMean VARCHAR(254), "+ "WindSpeedMax VARCHAR(254), "+ "relHum VARCHAR(254), "+ "THI VARCHAR(254), "+ "watertemp VARCHAR(254), "+ "TCI INTEGER)";
+					stmt.executeUpdate(table);
+				}
+				catch (Exception ex) {
+				ex.printStackTrace();
+				}
+				
+		for(Actor a : actorMap().getEntries()){
+			String table = "INSERT INTO DestinationDailyClimateData \n"+"VALUES(";
+			DD_Destination d = (DD_Destination)a;
+			table+=d.getId()+
+					","+"'"+actTime.getYear()+"-"+actTime.getMonth()+"-"+actTime.getDay()+"'"+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMax)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMin)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationSum)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationMax)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.sunshineDurationSum)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMean)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMax)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.relativeHumidityMean)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.temperatureHumidityIndexMonthlyMean)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.watertemp)+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.TCI)+
+					"\n"+")";
+			stmt.executeUpdate(table);
+			}
+		}
+		catch (Exception e) {
+		e.printStackTrace();
+		}
+	}
+//    	FileWriter writeOut;
+//		String outputName = "ClimateData"+File.separator+"DestinationData"+actTime.getDay()+actTime.getMonth()+actTime.getYear()+".csv"; 
+//		try{
+//			writeOut = new FileWriter(outputName, false);
+//			writeOut.write("");
+//			writeOut.flush();
+//			writeOut = new FileWriter(outputName, true);
+//			
+//			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp;TCI\n");
+//			for(Actor a : actorMap().getEntries()){
+//				DD_Destination d = (DD_Destination)a;
+//				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMax)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMin)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationSum)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationMax)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.sunshineDurationSum)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMean)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMax)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.relativeHumidityMean)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.temperatureHumidityIndexMonthlyMean)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.watertemp)+
+//						";"+RekurUtil.dotToComma(d.ca.dailyClimate.TCI)+
+//						"\n");	
+//			}
+//			
+//			writeOut.flush();
+//			writeOut.close();
+//		}catch(Exception e){System.out.println(e);}
+
 	
 	private void writeMonthlyClimateData(DanubiaCalendar actTime){
-    	FileWriter writeOut;
-		String outputName = "ClimateData"+File.separator+"DestinationMonthlyData"+(actTime.getMonth()-1)+actTime.getYear()+".csv"; 
 		try{
-			writeOut = new FileWriter(outputName, false);
-			writeOut.write("");
-			writeOut.flush();
-			writeOut = new FileWriter(outputName, true);
-			
-			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp;TCI\n");
-			for(Actor a : actorMap().getEntries()){
-				DD_Destination d = (DD_Destination)a;
-				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMax)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMin)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationSum)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationMax)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.sunshineDurationSum)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMean)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMax)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.relativeHumidityMean)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.temperatureHumidityIndex)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.watertemp)+
-						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.TCI)+
-						"\n");
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Connection con = DriverManager.getConnection(database);
+			Statement stmt = con.createStatement();
+			try{
+				  stmt.executeUpdate("DROP TABLE "+"DestinationMonthlyClimateData");
 			}
-			
-			writeOut.flush();
-			writeOut.close();
-		}catch(Exception e){System.out.println(e);}
-    }
+			catch(Exception e){}
+				try {
+					String table = "CREATE TABLE DestinationMonthlyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp VARCHAR(254), "+ "MaxTemp VARCHAR(254), "+ "MinTemp VARCHAR(254), "+ "precipSum VARCHAR(254), "+ "precipMax VARCHAR(254), "+ "sunDuranceSum VARCHAR(254), "+ "windSpeedMean VARCHAR(254), "+ "WindSpeedMax VARCHAR(254), "+ "relHum VARCHAR(254), "+ "THI VARCHAR(254), "+ "watertemp VARCHAR(254), "+ "TCI INTEGER)";
+					stmt.executeUpdate(table);
+				}
+				catch (Exception ex) {
+				ex.printStackTrace();
+				}
+				
+		for(Actor a : actorMap().getEntries()){
+			String table = "INSERT INTO DestinationMonthlyClimateData \n"+"VALUES(";
+			DD_Destination d = (DD_Destination)a;
+			table+=d.getId()+
+					","+"'"+actTime.getYear()+"-"+actTime.getMonth()+"-"+"00"+"'"+
+					","+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+						// <---- daily?
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMax)+
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMin)+
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationSum)+
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationMax)+
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.sunshineDurationSum)+
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMean)+
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMax)+
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.relativeHumidityMean)+
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.temperatureHumidityIndex)+
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.watertemp)+
+					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.TCI)+
+					"\n"+")";
+			stmt.executeUpdate(table);
+			}
+		}
+		catch (Exception e) {
+		e.printStackTrace();
+		}
+	}		
+//    	FileWriter writeOut;
+//		String outputName = "ClimateData"+File.separator+"DestinationMonthlyData"+(actTime.getMonth()-1)+actTime.getYear()+".csv"; 
+//		try{
+//			writeOut = new FileWriter(outputName, false);
+//			writeOut.write("");
+//			writeOut.flush();
+//			writeOut = new FileWriter(outputName, true);
+//			
+//			writeOut.write("ActorID;MeanTemp;MaxTemp;MinTemp;precipSum;precipMax;sunDuranceSum;windSpeedMean;WindSpeedMax;relHum;THI;watertemp;TCI\n");
+//			for(Actor a : actorMap().getEntries()){
+//				DD_Destination d = (DD_Destination)a;
+//				writeOut.write(d.getId()+";"+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMax)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMin)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationSum)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationMax)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.sunshineDurationSum)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMean)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMax)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.relativeHumidityMean)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.temperatureHumidityIndex)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.watertemp)+
+//						";"+RekurUtil.dotToComma(d.ca.lastMonthClimate.TCI)+
+//						"\n");
+//			}
+//			
+//			writeOut.flush();
+//			writeOut.close();
+//		}catch(Exception e){System.out.println(e);}
+//    }
 	
 	
 	/* (non-Javadoc)
