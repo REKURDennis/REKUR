@@ -34,6 +34,10 @@ public class DA_Tourist implements LightWeightDeepActor{
 	public int lifephase;
 	
 	
+	/**
+	 * Saves the family status <code>0-3<code>.
+	 */
+	public int familyStatus;
 	
 	/**
 	 * References the current touristTpye.

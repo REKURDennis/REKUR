@@ -45,6 +45,7 @@ public class ClimateDataAggregator {
 			currentMonth.relativeHumidityMean /= daysInMonth;
 			currentMonth.relativeHumidityMin /= daysInMonth;
 			currentMonth.temperatureHumidityIndexMonthlyMean /= daysInMonth;
+			//currentMonth.temperatureHumidityIndex /= daysInMonth;
 			lastMonthClimate = currentMonth;
 			currentMonth = new AggregatedClimateData();
 			daysInMonth = 1;	
@@ -113,9 +114,9 @@ public class ClimateDataAggregator {
 		currentMonth.relativeHumidityMean += dailyClimate.relativeHumidityMean;
 		currentMonth.relativeHumidityMin += dailyClimate.relativeHumidityMin;
 		currentMonth.temperatureHumidityIndexMonthlyMean += dailyClimate.temperatureHumidityIndex;
-		if(currentMonth.temperatureHumidityIndex<dailyClimate.temperatureHumidityIndex){
-			currentMonth.temperatureHumidityIndex = dailyClimate.temperatureHumidityIndex;
-		}
+		//if(currentMonth.temperatureHumidityIndex<dailyClimate.temperatureHumidityIndex){
+			currentMonth.temperatureHumidityIndex += dailyClimate.temperatureHumidityIndex;
+		//}
 		daysInMonth++;
 	}
 }
