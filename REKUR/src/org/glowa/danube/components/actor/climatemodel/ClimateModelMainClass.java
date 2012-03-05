@@ -371,7 +371,7 @@ public class ClimateModelMainClass extends AbstractModel<ClimateProxel> implemen
 	@Override
 	public void compute(DanubiaCalendar actTime) {
 //		System.out.println("ClimateCompute"+actTime.getDay()+actTime.getMonth()+actTime.getYear());
-		//Data-Objekt zur Uebergabe an Proxel mit netCDFReader-Objekt verknüpfen, da dort die KlimaArrays vorliegen.
+		//Data-Objekt zur Uebergabe an Proxel mit netCDFReader-Objekt verknpfen, da dort die KlimaArrays vorliegen.
 		Object data = netCDFReader;
 		//Proxel anweisen Klimadaten zu laden.
 		computeProxelsParallel(actTime, data);

@@ -91,7 +91,7 @@ public class DA_SourceArea extends AbstractActor{
 		
 		ca.aggregateClimateData(getProxel(), this.getSimulationTime().getDay());
 		
-		// Ausgabe der täglichen Klimadaten
+		// Ausgabe der taeglichen Klimadaten
 		
 		
 		if(simulationTime().getDay() == 1){
@@ -173,7 +173,7 @@ public class DA_SourceArea extends AbstractActor{
 						}
 					}
 				}
-				//Datenbankausgabe für Anzahl der Typen pro Quellgebiet
+				//Datenbankausgabe fuer Anzahl der Typen pro Quellgebiet
 			}
 		}
 		catch(Exception e){

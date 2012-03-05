@@ -57,7 +57,7 @@ public class DD_Destination extends AbstractActor{
 		
 		ca.aggregateClimateData(getProxel(), getSimulationTime().getDay());
 		
-		//Ausgabe der TŠglichen Klimadaten
+		//Ausgabe der Taeglichen Klimadaten
 		
 	}
 }

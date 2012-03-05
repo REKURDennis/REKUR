@@ -206,6 +206,10 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	public HashMap<Integer, Integer> switchOffCountries = new HashMap<Integer, Integer>();
 	Connection con = null;
 	
+	private boolean firstday = true;
+	
+	private boolean firstmonth = true;
+	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
@@ -274,7 +278,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	private void initSourceAreasFromDataBase(){
 		try {
             // Der Aufruf von newInstance() ist ein Workaround
-	        // für einige misslungene Java-Implementierungen
+	        // fr einige misslungene Java-Implementierungen
 		
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			Connection con = DriverManager.getConnection(database);
@@ -313,6 +317,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			}
 //			checkDistances();
 //			checkBuyingPower();
+			con.close();
 		} catch (Exception ex) {
             // Fehler behandeln
 			ex.printStackTrace();
@@ -345,6 +350,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			while(sa.next()){
 				currentActor.distance.put(Integer.parseInt(sa.getString("DESTINATION_ROWNUMBER")), (int)(Float.parseFloat(sa.getString("distanceinminutes"))));
 			}
+		con.close();
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -415,6 +421,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				}
 				
 			}
+		con.close();
 		} catch (Exception ex) {
 	        // Fehler behandeln
 			ex.printStackTrace();
@@ -519,7 +526,8 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 					logger().debug(e.getMessage());
 				}
 				touristTypes.put(Integer.parseInt(sa.getString("ID")), ttype);
-			}	
+			}
+		con.close();	
 		} catch (Exception ex) {
 	        // Fehler behandeln
 			ex.printStackTrace();
@@ -875,43 +883,47 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			Connection con = DriverManager.getConnection(database);
 			Statement stmt = con.createStatement();
+			if (firstday) {
+				firstday = false;
 			try{
 				  stmt.executeUpdate("DROP TABLE "+"SourceDailyClimateData");
 			}
 			catch(Exception e){}
 				try {
-					String table = "CREATE TABLE SourceDailyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp VARCHAR(254), "+ "MaxTemp VARCHAR(254), "+ "MinTemp VARCHAR(254), "+ "precipSum VARCHAR(254), "+ "precipMax VARCHAR(254), "+ "sunDuranceSum VARCHAR(254), "+ "windSpeedMean VARCHAR(254), "+ "WindSpeedMax VARCHAR(254), "+ "relHum VARCHAR(254), "+ "THI VARCHAR(254), "+ "watertemp VARCHAR(254), "+ "TCI INTEGER)";
+					String table = "CREATE TABLE SourceDailyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,1), "+ "precipMax FLOAT(6,1), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,1), "+ "WindSpeedMax FLOAT(6,1), "+ "relHum FLOAT(6,1), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
 				}
 				catch (Exception ex) {
 				ex.printStackTrace();
 				}
-				
+			} else {	
 		for(Actor a : actorMap().getEntries()){
 			String table = "INSERT INTO SourceDailyClimateData \n"+"VALUES(";
 			DA_SourceArea d = (DA_SourceArea)a;
 			table+=d.getId()+
 					","+"'"+actTime.getYear()+"-"+actTime.getMonth()+"-"+actTime.getDay()+"'"+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMax)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMin)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationSum)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.precipitationMax)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.sunshineDurationSum)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMean)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.windSpeedMax)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.relativeHumidityMean)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.temperatureHumidityIndexMonthlyMean)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.watertemp)+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.TCI)+
+					","+d.ca.dailyClimate.airTemperatureMean+
+					","+d.ca.dailyClimate.airTemperatureMax+
+					","+d.ca.dailyClimate.airTemperatureMin+
+					","+d.ca.dailyClimate.precipitationSum+
+					","+d.ca.dailyClimate.precipitationMax+
+					","+d.ca.dailyClimate.sunshineDurationSum+
+					","+d.ca.dailyClimate.windSpeedMean+
+					","+d.ca.dailyClimate.windSpeedMax+
+					","+d.ca.dailyClimate.relativeHumidityMean+
+					","+d.ca.dailyClimate.temperatureHumidityIndexMonthlyMean+
+					","+d.ca.dailyClimate.watertemp+
+					","+d.ca.dailyClimate.TCI+
 					"\n"+")";
 			stmt.executeUpdate(table);
 			}
-		}
+		con.close();
+		}}
 		catch (Exception e) {
 		e.printStackTrace();
 		}
-	}		
+	}	
+	
 //    	FileWriter writeOut;
 //		String outputName = "ClimateData"+File.separator+"SourceAreaData"+actTime.getDay()+actTime.getMonth()+actTime.getYear()+".csv"; 
 //		try{
@@ -952,43 +964,48 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			Connection con = DriverManager.getConnection(database);
 			Statement stmt = con.createStatement();
+			if (firstmonth) {
+				firstmonth = false;
 			try{
 				  stmt.executeUpdate("DROP TABLE "+"SourceMonthlyClimateData");
 			}
 			catch(Exception e){}
 				try {
-					String table = "CREATE TABLE SourceMonthlyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp VARCHAR(254), "+ "MaxTemp VARCHAR(254), "+ "MinTemp VARCHAR(254), "+ "precipSum VARCHAR(254), "+ "precipMax VARCHAR(254), "+ "sunDuranceSum VARCHAR(254), "+ "windSpeedMean VARCHAR(254), "+ "WindSpeedMax VARCHAR(254), "+ "relHum VARCHAR(254), "+ "THI VARCHAR(254), "+ "watertemp VARCHAR(254), "+ "TCI INTEGER)";
+					String table = "CREATE TABLE SourceMonthlyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,1), "+ "precipMax FLOAT(6,1), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,1), "+ "WindSpeedMax FLOAT(6,1), "+ "relHum FLOAT(6,1), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
 				}
 				catch (Exception ex) {
 				ex.printStackTrace();
 				}
+			} else {
 				
 		for(Actor a : actorMap().getEntries()){
 			String table = "INSERT INTO SourceMonthlyClimateData \n"+"VALUES(";
 			DA_SourceArea d = (DA_SourceArea)a;
 			table+=d.getId()+
 					","+"'"+actTime.getYear()+"-"+actTime.getMonth()+"-"+"00"+"'"+
-					","+RekurUtil.dotToComma(d.ca.dailyClimate.airTemperatureMean)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMax)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.airTemperatureMin)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationSum)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.precipitationMax)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.sunshineDurationSum)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMean)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.windSpeedMax)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.relativeHumidityMean)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.temperatureHumidityIndex)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.watertemp)+
-					","+RekurUtil.dotToComma(d.ca.lastMonthClimate.TCI)+
+					","+d.ca.lastMonthClimate.airTemperatureMean+						// ","+"d.ca.dailyClimate.airTemperatureMean"+
+					","+d.ca.lastMonthClimate.airTemperatureMax+
+					","+d.ca.lastMonthClimate.airTemperatureMin+
+					","+d.ca.lastMonthClimate.precipitationSum+
+					","+d.ca.lastMonthClimate.precipitationMax+
+					","+d.ca.lastMonthClimate.sunshineDurationSum+
+					","+d.ca.lastMonthClimate.windSpeedMean+
+					","+d.ca.lastMonthClimate.windSpeedMax+
+					","+d.ca.lastMonthClimate.relativeHumidityMean+
+					","+d.ca.lastMonthClimate.temperatureHumidityIndex+
+					","+d.ca.lastMonthClimate.watertemp+
+					","+d.ca.lastMonthClimate.TCI+
 					"\n"+")";
 			stmt.executeUpdate(table);
 			}
-		}
+		con.close();
+		}}
 		catch (Exception e) {
 		e.printStackTrace();
 		}
-	}		
+	}	
+	
 //    	FileWriter writeOut;
 //		String outputName = "ClimateData"+File.separator+"SourceAreaMonthlyData"+(actTime.getMonth()-1)+actTime.getYear()+".csv"; 
 //		try{
