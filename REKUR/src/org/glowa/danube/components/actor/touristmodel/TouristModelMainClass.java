@@ -885,10 +885,10 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			Statement stmt = con.createStatement();
 			if (firstday) {
 				firstday = false;
-			try{
+				try{
 				  stmt.executeUpdate("DROP TABLE "+"SourceDailyClimateData");
-			}
-			catch(Exception e){}
+				}
+				catch(Exception e){}
 				try {
 					String table = "CREATE TABLE SourceDailyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,1), "+ "precipMax FLOAT(6,1), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,1), "+ "WindSpeedMax FLOAT(6,1), "+ "relHum FLOAT(6,1), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
