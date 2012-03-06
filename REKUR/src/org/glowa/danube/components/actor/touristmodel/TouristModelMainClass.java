@@ -1,6 +1,7 @@
 package org.glowa.danube.components.actor.touristmodel;
 
 
+
 import java.io.File;
 import java.io.FileWriter;
 import java.sql.Connection;
@@ -209,6 +210,8 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	private boolean firstday = true;
 	
 	private boolean firstmonth = true;
+	
+	private boolean firsttable = true;
 	
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
@@ -890,7 +893,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			}
 			catch(Exception e){}
 				try {
-					String table = "CREATE TABLE SourceDailyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,1), "+ "precipMax FLOAT(6,1), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,1), "+ "WindSpeedMax FLOAT(6,1), "+ "relHum FLOAT(6,1), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
+					String table = "CREATE TABLE SourceDailyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
 				}
 				catch (Exception ex) {
@@ -971,7 +974,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			}
 			catch(Exception e){}
 				try {
-					String table = "CREATE TABLE SourceMonthlyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,1), "+ "precipMax FLOAT(6,1), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,1), "+ "WindSpeedMax FLOAT(6,1), "+ "relHum FLOAT(6,1), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
+					String table = "CREATE TABLE SourceMonthlyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
 				}
 				catch (Exception ex) {
@@ -1194,22 +1197,24 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				if(con!=null)con.close();
 				con = DriverManager.getConnection(database);
 				stmt = con.createStatement();
-					
+				
+				if (firsttable) {
+					firsttable = false;
+				
 				//}
 				try{
-					stmt.executeUpdate("drop table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
+					stmt.executeUpdate("drop table touristsPerDestinations");
 				}catch(Exception e){
 					//System.out.println("drop fehler"+ touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
 					//e.printStackTrace();
 				}
-				//String query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(255), Category varchar(255), SourceID varchar(255), TouristType varchar(255), age varchar(255), sex varchar(255), quantity int(200))";
-				query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";
+				try{ //String query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(255), Category varchar(255), SourceID varchar(255), TouristType varchar(255), age varchar(255), sex varchar(255), quantity int(200))";
+				query="Create table touristsPerDestinations (Year integer, Week tinyint, DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";					//+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";
 				
-				stmt.executeUpdate(query);
-			}
-			catch(Exception e){
-				System.out.println("create fehler "+query);
-			}
+				stmt.executeUpdate(query);}
+				catch(Exception e){System.out.println("create fehler "+query);}
+
+				} else {
 			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
 				try{
 					/*Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -1232,7 +1237,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 														try{
 															//System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
 															//String query ="insert into "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"','"+touristsPerType.getKey()+"','"+touristsPerAge.getKey()+"','"+touristsPerSex.getKey()+"',"+touristsPerSex.getValue()+")";
-															query ="insert into "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getKey()+"',"+touristsPerCatAndSource.getKey()+",'"+touristsPerSource.getKey()+"',"+touristsPerType.getKey()+","+touristsPerAge.getKey()+","+touristsPerSex.getKey()+","+touristsPerSex.getValue()+")";
+															query ="insert into touristsPerDestinations values('"+simulationTime().getYear()+"','"+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+"','"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"','"+touristsPerType.getKey()+"','"+touristsPerAge.getKey()+"','"+touristsPerSex.getKey()+"',"+touristsPerSex.getValue()+")";
 															
 															if(debug)System.out.println(query);
 															stmt.executeUpdate(query);
@@ -1265,15 +1270,18 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 						
 					}
 					
-					
+				
 					//con.close();#
 					
 				}catch(Exception e){
 					
 				}
-			}	
+			}
+			con.close();
 		}
-		
+			}
+			catch(Exception e){}
+		}
 		
 		if(booked && destinations !=null){
 //			touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>();
@@ -1281,8 +1289,112 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
 				touristPerDest.put(dests.getKey(), dests.getValue().touristsPerTimeSourceAndCat);
 			}	
-		}
-	}
+		}		
+	}	
+//	{
+////		System.out.println("TouristProvide");
+//		
+//		if(destinations !=null && printedWeek!=currentDate.get(GregorianCalendar.WEEK_OF_YEAR)){
+//			printedWeek=currentDate.get(GregorianCalendar.WEEK_OF_YEAR);
+//			String query = "";
+//			try{
+//				if(stmt !=null)stmt.close();
+//				
+//				if(con == null){
+//					Class.forName("com.mysql.jdbc.Driver").newInstance();
+//				}
+//				if(con!=null)con.close();
+//				con = DriverManager.getConnection(database);
+//				stmt = con.createStatement();
+//					
+//				//}
+//				try{
+//					stmt.executeUpdate("drop table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
+//				}catch(Exception e){
+//					//System.out.println("drop fehler"+ touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
+//					//e.printStackTrace();
+//				}
+//				//String query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(255), Category varchar(255), SourceID varchar(255), TouristType varchar(255), age varchar(255), sex varchar(255), quantity int(200))";
+//				query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";
+//				
+//				stmt.executeUpdate(query);
+//			}
+//			catch(Exception e){
+//				System.out.println("create fehler "+query);
+//			}
+//			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
+//				try{
+//					/*Class.forName("com.mysql.jdbc.Driver").newInstance();
+//					Connection con = DriverManager.getConnection(database);
+//					Statement stmt = con.createStatement();*/
+//					HashMap<Integer, HashMap<Integer,HashMap<Integer, HashMap<Integer, HashMap<Integer,  Integer>>>>> touristsPerCatAndSourceHashMap = dests.getValue().touristsPerTimeSourceAndCat.get(currentDate.get(GregorianCalendar.YEAR)).get(currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
+//					try{	
+//						for(Entry<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>> touristsPerCatAndSource:touristsPerCatAndSourceHashMap.entrySet()){
+//							try{
+//								for(Entry<Integer,HashMap<Integer, HashMap<Integer, HashMap<Integer,  Integer>>>> touristsPerSource : touristsPerCatAndSource.getValue().entrySet()){
+//									try{
+//										for(Entry<Integer,HashMap<Integer, HashMap<Integer,  Integer>>> touristsPerType : touristsPerSource.getValue().entrySet()){
+//											try{
+//												//Alter in Klassen durchlaufen
+//												for(Entry<Integer,HashMap<Integer,  Integer>> touristsPerAge : touristsPerType.getValue().entrySet()){
+//													
+//														//Geschlechter zusammenfassen, wenn keine echte Unterscheidung vorhanden ist.
+//													query = "";
+//													for(Entry<Integer, Integer> touristsPerSex : touristsPerAge.getValue().entrySet()){
+//														try{
+//															//System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
+//															//String query ="insert into "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"','"+touristsPerType.getKey()+"','"+touristsPerAge.getKey()+"','"+touristsPerSex.getKey()+"',"+touristsPerSex.getValue()+")";
+//															query ="insert into "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getKey()+"',"+touristsPerCatAndSource.getKey()+",'"+touristsPerSource.getKey()+"',"+touristsPerType.getKey()+","+touristsPerAge.getKey()+","+touristsPerSex.getKey()+","+touristsPerSex.getValue()+")";
+//															
+//															if(debug)System.out.println(query);
+//															stmt.executeUpdate(query);
+//															query = null;
+//														}
+//														catch(Exception e ){
+//															System.out.println(query);
+//															e.printStackTrace();
+//														}
+//													}
+//													
+//												}
+//											}
+//											catch(Exception e ){
+//												e.printStackTrace();
+//											}
+//										}
+//									}
+//									catch(Exception e ){
+//										e.printStackTrace();
+//									}
+//								
+//								}
+//							}
+//							catch(Exception e ){
+//								e.printStackTrace();
+//							}
+//						}
+//					}catch(Exception e ){
+//						
+//					}
+//					
+//					
+//					//con.close();#
+//					
+//				}catch(Exception e){
+//					
+//				}
+//			}	
+//		}
+//		
+//		
+//		if(booked && destinations !=null){
+////			touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>();
+//			touristPerDest = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>>>>();
+//			for(Entry<Integer, DATA_Destination> dests:destinations.entrySet()){
+//				touristPerDest.put(dests.getKey(), dests.getValue().touristsPerTimeSourceAndCat);
+//			}	
+//		}
+//	}
 	
 	/**
 	 * Inits the scenario: Societal scenario and Actions will be initialized.
