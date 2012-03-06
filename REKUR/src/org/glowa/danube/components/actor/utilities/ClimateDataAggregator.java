@@ -45,7 +45,7 @@ public class ClimateDataAggregator {
 			currentMonth.relativeHumidityMean /= daysInMonth;
 			currentMonth.relativeHumidityMin /= daysInMonth;
 			currentMonth.temperatureHumidityIndexMonthlyMean /= daysInMonth;
-			//currentMonth.temperatureHumidityIndex /= daysInMonth;
+			currentMonth.temperatureHumidityIndex /= daysInMonth;
 			lastMonthClimate = currentMonth;
 			currentMonth = new AggregatedClimateData();
 			daysInMonth = 1;	

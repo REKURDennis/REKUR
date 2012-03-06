@@ -513,7 +513,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 					","+d.ca.dailyClimate.windSpeedMean+
 					","+d.ca.dailyClimate.windSpeedMax+
 					","+d.ca.dailyClimate.relativeHumidityMean+
-					","+d.ca.dailyClimate.temperatureHumidityIndexMonthlyMean+
+					","+d.ca.dailyClimate.temperatureHumidityIndex+
 					","+d.ca.dailyClimate.watertemp+
 					","+d.ca.dailyClimate.TCI+
 					"\n"+")";

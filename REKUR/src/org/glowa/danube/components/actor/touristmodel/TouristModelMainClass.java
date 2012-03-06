@@ -914,7 +914,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 					","+d.ca.dailyClimate.windSpeedMean+
 					","+d.ca.dailyClimate.windSpeedMax+
 					","+d.ca.dailyClimate.relativeHumidityMean+
-					","+d.ca.dailyClimate.temperatureHumidityIndexMonthlyMean+
+					","+d.ca.dailyClimate.temperatureHumidityIndex+
 					","+d.ca.dailyClimate.watertemp+
 					","+d.ca.dailyClimate.TCI+
 					"\n"+")";
@@ -1209,9 +1209,17 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 					//e.printStackTrace();
 				}
 				try{ //String query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(255), Category varchar(255), SourceID varchar(255), TouristType varchar(255), age varchar(255), sex varchar(255), quantity int(200))";
-				query="Create table touristsPerDestinations (Year integer, Week tinyint, DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";					//+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";
-				
-				stmt.executeUpdate(query);}
+					boolean realRun = true;
+					if(realRun){
+						query="Create table touristsPerDestinations (Year integer, Week tinyint, DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";					//+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";
+					}
+					else{
+						int number = 0; // hier einlesen
+						query="Create table touristsPerDestinations"+number+" (Year integer, Week tinyint, DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";					//+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";
+					
+					}
+					stmt.executeUpdate(query);
+				}
 				catch(Exception e){System.out.println("create fehler "+query);}
 
 				} else {
