@@ -491,7 +491,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			}
 			catch(Exception e){}
 				try {
-					String table = "CREATE TABLE DestinationDailyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,1), "+ "precipMax FLOAT(6,1), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,1), "+ "WindSpeedMax FLOAT(6,1), "+ "relHum FLOAT(6,1), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
+					String table = "CREATE TABLE DestinationDailyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
 				}
 				catch (Exception ex) {
@@ -570,7 +570,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			}
 			catch(Exception e){}
 				try {
-					String table = "CREATE TABLE DestinationMonthlyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,1), "+ "precipMax FLOAT(6,1), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,1), "+ "WindSpeedMax FLOAT(6,1), "+ "relHum FLOAT(6,1), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
+					String table = "CREATE TABLE DestinationMonthlyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
 				}
 				catch (Exception ex) {
