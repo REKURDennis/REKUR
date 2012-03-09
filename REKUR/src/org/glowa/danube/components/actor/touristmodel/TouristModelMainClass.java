@@ -46,6 +46,10 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	 * Saves the scenario used in this run.
 	 */
 	public int touristscenario; 
+	/**
+	 * Saves the scenario used in this run.
+	 */
+	public String climatescenario;
 	
 	static final long serialVersionUID = 1;
 	/**
@@ -245,6 +249,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	    
 	    
 	    touristscenario = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("touristscenario"));
+	    climatescenario = this.componentConfig().getComponentProperties().getProperty("climatescenario");
 	    Holidays.scenario = Integer.parseInt(this.componentConfig().getComponentProperties().getProperty("holidayscenario"));
 	    if(this.componentConfig().getComponentProperties().getProperty("debug").equals("false"))debug = false;
 		initSourceAreasFromDataBase();
@@ -1188,6 +1193,8 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 		if(destinations !=null && printedWeek!=currentDate.get(GregorianCalendar.WEEK_OF_YEAR)){
 			printedWeek=currentDate.get(GregorianCalendar.WEEK_OF_YEAR);
 			String query = "";
+			boolean realRun = false;
+			int number = 0; // hier einlesen
 			try{
 				if(stmt !=null)stmt.close();
 				
@@ -1203,18 +1210,18 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				
 				//}
 				try{
-					stmt.executeUpdate("drop table touristsPerDestinations");
+					if(realRun)stmt.executeUpdate("drop table touristsPerDestinations");
 				}catch(Exception e){
 					//System.out.println("drop fehler"+ touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR));
 					//e.printStackTrace();
 				}
 				try{ //String query="Create table "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(255), Category varchar(255), SourceID varchar(255), TouristType varchar(255), age varchar(255), sex varchar(255), quantity int(200))";
-					boolean realRun = true;
+					
 					if(realRun){
 						query="Create table touristsPerDestinations (Year integer, Week tinyint, DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";					//+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";
 					}
 					else{
-						int number = 0; // hier einlesen
+						
 						query="Create table touristsPerDestinations"+number+" (Year integer, Week tinyint, DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";					//+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";
 					
 					}
@@ -1245,8 +1252,12 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 														try{
 															//System.out.println("Year: "+currentDate.get(GregorianCalendar.YEAR) +" Week: "+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" Destination: "+dests.getKey()+" in category: "+touristsPerCatAndSource.getKey()+" from SourceArea: "+touristsPerSource.getKey()+" Quantity: "+touristsPerSource.getValue());
 															//String query ="insert into "+touristsPerDestinationTables+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" values('"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"','"+touristsPerType.getKey()+"','"+touristsPerAge.getKey()+"','"+touristsPerSex.getKey()+"',"+touristsPerSex.getValue()+")";
-															query ="insert into touristsPerDestinations values('"+simulationTime().getYear()+"','"+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+"','"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"','"+touristsPerType.getKey()+"','"+touristsPerAge.getKey()+"','"+touristsPerSex.getKey()+"',"+touristsPerSex.getValue()+")";
-															
+															if(realRun){
+																query ="insert into touristsPerDestinations values('"+simulationTime().getYear()+"','"+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+"','"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"','"+touristsPerType.getKey()+"','"+touristsPerAge.getKey()+"','"+touristsPerSex.getKey()+"',"+touristsPerSex.getValue()+")";
+															}
+															else{
+																query ="insert into touristsPerDestinations"+number+" values('"+simulationTime().getYear()+"','"+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+"','"+dests.getKey()+"','"+touristsPerCatAndSource.getKey()+"','"+touristsPerSource.getKey()+"','"+touristsPerType.getKey()+"','"+touristsPerAge.getKey()+"','"+touristsPerSex.getKey()+"',"+touristsPerSex.getValue()+")";
+															}
 															if(debug)System.out.println(query);
 															stmt.executeUpdate(query);
 															query = null;
