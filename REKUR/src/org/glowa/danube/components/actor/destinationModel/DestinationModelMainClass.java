@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 
 import org.glowa.danube.components.actor.interfaces.ModelControllerToRekurDestinationModel;
 import org.glowa.danube.components.actor.interfaces.RekurDestinationModelToModelController;
+import org.glowa.danube.components.actor.touristmodel.TouristModelMainClass;
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.components.actor.utilities.RekurUtil;
 import org.glowa.danube.deepactors.actors.actor.Actor;
@@ -101,6 +102,8 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	private boolean firstday = true;
 	
 	private boolean firstmonth = true;
+	
+	private String climatescenario;
 	/* (non-Javadoc)
 	 * @see org.glowa.danube.deepactors.model.AbstractActorModel#init()
 	 */
@@ -114,7 +117,8 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	    if(this.componentConfig().getComponentProperties().getProperty("debug").equals("false"))debug = false;
 	    System.out.println("destinationInit"+debug);
 	    database = "jdbc:mysql://localhost/"+dataBaseName+"?user="+userName+"&password="+password;
-		
+	    
+	    climatescenario = TouristModelMainClass.climatescenario;
 		
 		initDestinationsFromDataBase();
 		for(Actor entry :actorMap().getEntries()){
@@ -487,11 +491,11 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			if (firstday) {
 				firstday = false;
 			try{
-				  stmt.executeUpdate("DROP TABLE "+"DestinationDailyClimateData");
+				  stmt.executeUpdate("DROP TABLE "+"DestinationDailyClimateData_"+climatescenario);
 			}
 			catch(Exception e){}
 				try {
-					String table = "CREATE TABLE DestinationDailyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
+					String table = "CREATE TABLE DestinationDailyClimateData_"+climatescenario+"("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
 				}
 				catch (Exception ex) {
@@ -500,7 +504,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			} else {
 				
 		for(Actor a : actorMap().getEntries()){
-			String table = "INSERT INTO DestinationDailyClimateData \n"+"VALUES(";
+			String table = "INSERT INTO DestinationDailyClimateData_"+climatescenario+" \n"+"VALUES(";
 			DD_Destination d = (DD_Destination)a;
 			table+=d.getId()+
 					","+"'"+actTime.getYear()+"-"+actTime.getMonth()+"-"+actTime.getDay()+"'"+
@@ -566,11 +570,11 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			if (firstmonth) {
 				firstmonth = false;
 			try{
-				  stmt.executeUpdate("DROP TABLE "+"DestinationMonthlyClimateData");
+				  stmt.executeUpdate("DROP TABLE "+"DestinationMonthlyClimateData_"+climatescenario);
 			}
 			catch(Exception e){}
 				try {
-					String table = "CREATE TABLE DestinationMonthlyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
+					String table = "CREATE TABLE DestinationMonthlyClimateData_"+climatescenario+"("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
 				}
 				catch (Exception ex) {
@@ -579,7 +583,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			} else {
 				
 		for(Actor a : actorMap().getEntries()){
-			String table = "INSERT INTO DestinationMonthlyClimateData \n"+"VALUES(";
+			String table = "INSERT INTO DestinationMonthlyClimateData_"+climatescenario+" \n"+"VALUES(";
 			DD_Destination d = (DD_Destination)a;
 			table+=d.getId()+
 					","+"'"+actTime.getYear()+"-"+actTime.getMonth()+"-"+"00"+"'"+

@@ -30,6 +30,8 @@ import org.glowa.danube.utilities.execution.ProvideTask;
 import org.glowa.danube.utilities.internal.DanubiaLogger;
 import org.glowa.danube.utilities.time.DanubiaCalendar;
 
+import com.mysql.jdbc.DatabaseMetaData;
+
 /**
  * The class <tt>TouristModel</tt> is the mainclass of the subcomponent Tourist Model of component deepactor .
  * 
@@ -49,7 +51,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 	/**
 	 * Saves the scenario used in this run.
 	 */
-	public String climatescenario;
+	public static String climatescenario;
 	
 	static final long serialVersionUID = 1;
 	/**
@@ -894,11 +896,11 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			if (firstday) {
 				firstday = false;
 				try{
-				  stmt.executeUpdate("DROP TABLE "+"SourceDailyClimateData");
+				  stmt.executeUpdate("DROP TABLE "+"SourceDailyClimateData_"+climatescenario);
 				}
 				catch(Exception e){}
 				try {
-					String table = "CREATE TABLE SourceDailyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
+					String table = "CREATE TABLE SourceDailyClimateData_"+climatescenario+"("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
 				}
 				catch (Exception ex) {
@@ -906,7 +908,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				}
 			} else {	
 		for(Actor a : actorMap().getEntries()){
-			String table = "INSERT INTO SourceDailyClimateData \n"+"VALUES(";
+			String table = "INSERT INTO SourceDailyClimateData_"+climatescenario+" \n"+"VALUES(";
 			DA_SourceArea d = (DA_SourceArea)a;
 			table+=d.getId()+
 					","+"'"+actTime.getYear()+"-"+actTime.getMonth()+"-"+actTime.getDay()+"'"+
@@ -975,11 +977,11 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			if (firstmonth) {
 				firstmonth = false;
 			try{
-				  stmt.executeUpdate("DROP TABLE "+"SourceMonthlyClimateData");
+				  stmt.executeUpdate("DROP TABLE "+"SourceMonthlyClimateData_"+climatescenario);
 			}
 			catch(Exception e){}
 				try {
-					String table = "CREATE TABLE SourceMonthlyClimateData("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
+					String table = "CREATE TABLE SourceMonthlyClimateData_"+climatescenario+"("+ "ActorID INTEGER, "+ " Date DATE, "+ "MeanTemp FLOAT(6,1), "+ "MaxTemp FLOAT(6,1), "+ "MinTemp FLOAT(6,1), "+ "precipSum FLOAT(6,2), "+ "precipMax FLOAT(6,2), "+ "sunDuranceSum FLOAT(6,1), "+ "windSpeedMean FLOAT(6,2), "+ "WindSpeedMax FLOAT(6,2), "+ "relHum FLOAT(6,2), "+ "THI FLOAT(6,1), "+ "watertemp FLOAT(6,1), "+ "TCI INTEGER)";
 					stmt.executeUpdate(table);
 				}
 				catch (Exception ex) {
@@ -988,7 +990,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			} else {
 				
 		for(Actor a : actorMap().getEntries()){
-			String table = "INSERT INTO SourceMonthlyClimateData \n"+"VALUES(";
+			String table = "INSERT INTO SourceMonthlyClimateData_"+climatescenario+" \n"+"VALUES(";
 			DA_SourceArea d = (DA_SourceArea)a;
 			table+=d.getId()+
 					","+"'"+actTime.getYear()+"-"+actTime.getMonth()+"-"+"00"+"'"+
@@ -1194,7 +1196,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 			printedWeek=currentDate.get(GregorianCalendar.WEEK_OF_YEAR);
 			String query = "";
 			boolean realRun = false;
-			int number = 0; // hier einlesen
+			int number = 1;
 			try{
 				if(stmt !=null)stmt.close();
 				
@@ -1204,6 +1206,7 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 				if(con!=null)con.close();
 				con = DriverManager.getConnection(database);
 				stmt = con.createStatement();
+				DatabaseMetaData dbm = (DatabaseMetaData) con.getMetaData();
 				
 				if (firsttable) {
 					firsttable = false;
@@ -1222,8 +1225,45 @@ public class TouristModelMainClass extends AbstractActorModel<TouristProxel> imp
 					}
 					else{
 						
+						ResultSet rs = dbm.getTables(null, null, "Runs", null);
+						if (rs.next()) {
+						// Table exists
+								try{				
+									query = "SELECT Run FROM Runs ORDER BY Run DESC LIMIT 1;";
+									ResultSet sa = stmt.executeQuery(query);
+									sa.next();
+									number = sa.getInt("Run")+1;
+								}
+								catch (Exception ex) {
+									ex.printStackTrace();
+									}
+								try{
+									query = "INSERT INTO Runs \n"+"VALUES("+number+","+touristscenario+","+Holidays.scenario+","+"'"+climatescenario+"'"+","+"CURRENT_TIMESTAMP"+
+									"\n"+")";
+									stmt.executeUpdate(query);
+								}
+								catch (Exception ex) {
+									ex.printStackTrace();}
+						}	
+						else {
+						// Table does not exist
+							try{
+							query = "CREATE TABLE Runs ("+ "Run INTEGER, "+ "Touristscenerio INTEGER, "+ "Holidayscenerio INTEGER, "+ "Climatescenerio VARCHAR(8), "+ "Timestamp TIMESTAMP)";
+							stmt.executeUpdate(query);
+								} catch (Exception ex) {
+									ex.printStackTrace();
+								}
+							try {
+								String insert = "INSERT INTO Runs \n"+"VALUES(";
+								insert+="1"+","+touristscenario+","+Holidays.scenario+","+"'"+climatescenario+"'"+","+"CURRENT_TIMESTAMP"+
+								"\n"+")";
+								stmt.executeUpdate(insert);
+								} catch (Exception ex) {
+								ex.printStackTrace();
+								}
+							
+						}
 						query="Create table touristsPerDestinations"+number+" (Year integer, Week tinyint, DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";					//+simulationTime().getYear()+currentDate.get(GregorianCalendar.WEEK_OF_YEAR)+" (DestID varchar(8), Category tinyint(3), SourceID varchar(8), TouristType tinyint(3), age tinyint(4), sex tinyint(1), quantity smallint(6))";
-					
 					}
 					stmt.executeUpdate(query);
 				}
