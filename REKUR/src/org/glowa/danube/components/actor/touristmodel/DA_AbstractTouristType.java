@@ -52,6 +52,19 @@ public class DA_AbstractTouristType {
 	public int bookingDay;
 	
 	/**
+	 * Saves the probability to travel this year.
+	 */
+	public int currentProbability;
+	/**
+	 * Saves the basic probability to travel.
+	 */
+	public int travelProbability;
+	/**
+	 * Probability increase factor.
+	 */
+	public double increaseFactor;
+	
+	/**
 	 * Decides to travel.
 	 * @param year current year.
 	 * @param month current month.

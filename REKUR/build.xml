@@ -61,6 +61,14 @@
 				<fileset dir="${lib.dir}" includes="**/*.jar" />
 			</classpath>
 			<jvmarg value="-Xmx${maxheapsize}" />
+			
+			<jvmarg value="-XX:+UseParNewGC" />
+			<jvmarg value="-XX:+UseConcMarkSweepGC" />
+			<jvmarg value="-XX:ParallelGCThreads=20" />
+			<jvmarg value="-XX:SurvivorRatio=8" />
+			<jvmarg value="-XX:TargetSurvivorRatio=90" />
+			<jvmarg value="-XX:MaxTenuringThreshold=31" />
+			
 			<jvmarg value="-Djava.security.policy=policy"/>
 			<jvmarg value="-Dlog4j.configuration=file:///${log4j.properties.dir}/${log4j.configuration}"/>
 			<jvmarg value="-Dscenario.id=${scenario.id}" />

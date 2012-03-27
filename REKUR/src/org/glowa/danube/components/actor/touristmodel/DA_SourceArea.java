@@ -1,9 +1,12 @@
 package org.glowa.danube.components.actor.touristmodel;
 
 import java.util.*;
+import java.util.Map.Entry;
+
 import org.glowa.danube.components.actor.utilities.ClimateData;
 import org.glowa.danube.components.actor.utilities.ClimateDataAggregator;
 import org.glowa.danube.deepactors.actors.actor.AbstractActor;
+
 
 
 /**
@@ -54,9 +57,9 @@ public class DA_SourceArea extends AbstractActor{
 	
 	
 	/**
-	 * Saves a LikedList with references to all touristactors of this area per age and sex.
+	 * Saves a LikedList with references to all touristactors of this area per age, sex and family status.
 	 */
-	public LinkedList<LinkedList<LinkedList<DA_Tourist>>> touristsPerAge = new LinkedList<LinkedList<LinkedList<DA_Tourist>>>(); 
+	public LinkedList<LinkedList<HashMap<Integer,LinkedList<DA_Tourist>>>> touristsPerAge = new LinkedList<LinkedList<HashMap<Integer,LinkedList<DA_Tourist>>>>(); 
 	
 	/**
 	 * References the climateDataAggregator-Object to aggregate and the monthly climate.
@@ -77,14 +80,21 @@ public class DA_SourceArea extends AbstractActor{
 	 */
 	public HashMap<Integer, Integer> distance = new HashMap<Integer, Integer>();
 	
+	/**
+	 * Saves the number of different touristTypes
+	 */
+	public int numberOfTypes = 7;
+	
 	@Override
 	protected void options() {
 		super.options();
 		updateDemographyInSA();
-		for(LinkedList<LinkedList<DA_Tourist>> aget:touristsPerAge){
-			for(LinkedList<DA_Tourist> agesAndSex:aget){
-				for(DA_Tourist t:agesAndSex){
-					t.options(this.getSimulationTime().getYear(), this.getSimulationTime().getMonth(), this.getSimulationTime().getDay());
+		for(LinkedList<HashMap<Integer,LinkedList<DA_Tourist>>> aget:touristsPerAge){
+			for(HashMap<Integer,LinkedList<DA_Tourist>> agesSexFT:aget){
+				for(Entry<Integer, LinkedList<DA_Tourist>> ft:agesSexFT.entrySet()){
+					for(DA_Tourist t:ft.getValue()){
+						t.options(this.getSimulationTime().getYear(), this.getSimulationTime().getMonth(), this.getSimulationTime().getDay());
+					}
 				}
 			}
 		}
@@ -111,16 +121,26 @@ public class DA_SourceArea extends AbstractActor{
 			if(simulationTime().getDay() == 1 && simulationTime().getMonth() == 1 && simulationTime().getYear()>tm.startYear){
 				int rownumber = 0;
 				
-				touristsPerAge.addFirst(new LinkedList<LinkedList<DA_Tourist>>());
-				touristsPerAge.get(0).addLast(new LinkedList<DA_Tourist>());
-				touristsPerAge.get(0).addLast(new LinkedList<DA_Tourist>());
+				touristsPerAge.addFirst(new LinkedList<HashMap<Integer,LinkedList<DA_Tourist>>>());
 				
+				touristsPerAge.get(0).addLast(new HashMap<Integer,LinkedList<DA_Tourist>>());
+				touristsPerAge.get(0).addLast(new HashMap<Integer,LinkedList<DA_Tourist>>());
 				
-				for(DA_Tourist t: touristsPerAge.getLast().get(0)){
-					touristsPerAge.get(touristsPerAge.size()-2).get(0).addLast(t);
+				for (int i = 0; i<numberOfTypes;i++){
+					touristsPerAge.get(0).get(0).put(i, new LinkedList<DA_Tourist>());
+					touristsPerAge.get(0).get(1).put(i, new LinkedList<DA_Tourist>());
 				}
-				for(DA_Tourist t: touristsPerAge.getLast().get(1)){
-					touristsPerAge.get(touristsPerAge.size()-2).get(1).addLast(t);
+				
+				
+				for (int i = 0; i<numberOfTypes;i++){
+					for(DA_Tourist t: touristsPerAge.getLast().get(0).get(i)){
+						touristsPerAge.get(touristsPerAge.size()-2).get(0).get(i).addLast(t);
+					}
+				}
+				for (int i = 0; i<numberOfTypes;i++){
+					for(DA_Tourist t: touristsPerAge.getLast().get(1).get(i)){
+						touristsPerAge.get(touristsPerAge.size()-2).get(1).get(i).addLast(t);
+					}
 				}
 				touristsPerAge.removeLast();
 				
@@ -129,36 +149,34 @@ public class DA_SourceArea extends AbstractActor{
 					
 					for(int cols:rows){
 						//if(landkreisId == 9577)System.out.println(simulationTime().getYear()+" "+landkreisId+" "+colnumber+" "+rownumber+" touristsPerAge alt "+touristsPerAge.get(rownumber).get(colnumber).size());
-						if(cols<0){
-							for(int delete = 0; delete<((cols*-1));delete++){
-								if(0 == (touristsPerAge.get(rownumber).get(colnumber).size())){
-									System.out.println(landkreisId+" "+colnumber+" "+rownumber);
-								}
-								else{
-									touristsPerAge.get(rownumber).get(colnumber).remove((int)(Math.random()*(double)(touristsPerAge.get(rownumber).get(colnumber).size())));
-								}
-							}
-						}
-						if(cols>0){
-							for(int add = 0; add<cols;add++){
-								if(rownumber == 0){
-									touristsPerAge.get(rownumber).get(colnumber).addLast(new DA_Tourist(tm, this, tm.touristTypes.get(1), rownumber, colnumber, 0));
-								}
-								else{
-									try{
-										DA_Tourist clone = (touristsPerAge.get(rownumber).get(colnumber).get((int)(Math.random()*(double)(touristsPerAge.get(rownumber).get(colnumber).size())))).clone();
-										touristsPerAge.get(rownumber).get(colnumber).addLast(clone);
-									}catch(Exception e){
-										e.printStackTrace();
-										System.out.println(simulationTime().getYear()+" "+landkreisId+" "+colnumber+" "+rownumber);
+						for(int i = 0; i<1;i++){	
+							if(cols<0){
+								for(int delete = 0; delete<((cols*-1));delete++){
+									if(0 == (touristsPerAge.get(rownumber).get(colnumber).get(i).size())){
+										System.out.println(landkreisId+" "+colnumber+" "+rownumber);
+									}
+									else{
+										touristsPerAge.get(rownumber).get(colnumber).get(i).remove((int)(Math.random()*(double)(touristsPerAge.get(rownumber).get(colnumber).get(i).size())));
 									}
 								}
 							}
-						}
-						if(landkreisId == 9577){
-							//System.out.println(simulationTime().getYear()+" "+landkreisId+" "+colnumber+" "+rownumber+" touristsPerAge "+touristsPerAge.get(rownumber).get(colnumber).size());
-							//System.out.println(simulationTime().getYear()+" "+landkreisId+" "+colnumber+" "+rownumber+" pop per age "+populationPerAgeAndSex[rownumber][colnumber]+" last Year "+lastYearpop[rownumber][colnumber]);
-							//System.out.println(simulationTime().getYear()+" "+landkreisId+" "+colnumber+" "+rownumber+" pop diff per age "+populationPerAgeAndSexDifference[rownumber][colnumber]+" "+cols);
+							if(cols>0){
+								for(int add = 0; add<cols;add++){
+									
+									if(rownumber == 0){
+										touristsPerAge.get(rownumber).get(colnumber).get(i).addLast(new DA_Tourist(tm, this, tm.touristTypes.get(1), rownumber, colnumber, 0));
+									}
+									else{
+										try{
+											DA_Tourist clone = (touristsPerAge.get(rownumber).get(colnumber).get(i).get((int)(Math.random()*(double)(touristsPerAge.get(rownumber).get(colnumber).get(i).size())))).clone();
+											touristsPerAge.get(rownumber).get(colnumber).get(i).addLast(clone);
+										}catch(Exception e){
+											e.printStackTrace();
+											System.out.println(simulationTime().getYear()+" "+landkreisId+" "+colnumber+" "+rownumber);
+										}
+									}
+								}
+							}
 						}
 						colnumber++;
 						
@@ -166,10 +184,12 @@ public class DA_SourceArea extends AbstractActor{
 					rownumber++;
 					
 				}
-				for(LinkedList<LinkedList<DA_Tourist>> aget:touristsPerAge){
-					for(LinkedList<DA_Tourist> agesAndSex:aget){
-						for(DA_Tourist t:agesAndSex){
-							t.age++;
+				for(LinkedList<HashMap<Integer,LinkedList<DA_Tourist>>> aget:touristsPerAge){
+					for(HashMap<Integer,LinkedList<DA_Tourist>> agesSexFT:aget){
+						for(Entry<Integer, LinkedList<DA_Tourist>> ft:agesSexFT.entrySet()){
+							for(DA_Tourist t:ft.getValue()){
+								t.age++;
+							}
 						}
 					}
 				}
@@ -220,13 +240,20 @@ public class DA_SourceArea extends AbstractActor{
 		this.tm = tm;
 		int age = 0;
 		for(int[] popPerAge: populationPerAgeAndSex){
-			touristsPerAge.addLast(new LinkedList<LinkedList<DA_Tourist>>());
+			touristsPerAge.addLast(new LinkedList<HashMap<Integer,LinkedList<DA_Tourist>>>());
 			int sex = 0;
 			for(int i:popPerAge){
-				touristsPerAge.get(age).addLast(new LinkedList<DA_Tourist>());
+				touristsPerAge.get(age).addLast(new HashMap<Integer,LinkedList<DA_Tourist>>());
+				for(int z = 0; z<numberOfTypes;z++){
+					touristsPerAge.get(age).get(sex).put(z,new LinkedList<DA_Tourist>());
+				}
 				for(int number = 0; number<i; number++){
-					int random = (int)(Math.random()*(double)tm.touristTypes.size()+1.0);
-					touristsPerAge.get(age).get(sex).addLast(new DA_Tourist(tm,this, tm.touristTypes.get(random), age, sex, 0));
+					int random = (int)(Math.random()*(double)tm.touristTypes.size());
+					
+					//int rType = (int)(Math.random()*(double)3.0);
+					int rType = 0;
+					//Touristentypen nach prozentualem Anteil erstellen	
+					touristsPerAge.get(age).get(sex).get(rType).add(new DA_Tourist(tm,this, tm.touristTypes.get(random), age, sex, 0));
 				}
 				sex++;
 			}

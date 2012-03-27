@@ -21,7 +21,10 @@ public class DA_DummyTouristType extends DA_AbstractTouristType{
 	public void makeDecision(int year, int month, int day, DA_Tourist delegate){
 		
 		if(!delegate.tm.preSimulation){
-			if(month==bookingMonth && day == bookingDay){
+			int r = (int)(Math.random() * 100.0);
+			currentProbability = (int)((double)(currentProbability)*increaseFactor);
+			if(month==bookingMonth && day == bookingDay && r<currentProbability){
+				currentProbability = travelProbability;
 				HashMap<Integer, Vector<Integer>> weeks  = new HashMap<Integer, Vector<Integer>>();
 				weeks.put(year, preferedJourneyWeeks);
 				Vector<DATA_Destination> possibleDests = new Vector<DATA_Destination>();
