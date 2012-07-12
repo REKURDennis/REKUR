@@ -12,7 +12,7 @@ import java.util.Vector;
  */
 public class DA_DummyTouristType extends DA_AbstractTouristType{
 	/**
-	 * Construcotr of the class.
+	 * Constructor of the class.
 	 */
 	public DA_DummyTouristType() {
 		this.countries.add(6);

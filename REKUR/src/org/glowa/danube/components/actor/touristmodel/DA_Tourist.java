@@ -25,6 +25,10 @@ public class DA_Tourist implements LightWeightDeepActor{
 	 */
 	public int age;
 	/**
+	 * saves the current age category.
+	 */
+	public int ageCategory;
+	/**
 	 * Saves the sex of the tourist.
 	 */
 	public int sex;
@@ -32,8 +36,10 @@ public class DA_Tourist implements LightWeightDeepActor{
 	 * Saves the lifephase of the tourist.
 	 */
 	public int lifephase;
-	
-	
+	/**
+	 * Saves the holiday budget per day.
+	 */
+	public int budget;
 	/**
 	 * Saves the family status <code>0-3<code>.
 	 */
@@ -57,13 +63,41 @@ public class DA_Tourist implements LightWeightDeepActor{
 	 * @param sex sex of the tourist.
 	 * @param lp the tourist lifephase.
 	 */
-	public DA_Tourist(TouristModelMainClass tm,DA_SourceArea origin, DA_AbstractTouristType tType, int age, int sex, int lp){
+	public DA_Tourist(TouristModelMainClass tm,DA_SourceArea origin, DA_AbstractTouristType tType, int age, int sex, int lp, int budget){
 		this.tm = tm;
 		this.origin = origin;
 		currentTouristType = tType;
 		this.age = age;
 		this.sex = sex;
+		lifephase = lp;
+		this.budget = budget;
+		calcAgeCat();
 	}
+	/**
+	 * chooses the age category
+	 */
+	public void calcAgeCat(){
+		ageCategory=0;
+		if(age>=20){
+			ageCategory=1;
+		}
+		if(age>=30){
+			ageCategory=2;
+		}
+		if(age>=40){
+			ageCategory=3;
+		}
+		if(age>=50){
+			ageCategory=4;
+		}
+		if(age>=60){
+			ageCategory=5;
+		}
+		if(age>=70){
+			ageCategory=6;
+		}
+	}
+	
 	/**
 	 * Method for redecision process.
 	 * @param year current year.
@@ -83,7 +117,7 @@ public class DA_Tourist implements LightWeightDeepActor{
 	 * Clones the Tourist and gives ist back.
 	 */
 	public DA_Tourist clone(){
-		DA_Tourist clone = new DA_Tourist(tm, origin, currentTouristType, age, sex, lifephase);
+		DA_Tourist clone = new DA_Tourist(tm, origin, currentTouristType, age, sex, lifephase, budget);
 		clone.history = history.clone();
 		return clone;
 	}

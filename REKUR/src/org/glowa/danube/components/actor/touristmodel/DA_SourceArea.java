@@ -1,5 +1,6 @@
 package org.glowa.danube.components.actor.touristmodel;
 
+import java.io.FileWriter;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -17,18 +18,22 @@ import org.glowa.danube.deepactors.actors.actor.AbstractActor;
 @SuppressWarnings("unchecked")
 public class DA_SourceArea extends AbstractActor{
 	/**
+	 * Indicates if the district is a city 1 =city 0 = rural.
+	 */
+	public int cityStatus;
+	/**
 	 * Saves the official landkreis-id.
 	 */
 	public int landkreisId;
 	/**
 	 * Saves the number of citizens within this sourcearea.
 	 */
-	public int[] numberOfCitizensPerAge = new int[2];
+	public int[] numberOfCitizens = new int[2];
 	
 	/**
 	 * Saves the number of citizens difference to last year within this sourcearea.
 	 */
-	public int[] numberOfCitizensPerAgeDiff = new int[2];
+	public int[] numberOfCitizensDiff = new int[2];
 	/**
 	 * saves the name of this area.
 	 */
@@ -38,17 +43,21 @@ public class DA_SourceArea extends AbstractActor{
 	 */
 	public float size;
 	/**
+	 * Saves the number of different touristTypes
+	 */
+	public int numberOfTypes = 7;
+	/**
 	 * Saves the number of citizens per age and sex, starting with 0 years and ends with 90 and older.
 	 */
-	public int[][] populationPerAgeAndSex = new int [91][2];
+	public int[][][] populationPerAgeAndSex = new int [91][2][numberOfTypes];
 	
 	
 	/**
 	 * Saves the number of citizens difference to the last year per age and sex, starting with 0 years and ends with 90 and older.
 	 */
-	public int[][] populationPerAgeAndSexDifference = new int [91][2];
+	public int[][][] populationPerAgeAndSexDifference = new int [91][2][numberOfTypes];
 	
-	public int[][] lastYearpop = new int[91][2];
+	public int[][][] lastYearpop = new int[91][2][numberOfTypes];
 	
 	/**
 	 * Saves the buyingpower of this area.
@@ -81,9 +90,9 @@ public class DA_SourceArea extends AbstractActor{
 	public HashMap<Integer, Integer> distance = new HashMap<Integer, Integer>();
 	
 	/**
-	 * Saves the number of different touristTypes
+	 * Saves the loctaion 0 = Sh 1 = North Bavaria 2 = south Bavaria
 	 */
-	public int numberOfTypes = 7;
+	public int location = 0;
 	
 	@Override
 	protected void options() {
@@ -119,7 +128,7 @@ public class DA_SourceArea extends AbstractActor{
 	private void updateDemographyInSA(){
 		try{
 			if(simulationTime().getDay() == 1 && simulationTime().getMonth() == 1 && simulationTime().getYear()>tm.startYear){
-				int rownumber = 0;
+				
 				
 				touristsPerAge.addFirst(new LinkedList<HashMap<Integer,LinkedList<DA_Tourist>>>());
 				
@@ -144,51 +153,101 @@ public class DA_SourceArea extends AbstractActor{
 				}
 				touristsPerAge.removeLast();
 				
-				for(int[] rows : populationPerAgeAndSexDifference){
-					int colnumber = 0;
+				for(int rows=0;rows< populationPerAgeAndSexDifference.length;rows++){
 					
-					for(int cols:rows){
+					for(int cols = 0; cols < populationPerAgeAndSexDifference[rows].length;cols++){
 						//if(landkreisId == 9577)System.out.println(simulationTime().getYear()+" "+landkreisId+" "+colnumber+" "+rownumber+" touristsPerAge alt "+touristsPerAge.get(rownumber).get(colnumber).size());
-						for(int i = 0; i<1;i++){	
-							if(cols<0){
-								for(int delete = 0; delete<((cols*-1));delete++){
-									if(0 == (touristsPerAge.get(rownumber).get(colnumber).get(i).size())){
-										System.out.println(landkreisId+" "+colnumber+" "+rownumber);
+
+						for(int type=0;type<populationPerAgeAndSexDifference[rows][cols].length;type++){
+							int i= populationPerAgeAndSexDifference[rows][cols][type];
+							//System.out.println(landkreisId+" "+rows+" "+i);
+							if(i<0){
+								
+								for(int delete = 0; delete<((i*-1));delete++){
+									boolean swapped = false;
+									for(int n = type+1;n<numberOfTypes;n++){
+										if(populationPerAgeAndSexDifference[rows][cols][n]>0 && !swapped){
+											swapped = true;
+											DA_Tourist t = touristsPerAge.get(rows).get(cols).get(type).get((int)(Math.random()*(double)(touristsPerAge.get(rows).get(cols).get(type).size())));
+											t.currentTouristType = tm.touristTypes.get(n);
+											touristsPerAge.get(rows).get(cols).get(n).add(t);
+											touristsPerAge.get(rows).get(cols).get(type).remove(t);
+											t.lifephase = n;
+											populationPerAgeAndSexDifference[rows][cols][n]--;
+										}
 									}
-									else{
-										touristsPerAge.get(rownumber).get(colnumber).get(i).remove((int)(Math.random()*(double)(touristsPerAge.get(rownumber).get(colnumber).get(i).size())));
+									if(!swapped){
+										try{
+											touristsPerAge.get(rows).get(cols).get(type).remove((int)(Math.random()*(double)(touristsPerAge.get(rows).get(cols).get(type).size())));
+											
+										}catch(Exception e){
+											e.printStackTrace();
+											System.out.println(simulationTime().getYear()+" "+landkreisId+" "+cols+" "+rows+" "+type);
+										}
 									}
+									
+									
 								}
 							}
-							if(cols>0){
-								for(int add = 0; add<cols;add++){
+							if(i>0){
+								
+								for(int add = 0; add<i;add++){
 									
-									if(rownumber == 0){
-										touristsPerAge.get(rownumber).get(colnumber).get(i).addLast(new DA_Tourist(tm, this, tm.touristTypes.get(1), rownumber, colnumber, 0));
+									if(rows == 0){
+										
+										
+										int budget = getBudget(rows,type);
+										
+										
+										touristsPerAge.get(rows).get(cols).get(type).addLast(new DA_Tourist(tm, this, tm.touristTypes.get(type), rows, cols, type,budget));
 									}
 									else{
 										try{
-											DA_Tourist clone = (touristsPerAge.get(rownumber).get(colnumber).get(i).get((int)(Math.random()*(double)(touristsPerAge.get(rownumber).get(colnumber).get(i).size())))).clone();
-											touristsPerAge.get(rownumber).get(colnumber).get(i).addLast(clone);
+											
+											boolean swapped = false;
+											for(int n = type+1;n<numberOfTypes;n++){
+												if(populationPerAgeAndSexDifference[rows][cols][n]<0 && !swapped){
+													swapped = true;
+													DA_Tourist t = touristsPerAge.get(rows).get(cols).get(n).get((int)(Math.random()*(double)(touristsPerAge.get(rows).get(cols).get(n).size())));
+													t.currentTouristType = tm.touristTypes.get(type);
+													t.lifephase = type;
+													touristsPerAge.get(rows).get(cols).get(type).add(t);
+													touristsPerAge.get(rows).get(cols).get(n).remove(t);
+													populationPerAgeAndSexDifference[rows][cols][n]++;
+												}
+											}
+											if(!swapped){
+												try{
+													int x = 0;
+													while(touristsPerAge.get(rows+x).get(cols).get(type).size()==0){
+														x++;
+													}
+													DA_Tourist clone = (touristsPerAge.get(rows+x).get(cols).get(type).get((int)(Math.random()*(double)(touristsPerAge.get(rows+x).get(cols).get(type).size())))).clone();
+													clone.age = rows;
+													touristsPerAge.get(rows).get(cols).get(type).addLast(clone);
+												}catch(Exception e){
+													e.printStackTrace();
+													System.out.println(simulationTime().getYear()+" "+landkreisId+" "+cols+" "+rows+" "+type);
+												}
+												
+											}
 										}catch(Exception e){
 											e.printStackTrace();
-											System.out.println(simulationTime().getYear()+" "+landkreisId+" "+colnumber+" "+rownumber);
+											System.out.println(simulationTime().getYear()+" "+landkreisId+" "+cols+" "+rows);
 										}
 									}
 								}
 							}
 						}
-						colnumber++;
-						
 					}
-					rownumber++;
-					
 				}
 				for(LinkedList<HashMap<Integer,LinkedList<DA_Tourist>>> aget:touristsPerAge){
 					for(HashMap<Integer,LinkedList<DA_Tourist>> agesSexFT:aget){
 						for(Entry<Integer, LinkedList<DA_Tourist>> ft:agesSexFT.entrySet()){
 							for(DA_Tourist t:ft.getValue()){
 								t.age++;
+								t.calcAgeCat();
+								
 							}
 						}
 					}
@@ -201,10 +260,24 @@ public class DA_SourceArea extends AbstractActor{
 		}
 		for(int x = 0; x< 91;x++){
 			for(int y = 0;y<2;y++){
-				lastYearpop[x][y] = populationPerAgeAndSex[x][y];
+				for(int z = 0;z<numberOfTypes;z++){
+					lastYearpop[x][y][z] = populationPerAgeAndSex[x][y][z];
+				}
 			}
 		}
-			
+//		checkTouristInit();
+		for(int age =0;age<91;age++){
+			for(int sex = 0; sex<2;sex++){
+				for(int type=0;type<numberOfTypes;type++){
+					for(DA_Tourist t : touristsPerAge.get(age).get(sex).get(type)){
+						t.age = age;
+						t.calcAgeCat();
+						t.lifephase=type;
+						t.budget = getBudget(t.age, t.lifephase);
+					}
+				}
+			}
+		}
 	}
 		
 	/**
@@ -239,25 +312,110 @@ public class DA_SourceArea extends AbstractActor{
 	public void initTourists(TouristModelMainClass tm){
 		this.tm = tm;
 		int age = 0;
-		for(int[] popPerAge: populationPerAgeAndSex){
+		for(int[][] popPerAge: populationPerAgeAndSex){
 			touristsPerAge.addLast(new LinkedList<HashMap<Integer,LinkedList<DA_Tourist>>>());
 			int sex = 0;
-			for(int i:popPerAge){
+			for(int[] i:popPerAge){
 				touristsPerAge.get(age).addLast(new HashMap<Integer,LinkedList<DA_Tourist>>());
 				for(int z = 0; z<numberOfTypes;z++){
 					touristsPerAge.get(age).get(sex).put(z,new LinkedList<DA_Tourist>());
 				}
-				for(int number = 0; number<i; number++){
-					int random = (int)(Math.random()*(double)tm.touristTypes.size());
+				int currentType = 0;
+				for(int type:i){
 					
-					//int rType = (int)(Math.random()*(double)3.0);
-					int rType = 0;
-					//Touristentypen nach prozentualem Anteil erstellen	
-					touristsPerAge.get(age).get(sex).get(rType).add(new DA_Tourist(tm,this, tm.touristTypes.get(random), age, sex, 0));
+					int budget = getBudget(age, currentType);
+					
+					for(int z=0;z<type;z++){
+						touristsPerAge.get(age).get(sex).get(currentType).add(new DA_Tourist(tm,this, tm.touristTypes.get(currentType), age, sex, currentType,budget));
+					}
+					currentType++;
 				}
 				sex++;
 			}
 			age++;
 		}
+//		checkTouristInit();
 	}
+	
+	
+	/**
+	 * chooses the age category
+	 */
+	public int calcAgeCat(int age){
+		int ageCategory=0;
+		if(age>=20){
+			ageCategory=1;
+		}
+		if(age>=30){
+			ageCategory=2;
+		}
+		if(age>=40){
+			ageCategory=3;
+		}
+		if(age>=50){
+			ageCategory=4;
+		}
+		if(age>=60){
+			ageCategory=5;
+		}
+		if(age>=70){
+			ageCategory=6;
+		}
+		return ageCategory;
+	}
+	
+	
+	private int getBudget(int age, int lp){
+		
+			float[] perc = tm.lpBudget.get(lp+1)[calcAgeCat(age)+1];
+			float random = (float)(Math.random()*100.0);
+			float add = 0.0f;
+			int p = 0;
+			while(add<random && p+1<perc.length){
+				add+=perc[p];
+				p++;
+			}
+//			System.out.println(add+" "+random);
+		try{
+			int budget = (int)tm.lpBudget.get(lp+1)[0][p];
+			return budget;
+		}
+		catch(Exception e){
+			System.out.println(add+" "+random+" "+p+" "+perc.length);
+			e.printStackTrace();
+		}
+		return 0;
+	}
+	
+	private void checkTouristInit(){
+		FileWriter writeOut;
+		String outputName = "sourceArea"+landkreisId+simulationTime().getYear()+".csv";
+		try{
+			writeOut = new FileWriter(outputName, false);
+			writeOut.write("");
+			writeOut.flush();
+			writeOut = new FileWriter(outputName, true);
+			for(int age =0;age<91;age++){
+				writeOut.write(";"+age);
+				for(int sex = 0; sex<2;sex++){
+					for(int type=0;type<numberOfTypes;type++){
+						int number = touristsPerAge.get(age).get(sex).get(type).size();
+						for(DA_Tourist t : touristsPerAge.get(age).get(sex).get(type)){
+							t.age = age;
+							t.calcAgeCat();
+							t.lifephase=type;
+						}
+						writeOut.write(";"+number);
+					}
+					writeOut.write(";");
+				}
+				writeOut.write("\n");
+			}
+			writeOut.flush();
+			writeOut.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
 }

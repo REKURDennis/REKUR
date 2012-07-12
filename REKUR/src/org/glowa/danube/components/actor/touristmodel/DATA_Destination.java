@@ -24,6 +24,10 @@ public class DATA_Destination {
 	 */
 	public int[][][] costsPerCategory;
 	/**
+	 * saves the min and max costs costs[0]=min costs[1]=max
+	 */
+	public int[] costs = new int[2];
+	/**
 	 * saves the Country-ID of the Destination.
 	 */
 	public int country;
@@ -45,7 +49,7 @@ public class DATA_Destination {
 	/**
 	 * HashMap<Year<HashMap<Week, HashMap<Category, HashMap<SourceID, HashMap<Type,HashMap<age, HashMap<sex, Number>>>>>();
 	 */
-	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>>>> touristsPerTimeSourceAndCat = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer>>>>>>>();
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer[]>>>>>>> touristsPerTimeSourceAndCat = new HashMap<Integer, HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,HashMap<Integer,Integer[]>>>>>>>();
 	//public int[][][][] touristsPerSource; 
 	
 	/**

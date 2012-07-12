@@ -80,7 +80,7 @@ public class ModelController extends AbstractController implements ModelControll
 	
 //	Touristmodel to DestinationModel interfacemethods
 	@Override
-	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>>>>> getNumberOfTourists() {
+	public HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer[]>>>>>>>> getNumberOfTourists() {
 		// TODO Auto-generated method stub
 		return tourist.getNumberOfTourists();
 	}
@@ -182,5 +182,11 @@ public class ModelController extends AbstractController implements ModelControll
 	public IntegerDataTable getTourismClimateIndex() {
 		// TODO Auto-generated method stub
 		return climate.getTourismClimateIndex();
+	}
+
+	@Override
+	public HashMap<Integer, int[]> getCosts() {
+		// TODO Auto-generated method stub
+		return destination.getCosts();
 	}
 }

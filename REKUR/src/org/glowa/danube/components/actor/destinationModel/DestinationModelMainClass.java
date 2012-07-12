@@ -62,6 +62,10 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	 */
 	private HashMap<Integer, boolean[]> holidayTypes = new HashMap<Integer, boolean[]>();
 	/**
+	 * HashMap with the destinations-ids as key and their costs.
+	 */
+	private HashMap<Integer, int[]> costsDest = new HashMap<Integer, int[]>();
+	/**
 	 * HashMap with the destinations-ids as key and their country-ids.
 	 */
 	private HashMap<Integer, Integer> countryIDs = new HashMap<Integer, Integer>();
@@ -125,8 +129,10 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			DD_Destination dest = (DD_Destination)entry;
 			holidayTypes.put(entry.getId(), dest.holidayTypes);
 			countryIDs.put(entry.getId(), dest.country);
+			costsDest.put(entry.getId(), dest.costs);
 		}
-		if(debug)writemap();
+		//if(debug)
+		writemap();
 	}
 	
 	/**
@@ -143,7 +149,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 			Connection con = DriverManager.getConnection(database);
 			Statement stmt = con.createStatement();
 			
-			String query = " select * from "+destinationsTable+";";
+			String query = " select * from "+destinationsTable+" left join DestPrice as dp on rekurid = dp.did;";
 			
 			ResultSet sa = stmt. executeQuery(query);
 			int i = 1;
@@ -153,18 +159,29 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 //				System.out.println(Integer.parseInt(sa.getString("RekurID")));
 				if(currentActor!=null){
 					test = Integer.parseInt(sa.getString("RekurID"));
+					int did = 0;
+					try{
+						did = Integer.parseInt(sa.getString("DID"));
+					}
+					catch(Exception ex){
+						
+					}
 					currentActor.holidayTypes = new boolean[holidayTypeNumber];
 					currentActor.country = Integer.parseInt(sa.getString("LandID"));
 					if(!sa.getString("Bettenkapazitaet").equals(""))currentActor.bedCapacities = Integer.parseInt(sa.getString("Bettenkapazitaet"));
 //					System.out.println(currentActor.getId()+" "+currentActor.bedCapacities);
 					for(int z = 0;z<holidayTypeNumber;z++){
-						String entry = sa.getString(z+5);
+						String entry = sa.getString(z+6);
 						if(entry.equals("0")){
 							currentActor.holidayTypes[z] = false;
 						}
 						if(entry.equals("1")){
 							currentActor.holidayTypes[z] = true;
 						}
+					}
+					if(did == test){
+						currentActor.costs[0] = sa.getInt("min");
+						currentActor.costs[1] = sa.getInt("max");
 					}
 					i++;
 				}
@@ -251,7 +268,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 					"NODATA_value  -9999\n");
 			
 			try{
-				for(int i=1;i<(590*258);i++){
+				for(int i=0;i<(590*258);i++){
 					
 					boolean inside = proxel(i).isInside();
 					if(inside){
@@ -438,7 +455,7 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
     		public void run()
     		{
     			if(controller.getNumberOfTourists() !=null){
-    				for(Entry<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>>>>>>> dests:controller.getNumberOfTourists().entrySet()){
+    				for(Entry<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer[]>>>>>>>> dests:controller.getNumberOfTourists().entrySet()){
     					DD_Destination dest =(DD_Destination)(actorMap().getEntry(dests.getKey()));
     					dest.touristsPerTimeSourceAndCat = dests.getValue();
     				}	
@@ -772,6 +789,12 @@ public class DestinationModelMainClass extends AbstractActorModel<DestinationPro
 	public int getDestinationModelscenario() {
 		// TODO Auto-generated method stub
 		return destinationscenario;
+	}
+
+	@Override
+	public HashMap<Integer, int[]> getCosts() {
+		// TODO Auto-generated method stub
+		return costsDest;
 	}
 	  
 }
